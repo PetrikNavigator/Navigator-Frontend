@@ -1,0 +1,162 @@
+# Resolver IP is auto-detected from /etc/resolv.conf at container start by
+# `15-detect-resolver.envsh` and injected as ${NGINX_RESOLVER}. Works on plain
+# Docker, Swarm overlay networks, and Kubernetes — no hardcoded 127.0.0.11.
+# A `resolver` + variable upstream forces re-resolution per request, so a
+# backend container restart (new IP) doesn't take this proxy down.
+resolver ${NGINX_RESOLVER} valid=10s ipv6=off;
+resolver_timeout 5s;
+
+# Cache zone for the one cacheable backend endpoint (/api/schedules/public).
+# Short TTL because there is no invalidation channel — staleness is bounded by
+# `proxy_cache_valid` below.
+proxy_cache_path /var/cache/nginx/schedules
+                 levels=1:2
+                 keys_zone=schedules_cache:10m
+                 max_size=100m
+                 inactive=1h
+                 use_temp_path=off;
+
+server {
+    listen       8080 default_server;
+    listen       [::]:8080 default_server;
+    server_name  _;
+
+    root   /usr/share/nginx/html;
+    index  index.html;
+
+    charset utf-8;
+
+    # Security headers
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "geolocation=(), microphone=(), camera=()" always;
+    add_header Cross-Origin-Opener-Policy "same-origin" always;
+    # Adjust CSP to your needs — this is a sane baseline for a Vite SPA.
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'" always;
+
+    limit_req zone=app_limit burst=60 nodelay;
+
+    # Health endpoint (no logs, no auth)
+    location = /healthz {
+        access_log off;
+        add_header Content-Type text/plain;
+        return 200 "ok\n";
+    }
+
+    # ---- Cached backend endpoint --------------------------------------------
+    # /api/schedules/public (and /api/schedules/public/options) are the only
+    # public, read-only endpoints that benefit from caching. `^~` makes this
+    # block win over the generic /api/ regex-style location below.
+    location ^~ /api/schedules/public {
+        # Held in a variable so the `resolver` above re-resolves per request.
+        set $backend_origin "${BACKEND_ORIGIN}";
+
+        proxy_pass         $backend_origin;
+
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_set_header   X-Forwarded-Host  $host;
+
+        # Cache GETs keyed by full URI (includes query string: premise, class,
+        # teacher, classroom, date). No invalidation channel — admin changes
+        # become visible after `proxy_cache_valid` expires.
+        proxy_cache             schedules_cache;
+        proxy_cache_methods     GET HEAD;
+        proxy_cache_key         $scheme$proxy_host$request_uri;
+        proxy_cache_valid       200 5m;
+        proxy_cache_valid       404 30s;
+        proxy_cache_lock        on;
+        proxy_cache_use_stale   error timeout updating http_500 http_502 http_503 http_504;
+        proxy_cache_background_update on;
+
+        # Treat the response as cacheable regardless of what the backend says.
+        proxy_ignore_headers    Cache-Control Set-Cookie Expires Vary;
+        proxy_hide_header       Set-Cookie;
+
+        # Surface cache state to clients for debugging (HIT / MISS / EXPIRED…).
+        add_header X-Cache-Status $upstream_cache_status always;
+
+        proxy_buffering         on;
+
+        proxy_connect_timeout 5s;
+        proxy_send_timeout    60s;
+        proxy_read_timeout    60s;
+
+        proxy_next_upstream error timeout http_502 http_503 http_504;
+    }
+
+    # ---- Backend reverse proxy ----------------------------------------------
+    # Browser calls /api/<path>  ->  nginx proxies to ${BACKEND_ORIGIN}/<path>
+    #
+    # The frontend should be built with VITE_API_BASE_URL=/api so requests are
+    # same-origin (no CORS, no mixed-content issues, cookies just work).
+    location /api/ {
+        # Held in a variable so the `resolver` above re-resolves per request.
+        set $backend_origin "${BACKEND_ORIGIN}";
+
+        proxy_pass         $backend_origin;
+
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_set_header   X-Forwarded-Host  $host;
+
+        # WebSocket / SSE support (harmless for plain HTTP)
+        proxy_set_header   Upgrade    $http_upgrade;
+        proxy_set_header   Connection $connection_upgrade;
+
+        # Don't cache API responses at the proxy layer.
+        proxy_buffering    off;
+        proxy_cache        off;
+
+        # Reasonable upstream timeouts.
+        proxy_connect_timeout 5s;
+        proxy_send_timeout    60s;
+        proxy_read_timeout    60s;
+
+        # Fail fast with a 502 if the backend container isn't up yet, rather
+        # than hanging the whole nginx worker.
+        proxy_next_upstream error timeout http_502 http_503 http_504;
+    }
+
+    # Don't serve dotfiles
+    location ~ /\.(?!well-known) {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+
+    # Long-cache fingerprinted assets emitted by Vite (dist/assets/*)
+    location ^~ /assets/ {
+        access_log off;
+        expires 1y;
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        try_files $uri =404;
+    }
+
+    # Other static files with content hashes / images / fonts
+    location ~* \.(?:js|css|woff2?|ttf|otf|eot|ico|png|jpg|jpeg|gif|webp|svg|avif|wasm|map)$ {
+        expires 7d;
+        add_header Cache-Control "public, max-age=604800";
+        try_files $uri =404;
+    }
+
+    # SPA fallback — index.html must not be cached so deploys take effect
+    location = /index.html {
+        add_header Cache-Control "no-store, no-cache, must-revalidate" always;
+        expires off;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Custom error pages fall back to SPA
+    error_page 404 /index.html;
+}

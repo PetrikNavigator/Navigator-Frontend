@@ -1,0 +1,21 @@
+# Sourced by the official nginx image's docker-entrypoint.sh BEFORE
+# `20-envsubst-on-templates.sh` runs. The `.envsh` extension makes the parent
+# entrypoint `source` this file instead of executing it, so exports persist
+# into the envsubst step.
+#
+# We extract the first `nameserver` line from /etc/resolv.conf so the
+# `resolver` directive in the nginx config points at whatever DNS the
+# container actually has — Docker (127.0.0.11), Kubernetes (kube-dns cluster
+# IP), or anything else. Override by setting NGINX_RESOLVER in the
+# environment before container start.
+
+if [ -z "${NGINX_RESOLVER:-}" ]; then
+    detected=$(awk '/^nameserver/ {print $2; exit}' /etc/resolv.conf 2>/dev/null || true)
+    if [ -n "$detected" ]; then
+        export NGINX_RESOLVER="$detected"
+        echo "$0: detected resolver $NGINX_RESOLVER from /etc/resolv.conf"
+    else
+        export NGINX_RESOLVER="127.0.0.11"
+        echo "$0: no nameserver in /etc/resolv.conf, falling back to $NGINX_RESOLVER"
+    fi
+fi
