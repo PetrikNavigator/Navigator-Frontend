@@ -16,7 +16,7 @@ export type StairsContextValue = {
     isError: boolean;
     error: string | null;
     clearError: () => void;
-    getStairs: (premise: string) => Promise<Stair[]>;
+    getStairs: () => Promise<Stair[]>;
     addStair: (dto: AddStair) => Promise<Stair | null>;
     updateStair: (id: string, dto: UpdateStair) => Promise<Stair | null>;
     deleteStair: (id: string) => Promise<Stair | null>;
@@ -40,14 +40,14 @@ export const StairsProvider = ({ children }: StairsProviderProps) => {
         setIsError(false);
     }, []);
 
-    const getStairs = async (premise: string): Promise<Stair[]> => {
+    const getStairs = async (): Promise<Stair[]> => {
         setIsLoading(true);
         setIsError(false);
         setError(null);
         let res = [] as Stair[];
 
         try {
-            res = await getStairsAPI(premise);
+            res = await getStairsAPI();
             
             if (JSON.stringify(res) !== JSON.stringify(stairs)) {
                 setStairs(res);

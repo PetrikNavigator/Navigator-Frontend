@@ -16,7 +16,7 @@ export type ClassroomTypeContextValue = {
     isError: boolean;
     error: string | null;
     clearError: () => void;
-    getClassroomTypes: (id: string) => Promise<ClassroomType[] | null>
+    getClassroomTypes: () => Promise<ClassroomType[] | null>
     createClassroomType: (dto: AddClasroomType) => Promise<ClassroomType | null>;
     updateClassroomType: (id: string, dto: UpdateClasroomType) => Promise<ClassroomType | null>;
     deleteClassroomType: (id: string) => Promise<ClassroomType | null>;
@@ -40,14 +40,14 @@ export const ClassroomTypeProvider = ({ children }: ClassroomTypeProviderProps) 
         setIsError(false);
     }, []);
 
-    const getClassroomTypes = async (id: string): Promise<ClassroomType[] | null> => {
+    const getClassroomTypes = async (): Promise<ClassroomType[] | null> => {
         setIsLoading(true);
         setIsError(false);
         setError(null);
         let classroom_types = [] as ClassroomType[];
 
         try {
-            classroom_types = await api_get_classroom_types(id);
+            classroom_types = await api_get_classroom_types();
         } catch (err: unknown) {
             setError(normalizeError(err));
             setIsError(true);

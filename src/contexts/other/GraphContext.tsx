@@ -9,14 +9,13 @@ import { getFullGraph as getFullGraphAPI } from '../../api/public.api'
 
 export type GraphContextValue = {
     graph: FullGraph | null;
-    currentPremiseId: string | null
 
     isLoading: boolean;
     isError: boolean;
     error: string | null
 
-    getFullGraph: (premise: string) => Promise<FullGraph | null>;
-    invalidateGraph: (premise: string) => void
+    getFullGraph: () => Promise<FullGraph | null>;
+    invalidateGraph: () => void
 };
 
 type GraphProviderProps = {
@@ -27,21 +26,19 @@ const GraphContext = createContext<GraphContextValue | undefined>(undefined);
 
 export const GraphProvider = ({ children }: GraphProviderProps) => {
     const [graph, setGraph] = useState<FullGraph | null>(null);
-    const [currentPremiseId, setCurrentPremiseId] = useState<string | null>(null)
 
     const [isLoading, setIsLoading] = useState(false);
     const [isError, setIsError] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    const fetchGraph = async (premise: string) => {
+    const fetchGraph = async () => {
         setIsLoading(true);
         setIsError(false);
         setError(null);
         let graphData: FullGraph | null = null;
 
         try {
-            graphData = await getFullGraphAPI(premise);
-            setCurrentPremiseId(premise)
+            graphData = await getFullGraphAPI();
         } catch (err: unknown) {
             setError(normalizeError(err));
             setIsError(true);
@@ -53,15 +50,15 @@ export const GraphProvider = ({ children }: GraphProviderProps) => {
         return graphData;
     }
 
-    const getFullGraph = async (premise: string) => {
-        if (graph !== null && currentPremiseId === premise)
+    const getFullGraph = async () => {
+        if (graph !== null)
             return graph
 
-        return fetchGraph(premise)
+        return fetchGraph()
     };
 
-    const invalidateGraph = async (premise: string) => {
-        fetchGraph(premise)
+    const invalidateGraph = async () => {
+        fetchGraph()
     }
 
     const value = {
@@ -70,7 +67,6 @@ export const GraphProvider = ({ children }: GraphProviderProps) => {
         isError,
         error,
         getFullGraph,
-        currentPremiseId,
         invalidateGraph
     };
 

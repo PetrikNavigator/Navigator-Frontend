@@ -16,7 +16,7 @@ export type CorridorContextValue = {
     isError: boolean;
     error: string | null;
     clearError: () => void;
-    getCorridors: (premise: string) => Promise<Corridor[]>;
+    getCorridors: () => Promise<Corridor[]>;
     addCorridor: (dto: AddCorridor) => Promise<Corridor | null>;
     updateCorridor: (id: string, dto: UpdateCorridor) => Promise<Corridor | null>;
     deleteCorridor: (id: string) => Promise<Corridor | null>;
@@ -40,14 +40,14 @@ export const CorridorProvider = ({ children }: CorridorProviderProps) => {
         setIsError(false);
     }, []);
 
-    const getCorridors = async (premise: string): Promise<Corridor[]> => {
+    const getCorridors = async (): Promise<Corridor[]> => {
         setIsLoading(true);
         setIsError(false);
         setError(null);
         let res = [] as Corridor[]
 
         try {
-            res = await getCorridorsAPI(premise);
+            res = await getCorridorsAPI();
 
             if (JSON.stringify(res) !== JSON.stringify(corridors)) {
                 setCorridors(res);

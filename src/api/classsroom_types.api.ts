@@ -5,8 +5,8 @@ import { get_request, post_put_request, delete_request } from "./requests"
 
 const PATH: string = "/api/classrooms-types"
 
-export async function getClassroomTypes(premise_id: string): Promise<ClassroomType[]> {
-    const classroom = await get_request<ClassroomType[]>(PATH + `?premise=${premise_id}`)
+export async function getClassroomTypes(): Promise<ClassroomType[]> {
+    const classroom = await get_request<ClassroomType[]>(PATH)
 
     return classroom
 }

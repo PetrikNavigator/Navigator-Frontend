@@ -4,8 +4,8 @@ import { get_request, post_put_request, delete_request } from "./requests"
 
 const PATH = "/api/stairs"
 
-export async function getStairs(premise: string): Promise<Stair[]> {
-    const stairs = await get_request<Stair[]>(PATH + `?premise=${premise}`)
+export async function getStairs(): Promise<Stair[]> {
+    const stairs = await get_request<Stair[]>(PATH)
 
     return stairs
 }

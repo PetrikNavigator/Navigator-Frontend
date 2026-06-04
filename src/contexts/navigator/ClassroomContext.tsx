@@ -16,7 +16,7 @@ export type ClassroomContextValue = {
     isError: boolean;
     error: string | null;
     clearError: () => void;
-    getClassrooms: (premise: string) => Promise<Classroom[]>;
+    getClassrooms: () => Promise<Classroom[]>;
     createClassroom: (dto: AddClassroom) => Promise<Classroom | null>;
     updateClassroom: (id: string, dto: UpdateClassroom) => Promise<Classroom | null>;
     deleteClassroom: (id: string) => Promise<Classroom | null>;
@@ -40,14 +40,14 @@ export const ClassroomProvider = ({ children }: ClassroomProviderProps) => {
         setIsError(false);
     }, []);
 
-    const getClassrooms = async (premise: string): Promise<Classroom[]> => {
+    const getClassrooms = async (): Promise<Classroom[]> => {
         setIsLoading(true);
         setIsError(false);
         setError(null);
         let res = [] as Classroom[]
 
         try {
-            res = await getClassroomsAPI(premise);
+            res = await getClassroomsAPI();
 
             if (JSON.stringify(res) !== JSON.stringify(classrooms)) {
                 setClassrooms(res);

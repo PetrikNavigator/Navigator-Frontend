@@ -5,8 +5,8 @@ import { get_request, post_put_request, delete_request } from "./requests"
 
 const PATH: string = "/api/corridors"
 
-export async function getCorridors(premise: string): Promise<Corridor[]> {
-    const corridors = await get_request<Corridor[]>(PATH + `?premise=${premise}`)
+export async function getCorridors(): Promise<Corridor[]> {
+    const corridors = await get_request<Corridor[]>(PATH)
 
     return corridors
 }

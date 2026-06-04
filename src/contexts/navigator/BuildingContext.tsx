@@ -16,7 +16,7 @@ export type BuildingsContextValue = {
     isError: boolean;
     error: string | null;
     clearError: () => void;
-    getBuildings: (premise: string) => Promise<Building[]>
+    getBuildings: () => Promise<Building[]>
     addBuilding: (dto: AddBuildingRequest) => Promise<Building | null>;
     updateBuilding: (id: string, dto: UpdateBuildingRequest) => Promise<Building | null>;
     deleteBuilding: (id: string) => Promise<Building | null>;
@@ -40,14 +40,14 @@ export const BuildingsProvider = ({ children }: BuildingsProviderProps) => {
         setIsError(false);
     }, []);
 
-    const getBuildings = async (premise: string): Promise<Building[]> => {
+    const getBuildings = async (): Promise<Building[]> => {
         setIsLoading(true);
         setIsError(false);
         setError(null);
         let buildings = [] as Building[]
 
         try {
-            buildings = await getBuildingsAPI(premise);
+            buildings = await getBuildingsAPI();
         } catch (err: unknown) {
             setError(normalizeError(err));
             setIsError(true);

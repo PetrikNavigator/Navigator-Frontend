@@ -1,12 +1,10 @@
 import type { AddBuildingRequest, Building, UpdateBuildingRequest } from "../types/navigator/Building"
 import { get_request, post_put_request, delete_request } from "./requests"
 
-
-
 const PATH: string = "/api/buildings"
 
-export async function getBuildings(premise: string): Promise<Building[]> {
-    const buildings = await get_request<Building[]>(PATH + `?premise=${premise}`)
+export async function getBuildings(): Promise<Building[]> {
+    const buildings = await get_request<Building[]>(PATH)
 
     return buildings
 }

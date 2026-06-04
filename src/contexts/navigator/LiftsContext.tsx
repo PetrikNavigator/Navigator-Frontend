@@ -16,7 +16,7 @@ export type LiftsContextValue = {
     isError: boolean;
     error: string | null;
     clearError: () => void;
-    getLifts: (premise: string) => Promise<Lift[]>;
+    getLifts: () => Promise<Lift[]>;
     addLift: (dto: AddLift) => Promise<Lift | null>;
     updateLift: (id: string, dto: UpdateLift) => Promise<Lift | null>;
     deleteLift: (id: string) => Promise<Lift | null>;
@@ -40,14 +40,14 @@ export const LiftsProvider = ({ children }: LiftsProviderProps) => {
         setIsError(false);
     }, []);
 
-    const getLifts = async (premise: string): Promise<Lift[]> => {
+    const getLifts = async (): Promise<Lift[]> => {
         setIsLoading(true);
         setIsError(false);
         setError(null);
         let res = [] as Lift[]
 
         try {
-            res = await getLiftsAPI(premise);
+            res = await getLiftsAPI();
 
             if (JSON.stringify(res) !== JSON.stringify(lifts)) {
                 setLifts(res);
