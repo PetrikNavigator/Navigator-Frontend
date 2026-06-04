@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
 import { useLifts } from "../../../contexts/navigator/LiftsContext"
-import { usePremise } from "../../../contexts/other/PremiseContext"
 import type { AddLift, Lift } from "../../../types/navigator/Lift"
 import LiftsTable from "./LiftsTable"
 import SchoolPreview3D from "../../../three/SchoolPreview3D"
@@ -20,7 +19,6 @@ const emptyForm = {
 }
 
 export default function LiftsTab() {
-    const { selectedPremiseId } = usePremise()
     const { buildings, getBuildings } = useBuildings()
     const { lifts, getLifts, deleteLift, isError, error, addLift, updateLift, clearError, isLoading } = useLifts()
     const { graph, getFullGraph, invalidateGraph } = useGraph()
@@ -45,10 +43,6 @@ export default function LiftsTab() {
         setErr("")
         clearError()
 
-        if (selectedPremiseId === null) {
-            setErr("Nincs kiválasztott telephely")
-            return
-        }
         if (!form.name.trim()) {
             setErr("Add meg a lift nevét")
             return
@@ -98,17 +92,14 @@ export default function LiftsTab() {
 
     useEffect(() => {
         setBuildingId("")
-        if (selectedPremiseId) {
-            getLifts(selectedPremiseId)
-            getBuildings(selectedPremiseId)
-            getFullGraph(selectedPremiseId)
-            setHighlightedLiftId(null)
-        }
-    }, [selectedPremiseId])
+        getLifts()
+        getBuildings()
+        getFullGraph()
+        setHighlightedLiftId(null)
+    }, [])
 
     useUpdateEffect(() => {
-        if (selectedPremiseId)
-            invalidateGraph(selectedPremiseId)
+        invalidateGraph()
     }, [lifts])
 
     useEffect(() => {
@@ -122,9 +113,6 @@ export default function LiftsTab() {
     }, [editing])
 
     useEffect(() => {
-        if (!selectedPremiseId)
-            return
-
         if (!editorOpen) {
             setHighlightedLiftId(null)
             return
@@ -134,7 +122,7 @@ export default function LiftsTab() {
             if (buildings.length > 0)
                 setBuildingId(buildings[0].id)
         }
-    }, [editorOpen, selectedPremiseId])
+    }, [editorOpen])
 
     const highlight: Highlight | undefined = editorOpen ?
         {

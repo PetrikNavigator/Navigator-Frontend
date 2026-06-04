@@ -1,16 +1,13 @@
 import { useEffect } from "react";
-import { usePremise } from "../../contexts/other/PremiseContext";
 import SchoolPreview3D from "../../three/SchoolPreview3D";
 import { useGraph } from "../../contexts/other/GraphContext";
 
 export default function Preview() {
-    const { selectedPremiseId } = usePremise()
     const { graph, getFullGraph } = useGraph()
 
     useEffect(() => {
-        if (selectedPremiseId)
-            getFullGraph(selectedPremiseId)
-    }, [selectedPremiseId]);
+        getFullGraph()
+    }, []);
 
     return (
         <div className="w-full flex justify-center items-center">

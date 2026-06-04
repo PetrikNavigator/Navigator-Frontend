@@ -9,9 +9,7 @@ import { ClassroomTypeProvider } from './contexts/navigator/ClassroomTypesContex
 import { CorridorProvider } from './contexts/navigator/CorridorContext.tsx'
 import { LiftsProvider } from './contexts/navigator/LiftsContext.tsx'
 import { StairsProvider } from './contexts/navigator/StairsContext.tsx'
-import { AdminProvider } from './contexts/other/AdminContext.tsx'
 import { AuthProvider } from './contexts/other/AuthContext.tsx'
-import { LastEditedProvider } from './contexts/other/LastEditedContext.tsx'
 import { ThemeProvider } from './contexts/other/ThemeContext.tsx'
 import { GraphProvider } from './contexts/other/GraphContext.tsx'
 
@@ -22,21 +20,17 @@ createRoot(document.getElementById('root')!).render(
         <BrowserRouter>
           <AuthProvider>
             <BuildingsProvider>
-              <AdminProvider>
-                <ClassroomProvider>
-                  <CorridorProvider>
-                    <LiftsProvider>
-                      <StairsProvider>
-                        <ClassroomTypeProvider>
-                          <LastEditedProvider>
-                            <App />
-                          </LastEditedProvider>
-                        </ClassroomTypeProvider>
-                      </StairsProvider>
-                    </LiftsProvider>
-                  </CorridorProvider>
-                </ClassroomProvider>
-              </AdminProvider>
+              <ClassroomProvider>
+                <CorridorProvider>
+                  <LiftsProvider>
+                    <StairsProvider>
+                      <ClassroomTypeProvider>
+                        <App />
+                      </ClassroomTypeProvider>
+                    </StairsProvider>
+                  </LiftsProvider>
+                </CorridorProvider>
+              </ClassroomProvider>
             </BuildingsProvider>
           </AuthProvider>
         </BrowserRouter>

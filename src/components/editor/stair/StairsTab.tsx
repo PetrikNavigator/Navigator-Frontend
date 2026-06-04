@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
 import { useStairs } from "../../../contexts/navigator/StairsContext"
-import { usePremise } from "../../../contexts/other/PremiseContext"
 import type { AddStair, Stair } from "../../../types/navigator/Stair"
 import StairsTable from "./StairsTable"
 import SchoolPreview3D from "../../../three/SchoolPreview3D"
@@ -24,7 +23,6 @@ const normalizeDeg0To359 = (deg: number) => ((deg % 360) + 360) % 360
 const normalizeRotation = (deg: number) => normalizeDeg0To359(Math.round(deg))
 
 export default function StairsTab() {
-    const { selectedPremiseId } = usePremise()
     const { buildings, getBuildings } = useBuildings()
     const { stairs, getStairs, deleteStair, isError, error, addStair, updateStair, clearError, isLoading } = useStairs()
     const { graph, getFullGraph, invalidateGraph } = useGraph()
@@ -49,10 +47,6 @@ export default function StairsTab() {
         setErr("")
         clearError()
 
-        if (selectedPremiseId === null) {
-            setErr("Nincs kiválasztott telephely")
-            return
-        }
         if (!form.name.trim()) {
             setErr("Add meg a lépcső nevét")
             return
@@ -102,17 +96,14 @@ export default function StairsTab() {
 
     useEffect(() => {
         setBuildingId("")
-        if (selectedPremiseId) {
-            getStairs(selectedPremiseId)
-            getBuildings(selectedPremiseId)
-            getFullGraph(selectedPremiseId)
-            setHighlightedStairId(null)
-        }
-    }, [selectedPremiseId])
+        getStairs()
+        getBuildings()
+        getFullGraph()
+        setHighlightedStairId(null)
+    }, [])
 
     useUpdateEffect(() => {
-        if (selectedPremiseId)
-            invalidateGraph(selectedPremiseId)
+        invalidateGraph()
     }, [stairs])
 
     useEffect(() => {
@@ -126,9 +117,6 @@ export default function StairsTab() {
     }, [editing])
 
     useEffect(() => {
-        if (!selectedPremiseId)
-            return
-
         if (!editorOpen) {
             setHighlightedStairId(null)
             return
@@ -138,7 +126,7 @@ export default function StairsTab() {
             if (buildings.length > 0)
                 setBuildingId(buildings[0].id)
         }
-    }, [editorOpen, selectedPremiseId])
+    }, [editorOpen])
 
     const highlight: Highlight | undefined = editorOpen ?
         {

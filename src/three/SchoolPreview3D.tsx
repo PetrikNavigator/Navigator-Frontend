@@ -17,7 +17,7 @@ import type { Vec3 } from "./path/pathfinder"
 
 type Props = {
     graph: FullGraph | null
-    highlight: Highlight
+    highlight?: Highlight
     path?: Vec3[]
     className?: string
     initialDistance?: number
@@ -126,7 +126,7 @@ export default function SchoolPreview3D({
 
         controller.apply({
             graph: localGraph,
-            highlight: highlight,
+            highlight: highlight ? highlight : null,
             path
         })
 

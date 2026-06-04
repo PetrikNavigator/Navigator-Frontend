@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
-import { usePremise } from "../../../contexts/other/PremiseContext"
 import SchoolPreview3D from "../../../three/SchoolPreview3D"
 import type { Building } from "../../../types/navigator/Building"
 import Modal from "../../Modal"
@@ -16,9 +15,8 @@ type Props = {
 
 export default function BuildingEditorModal({ building, open, setOpen }: Props) {
     const { isError, error, addBuilding, updateBuilding, isLoading, buildings } = useBuildings()
-    const { selectedPremiseId } = usePremise()
     const { graph, getFullGraph, invalidateGraph } = useGraph()
-    const [form, setForm] = useState<Building>({ id: "", description: "", name: "", premise_id: "", x: 0, y: 0 })
+    const [form, setForm] = useState<Building>({ id: "", description: "", name: "", x: 0, y: 0 })
     const [err, setErr] = useState<string>("")
 
     const onClose = () => {
@@ -28,10 +26,6 @@ export default function BuildingEditorModal({ building, open, setOpen }: Props) 
     const onSubmit = async (e: React.SubmitEvent) => {
         e.preventDefault()
 
-        if (selectedPremiseId === null) {
-            setErr("Nincs kiválasztott telephely")
-            return
-        }
         if (!form.name.trim()) {
             setErr("Add meg az épület nevét")
             return
@@ -60,12 +54,11 @@ export default function BuildingEditorModal({ building, open, setOpen }: Props) 
                 description: form.description,
                 x: ix,
                 y: iy,
-                premise_id: selectedPremiseId,
             })
         }
 
         setOpen(false)
-        setForm({ description: "", id: "", name: "", x: 0, y: 0, premise_id: "" })
+        setForm({ description: "", id: "", name: "", x: 0, y: 0, })
     }
 
     useEffect(() => {
@@ -73,18 +66,16 @@ export default function BuildingEditorModal({ building, open, setOpen }: Props) 
             setForm(building)
         }
         else {
-            setForm({ description: "", id: "", name: "", x: 0, y: 0, premise_id: "" })
+            setForm({ description: "", id: "", name: "", x: 0, y: 0, })
         }
     }, [building])
 
     useUpdateEffect(() => {
-        if (selectedPremiseId)
-            invalidateGraph(selectedPremiseId)
+        invalidateGraph()
     }, [buildings])
 
     useEffect(() => {
-        if (selectedPremiseId)
-            getFullGraph(selectedPremiseId)
+        getFullGraph()
     }, [open])
 
     const buildingHighlight: Highlight = open

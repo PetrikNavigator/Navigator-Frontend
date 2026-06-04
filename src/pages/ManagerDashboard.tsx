@@ -2,7 +2,6 @@ import { Route, Routes } from "react-router";
 import Layout from "../components/Layout";
 import ManagerSidebar from "../components/manager/ManagerSidebar";
 import ManagerMain from "../components/manager/ManagerMain";
-import ManagerSectionTabs from "../components/manager/ManagerSectionTabs";
 import Preview from "../components/editor/Preview";
 import BuildingsTable from "../components/editor/building/BuildingsTable";
 import ClassroomsTab from "../components/editor/classroom/ClassroomsTab";
@@ -16,8 +15,7 @@ export default function ManagerDashboard() {
         <>
             <Layout
                 sidebarItems={<ManagerSidebar />}
-                navbarStart={<h2 className="text-center hidden sm:flex text-lg font-bold ms-2">Petrik App</h2>}
-                navbarCenter={<ManagerSectionTabs />}>
+                navbarStart={<h2 className="text-center hidden sm:flex text-lg font-bold ms-2">Petrik App</h2>}>
 
                 <Routes>
                     <Route path="/" element={<ManagerMain />} />

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
 import { useCorridor } from "../../../contexts/navigator/CorridorContext"
-import { usePremise } from "../../../contexts/other/PremiseContext"
 import type { AddCorridor, Corridor } from "../../../types/navigator/Corridor"
 import CorridorsTable from "./CorridorsTable"
 import SchoolPreview3D from "../../../three/SchoolPreview3D"
@@ -24,7 +23,6 @@ const emptyForm = {
 }
 
 export default function CorridorsTab() {
-    const { selectedPremiseId } = usePremise()
     const { buildings, getBuildings } = useBuildings()
     const { corridors, getCorridors, deleteCorridor, isError, error, addCorridor, updateCorridor, clearError, isLoading } = useCorridor()
     const { graph, getFullGraph, invalidateGraph } = useGraph()
@@ -49,10 +47,6 @@ export default function CorridorsTab() {
         setErr("")
         clearError()
 
-        if (selectedPremiseId === null) {
-            setErr("Nincs kiválasztott telephely")
-            return
-        }
         if (!form.name.trim()) {
             setErr("Add meg a folyosó nevét")
             return
@@ -111,17 +105,14 @@ export default function CorridorsTab() {
 
     useEffect(() => {
         setBuildingId("")
-        if (selectedPremiseId) {
-            getCorridors(selectedPremiseId)
-            getBuildings(selectedPremiseId)
-            getFullGraph(selectedPremiseId)
-            setHighlightedCorridorId(null)
-        }
-    }, [selectedPremiseId])
+        getCorridors()
+        getBuildings()
+        getFullGraph()
+        setHighlightedCorridorId(null)
+    }, [])
 
     useUpdateEffect(() => {
-        if (selectedPremiseId)
-            invalidateGraph(selectedPremiseId)
+        invalidateGraph()
     }, [corridors])
 
     useEffect(() => {
@@ -135,9 +126,6 @@ export default function CorridorsTab() {
     }, [editing])
 
     useEffect(() => {
-        if (!selectedPremiseId)
-            return
-
         if (!editorOpen) {
             setHighlightedCorridorId(null)
             return
@@ -147,7 +135,7 @@ export default function CorridorsTab() {
             if (buildings.length > 0)
                 setBuildingId(buildings[0].id)
         }
-    }, [editorOpen, selectedPremiseId])
+    }, [editorOpen])
 
     const highlight: Highlight | undefined = editorOpen ?
         {

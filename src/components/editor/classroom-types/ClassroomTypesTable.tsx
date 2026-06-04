@@ -1,11 +1,9 @@
 import { useLayoutEffect, useState } from "react";
-import { usePremise } from "../../../contexts/other/PremiseContext";
 import ClassroomTypesEditorModal from "./ClassroomTypeEditorModal";
 import type { ClassroomType } from "../../../types/navigator/ClassroomType";
 import { useClassroomType } from "../../../contexts/navigator/ClassroomTypesContext";
 
 export default function ClassroomTypesTable() {
-    const { selectedPremiseId } = usePremise()
     const { classroom_types, getClassroomTypes, deleteClassroomType } = useClassroomType()
 
     const [editing, setEditing] = useState<ClassroomType | null>(null)
@@ -28,9 +26,8 @@ export default function ClassroomTypesTable() {
     }
 
     useLayoutEffect(() => {
-        if (selectedPremiseId)
-            getClassroomTypes(selectedPremiseId)
-    }, [selectedPremiseId])
+        getClassroomTypes()
+    }, [])
 
     return (
         <>

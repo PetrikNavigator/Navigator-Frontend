@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react"
-import { usePremise } from "../../../contexts/other/PremiseContext"
 import Modal from "../../Modal"
 import type { ClassroomType } from "../../../types/navigator/ClassroomType"
 import { useClassroomType } from "../../../contexts/navigator/ClassroomTypesContext"
@@ -14,7 +13,6 @@ const empty = { colorhex: "#ffffff", name: "" }
 
 export default function ClassroomTypesEditorModal({ classroom_type, open, setOpen }: Props) {
     const { isError, error, createClassroomType, updateClassroomType, isLoading } = useClassroomType()
-    const { selectedPremiseId } = usePremise()
     const [form, setForm] = useState(empty)
     const [err, setErr] = useState<string>("")
 
@@ -25,10 +23,6 @@ export default function ClassroomTypesEditorModal({ classroom_type, open, setOpe
     const onSubmit = async (e: React.SubmitEvent) => {
         e.preventDefault()
 
-        if (selectedPremiseId === null) {
-            setErr("Nincs kiválasztott telephely")
-            return
-        }
         if (!form.name.trim()) {
             setErr("Add meg a típus nevét")
             return
@@ -43,7 +37,6 @@ export default function ClassroomTypesEditorModal({ classroom_type, open, setOpe
             await createClassroomType({
                 colorhex: form.colorhex + "ff",
                 name: form.name,
-                premise_id: selectedPremiseId
             })
         }
 

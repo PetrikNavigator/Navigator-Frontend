@@ -1,11 +1,9 @@
 import { useLayoutEffect, useState } from "react";
 import BuildingEditorModal from "./BuildingEditorModal";
 import type { Building } from "../../../types/navigator/Building";
-import { usePremise } from "../../../contexts/other/PremiseContext";
 import { useBuildings } from "../../../contexts/navigator/BuildingContext";
 
 export default function BuildingsTable() {
-    const { selectedPremiseId } = usePremise()
     const { buildings, getBuildings, deleteBuilding } = useBuildings()
 
     const [editing, setEditing] = useState<Building | null>(null)
@@ -28,9 +26,8 @@ export default function BuildingsTable() {
     }
 
     useLayoutEffect(() => {
-        if (selectedPremiseId)
-            getBuildings(selectedPremiseId)
-    }, [selectedPremiseId])
+        getBuildings()
+    }, [])
 
     return (
         <>

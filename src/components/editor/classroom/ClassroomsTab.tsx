@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
 import { useClassroom } from "../../../contexts/navigator/ClassroomContext"
-import { usePremise } from "../../../contexts/other/PremiseContext"
 import type { AddClassroom, Classroom } from "../../../types/navigator/Classroom"
 import ClassroomsTable from "./ClassroomsTable"
 import SchoolPreview3D from "../../../three/SchoolPreview3D"
@@ -28,7 +27,6 @@ const normalizeDeg0To359 = (deg: number) => ((deg % 360) + 360) % 360
 const normalizeDoorRotation = (deg: number) => normalizeDeg0To359(Math.round(deg))
 
 export default function ClassroomsTab() {
-    const { selectedPremiseId } = usePremise()
     const { buildings, getBuildings } = useBuildings()
     const { classrooms, getClassrooms, deleteClassroom, isError, error, createClassroom, updateClassroom, clearError, isLoading } = useClassroom()
     const { classroom_types, getClassroomTypes } = useClassroomType()
@@ -55,10 +53,6 @@ export default function ClassroomsTab() {
         setErr("")
         clearError()
 
-        if (selectedPremiseId === null) {
-            setErr("Nincs kiválasztott telephely")
-            return
-        }
         if (!form.name.trim()) {
             setErr("Add meg az épület nevét")
             return
@@ -112,18 +106,15 @@ export default function ClassroomsTab() {
     useEffect(() => {
         setBuildingId("")
         setTypeId("")
-        if (selectedPremiseId) {
-            getClassrooms(selectedPremiseId)
-            getBuildings(selectedPremiseId)
-            getFullGraph(selectedPremiseId)
-            setHighlightedClassroomId(null)
-            getClassroomTypes(selectedPremiseId)
-        }
-    }, [selectedPremiseId])
+        getClassrooms()
+        getBuildings()
+        getFullGraph()
+        setHighlightedClassroomId(null)
+        getClassroomTypes()
+    }, [])
 
     useUpdateEffect(() => {
-        if (selectedPremiseId)
-            invalidateGraph(selectedPremiseId)
+        invalidateGraph()
     }, [classrooms])
 
     useEffect(() => {
@@ -137,9 +128,6 @@ export default function ClassroomsTab() {
     }, [editing])
 
     useEffect(() => {
-        if (!selectedPremiseId)
-            return
-
         if (!editorOpen) {
             setHighlightedClassroomId(null)
             return
@@ -154,7 +142,7 @@ export default function ClassroomsTab() {
             if (classroom_types.length > 0)
                 setTypeId(classroom_types[0].id)
         }
-    }, [editorOpen, selectedPremiseId])
+    }, [editorOpen])
 
     const highlight: Highlight | undefined = editorOpen ?
         {
