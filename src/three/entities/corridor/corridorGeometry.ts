@@ -53,18 +53,3 @@ export function buildTickMarks(e: CorridorEndpoints, y: number): THREE.Vector3[]
     }
     return out
 }
-
-export function buildDirectionChevron(e: CorridorEndpoints, y: number): THREE.Vector3[] {
-    const out: THREE.Vector3[] = []
-    const arrowSize = Math.min(1.6, e.length * 0.18)
-    const dirN = e.dir.clone().normalize()
-    const mid = e.p1.clone().lerp(e.p2, 0.5)
-    const tip = mid.clone().add(dirN.clone().multiplyScalar(arrowSize))
-    const back = dirN.clone().multiplyScalar(-arrowSize * 0.6)
-    const sideHalf = e.perp.clone().normalize().multiplyScalar(arrowSize * 0.55)
-    const left = mid.clone().add(back).add(sideHalf)
-    const right = mid.clone().add(back).sub(sideHalf)
-    pushPair(out, left, tip, y)
-    pushPair(out, right, tip, y)
-    return out
-}

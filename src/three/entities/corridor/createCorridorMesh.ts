@@ -7,7 +7,6 @@ import { makeLines } from "../../blueprint/primitives"
 import { dimFactor, isHighlighted } from "../../scene/highlight"
 import { storeyVisible } from "../../scene/visibility"
 import {
-    buildDirectionChevron,
     buildSideRails,
     buildTickMarks,
     computeCorridorEndpoints,
@@ -63,7 +62,6 @@ export function createCorridorMesh(cor: Corridor, ctx: RenderContext): THREE.Obj
     const segs: THREE.Vector3[] = [
         ...buildSideRails(endpoints, y),
         ...buildTickMarks(endpoints, y),
-        ...buildDirectionChevron(endpoints, y),
     ]
     const lines = makeLines(segs, color, opacity)
 
