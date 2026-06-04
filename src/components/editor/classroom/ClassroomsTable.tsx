@@ -49,8 +49,6 @@ export default function ClassroomsTable({ classrooms, buildings, onRemove, onEdi
                         <th>Épület</th>
                         <th>Emelet</th>
                         <th>Befogadóképesség</th>
-                        <th>Ajtó (x, y)</th>
-                        <th>Méret (x×y×z)</th>
                         <th className="w-40"></th>
                     </tr>
                 </thead>
@@ -65,13 +63,6 @@ export default function ClassroomsTable({ classrooms, buildings, onRemove, onEdi
                             <td>{buildingName(c.building_id)}</td>
                             <td>{c.storey === 0 ? "Földszint" : c.storey}</td>
                             <td>{c.capacity}</td>
-                            <td>
-                                {c.x.toFixed(1)}, {c.y.toFixed(1)}
-                            </td>
-                            <td>
-                                {c.size_x.toFixed(1)}×{c.size_y.toFixed(1)}×
-                                {c.size_z.toFixed(1)} m
-                            </td>
                             <td className="table-actions">
                                 <button
                                     className="btn btn-ghost btn-sm"

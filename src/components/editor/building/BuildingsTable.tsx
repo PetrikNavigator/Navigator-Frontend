@@ -41,7 +41,6 @@ export default function BuildingsTable() {
                             <thead>
                                 <tr>
                                     <th>Név</th>
-                                    <th>Pozíció (x, y)</th>
                                     <th>Leírás</th>
                                     <th className="w-32"></th>
                                 </tr>
@@ -53,10 +52,6 @@ export default function BuildingsTable() {
                                         key={b.id.toString()}
                                     >
                                         <td className="font-medium">{b.name}</td>
-
-                                        <td>
-                                            {b.x.toFixed(1)}, {b.y.toFixed(1)}
-                                        </td>
 
                                         <td>{b.description || "—"}</td>
 

@@ -50,9 +50,6 @@ export default function CorridorsTable({ corridors, buildings, onRemove, onEdit,
                         <th>Név</th>
                         <th>Épület</th>
                         <th>Emelet</th>
-                        <th>Kezdő (x, y)</th>
-                        <th>Vég (x, y)</th>
-                        <th>Szélesség</th>
                         <th>Akadálym.</th>
                         <th>Kültéri</th>
                         <th className="w-40"></th>
@@ -68,13 +65,6 @@ export default function CorridorsTable({ corridors, buildings, onRemove, onEdit,
                             <td>{c.name}</td>
                             <td>{buildingName(c.building_id)}</td>
                             <td>{storeyLabel(c.storey)}</td>
-                            <td>
-                                {c.x1.toFixed(1)}, {c.y1.toFixed(1)}
-                            </td>
-                            <td>
-                                {c.x2.toFixed(1)}, {c.y2.toFixed(1)}
-                            </td>
-                            <td>{c.width.toFixed(1)} m</td>
                             <td>{c.barrier_free ? "Igen" : "Nem"}</td>
                             <td>{c.is_outdoor ? "Igen" : "Nem"}</td>
                             <td className="table-actions">

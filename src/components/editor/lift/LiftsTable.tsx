@@ -49,7 +49,6 @@ export default function LiftsTable({ lifts, buildings, onRemove, onEdit, onHover
                     <tr>
                         <th>Név</th>
                         <th>Épület</th>
-                        <th>Pozíció (x, y)</th>
                         <th>Min. emelet</th>
                         <th>Max. emelet</th>
                         <th className="w-40"></th>
@@ -64,9 +63,6 @@ export default function LiftsTable({ lifts, buildings, onRemove, onEdit, onHover
                         >
                             <td>{l.name}</td>
                             <td>{buildingName(l.building_id)}</td>
-                            <td>
-                                {l.x.toFixed(1)}, {l.y.toFixed(1)}
-                            </td>
                             <td>{storeyLabel(l.min_storey)}</td>
                             <td>{storeyLabel(l.max_storey)}</td>
                             <td className="table-actions">

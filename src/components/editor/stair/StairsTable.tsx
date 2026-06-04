@@ -49,10 +49,8 @@ export default function StairsTable({ stairs, buildings, onRemove, onEdit, onHov
                     <tr>
                         <th>Név</th>
                         <th>Épület</th>
-                        <th>Pozíció (x, y)</th>
                         <th>Min. emelet</th>
                         <th>Max. emelet</th>
-                        <th>Forgatás</th>
                         <th className="w-40"></th>
                     </tr>
                 </thead>
@@ -65,12 +63,8 @@ export default function StairsTable({ stairs, buildings, onRemove, onEdit, onHov
                         >
                             <td>{s.name}</td>
                             <td>{buildingName(s.building_id)}</td>
-                            <td>
-                                {s.x.toFixed(1)}, {s.y.toFixed(1)}
-                            </td>
                             <td>{storeyLabel(s.min_storey)}</td>
                             <td>{storeyLabel(s.max_storey)}</td>
-                            <td>{s.rotation}°</td>
                             <td className="table-actions">
                                 <button
                                     className="btn btn-ghost btn-sm"
