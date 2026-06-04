@@ -15,7 +15,7 @@ export default function Layout({ children, sidebarItems, navbarStart, navbarCent
             <input id="sidebar-drawer" type="checkbox" className="drawer-toggle" />
 
             {/* MAIN CONTENT */}
-            <div className="drawer-content flex flex-col min-h-screen">
+            <div className="drawer-content flex flex-col h-screen overflow-hidden">
                 {/* NAVBAR */}
                 <div className="navbar bg-base-100 shadow-sm">
                     <div className="navbar-start">
@@ -46,7 +46,7 @@ export default function Layout({ children, sidebarItems, navbarStart, navbarCent
                 </div>
 
                 {/* PAGE CONTENT */}
-                <main className="p-6">
+                <main className="flex-1 min-h-0 p-6 overflow-hidden">
                     {children}
                 </main>
             </div>
