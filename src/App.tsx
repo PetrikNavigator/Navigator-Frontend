@@ -23,7 +23,7 @@ export default function App() {
   return (
     <Routes>
 
-      <Route path="/" element={<Dashboard />} />
+      <Route path="/*" element={<Dashboard />} />
       <Route path="/bejelentkezes" element={<Login />} />
       <Route path="/beallitasok" element={<p>Beállítások</p>} />
 

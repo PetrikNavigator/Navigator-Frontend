@@ -32,37 +32,37 @@ export default function ManagerSidebar() {
 
                     <SidebarLink
                         text="Épületek"
-                        url="/epuletek" />
+                        url="epuletek" />
 
                     <SidebarLink
                         disabled={!hasBuildings}
                         text="Terem típusok"
-                        url="/teremtipusok" />
+                        url="teremtipusok" />
 
                     <SidebarLink
                         disabled={!hasBuildings || !hasClassroomTypes}
                         text="Termek"
-                        url="/termek" />
+                        url="termek" />
 
                     <SidebarLink
                         disabled={!hasBuildings}
                         text="Liftek"
-                        url="/liftek" />
+                        url="liftek" />
 
                     <SidebarLink
                         disabled={!hasBuildings}
                         text="Lépcsők"
-                        url="/lepcsok" />
+                        url="lepcsok" />
 
                     <SidebarLink
                         disabled={!hasBuildings}
                         text="Folyosók"
-                        url="/folyosok" />
+                        url="folyosok" />
 
                     <SidebarLink
                         disabled={!hasBuildings}
                         text="3D Előnézet"
-                        url="/elonezet" />
+                        url="elonezet" />
 
                     <SidebarProfileButtons />
                 </ul>
