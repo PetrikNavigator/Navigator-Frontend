@@ -11,6 +11,7 @@ import { Astar } from "./astar"
 type Connector = (Lift | Stair) & { isLift: boolean }
 
 const CONNECTION_THRESHOLD = 30
+const CORRIDOR_POINTS = 15
 
 export class GraphPathBuilder {
     private graph: FullGraph
@@ -23,7 +24,7 @@ export class GraphPathBuilder {
         { connector: Connector; storey: number }
     >()
 
-    private corridorIdToPoints = new Map<string, [number, number]>()
+    private corridorIdToPoints = new Map<string, number[]>()
     private classroomIdToPoint = new Map<string, number>()
 
     private astar = new Astar()
@@ -55,17 +56,29 @@ export class GraphPathBuilder {
 
         // 2. Corridor endpoint points + internal segment.
         for (const cor of graph.corridors) {
-            const startId = this.astar.addPoint(this.corridorStartPos(cor))
-            const endId = this.astar.addPoint(this.corridorEndPos(cor))
-            this.pointIdToCorridor.set(startId, cor)
-            this.pointIdToCorridor.set(endId, cor)
-            this.corridorIdToPoints.set(cor.id.toString(), [startId, endId])
-            this.astar.connect(startId, endId)
+            const points = this.buildCorridorPoints(cor)
+
+            let prevId = -1
+            let currId = -1
+            for (let i = 0; i < points.length; i++) {
+                currId = this.astar.addPoint(points[i])
+
+                this.pointIdToCorridor.set(currId, cor)
+
+                const corToP = this.corridorIdToPoints.get(cor.id) || []
+                corToP.push(currId)
+                this.corridorIdToPoints.set(cor.id, corToP)
+
+                if (prevId > 0)
+                    this.astar.connect(prevId, currId)
+
+                prevId = currId
+            }
         }
 
         // 3. Corridor-to-corridor links by spatial proximity (same storey,
         //    first matching endpoint pair within threshold).
-        const corridors = graph.corridors
+        /*const corridors = graph.corridors
         for (let i = 0; i < corridors.length; i++) {
             const corA = corridors[i]
             const ptsA = this.corridorIdToPoints.get(corA.id.toString())!
@@ -89,7 +102,7 @@ export class GraphPathBuilder {
                     this.astar.connect(ptsA[1], ptsB[1])
                 }
             }
-        }
+        }*/
 
         // 4. Connect each classroom to its closest same-building/same-storey
         //    corridor endpoint.
@@ -140,7 +153,7 @@ export class GraphPathBuilder {
             }
         }
 
-        // 6. Connect each connector storey-point to the nearer endpoint of
+        /*// 6. Connect each connector storey-point to the nearer endpoint of
         //    every same-building, same-storey corridor.
         for (const connector of allConnectors) {
             const storeyMap = connectorStoreyPoints.get(connector.id.toString())!
@@ -156,7 +169,7 @@ export class GraphPathBuilder {
                     this.astar.connect(connectorPoint, target)
                 }
             }
-        }
+        }*/
     }
 
     private getBuilding(id: string): Building {
@@ -193,6 +206,21 @@ export class GraphPathBuilder {
             y: floorPositionOf(this.graph, cor.building_id, cor.storey),
             z: building.y + cor.y2,
         }
+    }
+
+    private buildCorridorPoints(cor: Corridor): Vec3[] {
+        const out: Vec3[] = []
+        const startPoint = this.corridorStartPos(cor)
+        const endPoint = this.corridorEndPos(cor)
+        const floorPos = floorPositionOf(this.graph, cor.building_id, cor.storey)
+
+        for (let i = 0; i <= CORRIDOR_POINTS; i += 1 / CORRIDOR_POINTS) {
+            const x = startPoint.x + (endPoint.x - startPoint.x) * i;
+            const z = startPoint.z + (endPoint.z - startPoint.z) * i;
+            out.push({ x, y: floorPos, z })
+        }
+
+        return out
     }
 
     private connectorPosOnStorey(c: Connector, storey: number): Vec3 {
