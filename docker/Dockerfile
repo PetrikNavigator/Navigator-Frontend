@@ -14,6 +14,8 @@ ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 
 RUN npm run build
 
+RUN npm ci --omit=dev
+
 FROM nginx:1.30.2-alpine3.23 AS runtime
 
 # All filesystem prep must happen while we are still root.
