@@ -19,7 +19,7 @@ const defaultClassroom = (graph: FullGraph): Classroom => ({
 })
 
 const defaultBuilding = (): Building => ({
-    id: NEW_ENTITY_ID, name: "új épület", description: "", x: 0, y: 0, premise_id: NEW_ENTITY_ID,
+    id: NEW_ENTITY_ID, name: "új épület", description: "", x: 0, y: 0,
 })
 
 const defaultLift = (graph: FullGraph): Lift => ({

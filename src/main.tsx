@@ -12,7 +12,6 @@ import { StairsProvider } from './contexts/navigator/StairsContext.tsx'
 import { AdminProvider } from './contexts/other/AdminContext.tsx'
 import { AuthProvider } from './contexts/other/AuthContext.tsx'
 import { LastEditedProvider } from './contexts/other/LastEditedContext.tsx'
-import { PremiseProvider } from './contexts/other/PremiseContext.tsx'
 import { ThemeProvider } from './contexts/other/ThemeContext.tsx'
 import { GraphProvider } from './contexts/other/GraphContext.tsx'
 
@@ -30,9 +29,7 @@ createRoot(document.getElementById('root')!).render(
                       <StairsProvider>
                         <ClassroomTypeProvider>
                           <LastEditedProvider>
-                            <PremiseProvider>
-                              <App />
-                            </PremiseProvider>
+                            <App />
                           </LastEditedProvider>
                         </ClassroomTypeProvider>
                       </StairsProvider>
