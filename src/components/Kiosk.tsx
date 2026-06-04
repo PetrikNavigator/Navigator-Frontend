@@ -4,6 +4,7 @@ import KioskView3D from "../three/KioskView3D"
 import type { Classroom } from "../types/navigator/Classroom"
 import type { IsolatedFloor, KioskSelection } from "../three/kiosk/types"
 import { Pathfinder, type Vec3 } from "../three/path/pathfinder"
+import { useSearchParams } from "react-router"
 
 /**
  * Demo host for the kiosk 3D view. Owns all interaction state:
@@ -13,6 +14,8 @@ import { Pathfinder, type Vec3 } from "../three/path/pathfinder"
  * The 3D component is fully controlled by these props.
  */
 export default function Kiosk() {
+    const [searchParams, setSearchParams] = useSearchParams();
+
     const { graph, getFullGraph, isLoading, isError, error } = useGraph()
 
     const [isolatedFloor, setIsolatedFloor] = useState<IsolatedFloor>(null)
@@ -26,18 +29,52 @@ export default function Kiosk() {
         getFullGraph()
     }, [])
 
+    useEffect(() => {
+        const start = searchParams.get("start")
+        const end = searchParams.get("end")
+        const barrierFree = searchParams.get("akadalymentes")
+
+        if (barrierFree)
+            setBarrierFree(barrierFree == "1")
+
+        if (start || end)
+            setSelection({ start, end })
+    }, [searchParams])
+
     // The selection cycle lives here, not in the 3D component: 1st tap =
     // start, 2nd = end, 3rd = start again. Tapping the current start again
     // clears it.
     const handleClassroomClick = (id: string): void => {
-        setSelection((prev) => {
-            if (!prev) return { start: id, end: null }
+        let newStart: string | null = null;
+        let newEnd: string | null = null;
 
-            if (!prev.start || (prev.start && prev.end)) return { start: id, end: null }
-            if (prev.start === id) return {}
-            return { start: prev.start, end: id }
-        })
-    }
+        if (!selection) {
+            newStart = id;
+        } else {
+            if (!selection.start || selection.end) {
+                newStart = id;
+            } else {
+                newStart = selection.start;
+                newEnd = id;
+            }
+        }
+
+        setSearchParams((prev) => {
+            if (newStart) {
+                prev.set("start", newStart);
+            } else {
+                prev.delete("start");
+            }
+
+            if (newEnd) {
+                prev.set("end", newEnd);
+            } else {
+                prev.delete("end");
+            }
+
+            return prev;
+        });
+    };
 
     const handleFloorClick = (buildingId: string, storey: number): void => {
         setIsolatedFloor({ buildingId, storey })
@@ -87,7 +124,7 @@ export default function Kiosk() {
 
     return (
         <div className="xl:flex xl:space-x-6 h-full w-full">
-            <div className="overflow-x-auto flex-shrink-0 w-80 space-y-4">
+            <div className="overflow-x-auto xl:flex-shrink-0 xl:w-80 space-y-4">
                 <h1 className="text-2xl font-bold text-primary">Kioszk</h1>
 
                 {isLoading && (
@@ -146,7 +183,12 @@ export default function Kiosk() {
                             type="checkbox"
                             className="checkbox checkbox-sm checkbox-primary"
                             checked={barrierFree}
-                            onChange={(e) => setBarrierFree(e.target.checked)}
+                            onChange={(e) => {
+                                setSearchParams((prev) => {
+                                    prev.set("akadalymentes", e.target.checked ? "1" : "0")
+                                    return prev;
+                                })
+                            }}
                         />
                         <span className="text-sm">Akadálymentes (liftek)</span>
                     </label>
