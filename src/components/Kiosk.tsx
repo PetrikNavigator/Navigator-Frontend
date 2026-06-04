@@ -200,14 +200,12 @@ export default function Kiosk() {
                     )}
                 </div>
 
-                {hoveredId && (
-                    <div className="text-xs opacity-70">
-                        Terem: {nameOf(hoveredId)}
-                    </div>
-                )}
+                <div className="text-xs opacity-70">
+                    Terem: {nameOf(hoveredId)}
+                </div>
             </div>
 
-            <div className="rounded-xl w-full min-h-[100%]" style={{ minWidth: 0 }}>
+            <div className="rounded-xl w-full" style={{ minWidth: 0 }}>
                 <KioskView3D
                     graph={graph}
                     isolatedFloor={isolatedFloor}

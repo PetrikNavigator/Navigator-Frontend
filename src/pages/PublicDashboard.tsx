@@ -1,9 +1,7 @@
-import Navigate from "../components/Navigate";
+import Kiosk from "../components/Kiosk";
 
 export default function PublicDashboard() {
     return (
-        <div className="mt-4 mx-4 card card-body border-2 border-primary">
-            <Navigate />
-        </div>
+        <div className="h-screen w-screen p-4"><Kiosk /></div>
     )
 }
