@@ -2,87 +2,19 @@ import type { FullGraph } from "../../types/FullGraph"
 import type { Building } from "../../types/navigator/Building"
 import type { Classroom } from "../../types/navigator/Classroom"
 import type { Corridor } from "../../types/navigator/Corridor"
+import { dist, type Vec3 } from "../../types/three/vector"
+import { floorPositionOf } from "../entities/building/buildingHelpers"
 import type { Lift } from "../../types/navigator/Lift"
 import type { Stair } from "../../types/navigator/Stair"
-import { floorPositionOf } from "../entities/building/buildingHelpers"
-
-// Mirrors `_rebuild_path_finder` in petrik-navigator-client/scripts/pathfinder.gd:
-// builds the same set of points (classroom doors, corridor endpoints,
-// per-storey connector stops) and the same connections (corridor internal
-// segments, near-endpoint corridor-to-corridor links, classroom-to-nearest
-// corridor-endpoint, vertical connector stacks, connector-to-corridor on
-// the matching storey). Then runs A* over that graph.
-
-export type Vec3 = { x: number; y: number; z: number }
+import { Astar } from "./astar"
 
 type Connector = (Lift | Stair) & { isLift: boolean }
 
 const CONNECTION_THRESHOLD = 30
 
-function dist(a: Vec3, b: Vec3): number {
-    const dx = a.x - b.x
-    const dy = a.y - b.y
-    const dz = a.z - b.z
-    return Math.sqrt(dx * dx + dy * dy + dz * dz)
-}
-
-// Min-heap keyed on numeric priority. Just enough for A*.
-class MinHeap<T> {
-    private data: { key: number; value: T }[] = []
-
-    push(key: number, value: T): void {
-        this.data.push({ key, value })
-        this.bubbleUp(this.data.length - 1)
-    }
-
-    pop(): T | undefined {
-        if (this.data.length === 0) return undefined
-        const top = this.data[0]
-        const last = this.data.pop()!
-        if (this.data.length > 0) {
-            this.data[0] = last
-            this.sinkDown(0)
-        }
-        return top.value
-    }
-
-    get size(): number { return this.data.length }
-
-    private bubbleUp(i: number): void {
-        while (i > 0) {
-            const parent = (i - 1) >> 1
-            if (this.data[parent].key <= this.data[i].key) break
-            const tmp = this.data[parent]
-            this.data[parent] = this.data[i]
-            this.data[i] = tmp
-            i = parent
-        }
-    }
-
-    private sinkDown(i: number): void {
-        const n = this.data.length
-        while (true) {
-            const l = i * 2 + 1
-            const r = i * 2 + 2
-            let smallest = i
-            if (l < n && this.data[l].key < this.data[smallest].key) smallest = l
-            if (r < n && this.data[r].key < this.data[smallest].key) smallest = r
-            if (smallest === i) break
-            const tmp = this.data[smallest]
-            this.data[smallest] = this.data[i]
-            this.data[i] = tmp
-            i = smallest
-        }
-    }
-}
-
-export class Pathfinder {
+export class GraphPathBuilder {
     private graph: FullGraph
     private barrierFree: boolean
-
-    private nextId = 0
-    private points = new Map<number, Vec3>()
-    private adj = new Map<number, Set<number>>()
 
     private pointIdToClassroom = new Map<number, Classroom>()
     private pointIdToCorridor = new Map<number, Corridor>()
@@ -94,70 +26,21 @@ export class Pathfinder {
     private corridorIdToPoints = new Map<string, [number, number]>()
     private classroomIdToPoint = new Map<string, number>()
 
+    private astar = new Astar()
+
     constructor(graph: FullGraph, barrierFree: boolean) {
         this.graph = graph
         this.barrierFree = barrierFree
         this.build()
     }
 
-    findPath(fromClassroomId: string, toClassroomId: string): Vec3[] {
-        const start = this.classroomIdToPoint.get(fromClassroomId.toString())
-        const goal = this.classroomIdToPoint.get(toClassroomId.toString())
-        if (start === undefined || goal === undefined) return []
-        if (start === goal) return [this.points.get(start)!]
+    getPath(fromClassroomId: string, toClassroomId: string): Vec3[] {
+        const start = this.classroomIdToPoint.get(fromClassroomId)
+        const end = this.classroomIdToPoint.get(toClassroomId)
 
-        const goalPos = this.points.get(goal)!
+        if (!start || !end) return [];
 
-        const gScore = new Map<number, number>()
-        const cameFrom = new Map<number, number>()
-        const open = new MinHeap<number>()
-
-        gScore.set(start, 0)
-        open.push(dist(this.points.get(start)!, goalPos), start)
-
-        while (open.size > 0) {
-            const current = open.pop()!
-            if (current === goal) return this.reconstruct(cameFrom, current)
-
-            const curPos = this.points.get(current)!
-            const curG = gScore.get(current)!
-
-            for (const neighbor of this.adj.get(current) ?? new Set<number>()) {
-                const neiPos = this.points.get(neighbor)!
-                const tentative = curG + dist(curPos, neiPos)
-                const existing = gScore.get(neighbor)
-                if (existing === undefined || tentative < existing) {
-                    gScore.set(neighbor, tentative)
-                    cameFrom.set(neighbor, current)
-                    open.push(tentative + dist(neiPos, goalPos), neighbor)
-                }
-            }
-        }
-
-        return []
-    }
-
-    private reconstruct(cameFrom: Map<number, number>, end: number): Vec3[] {
-        const ids: number[] = [end]
-        let cur = end
-        while (cameFrom.has(cur)) {
-            cur = cameFrom.get(cur)!
-            ids.push(cur)
-        }
-        ids.reverse()
-        return ids.map(id => this.points.get(id)!)
-    }
-
-    private addPoint(pos: Vec3): number {
-        const id = this.nextId++
-        this.points.set(id, pos)
-        this.adj.set(id, new Set())
-        return id
-    }
-
-    private connect(a: number, b: number): void {
-        this.adj.get(a)!.add(b)
-        this.adj.get(b)!.add(a)
+        return this.astar.findPath(start, end)
     }
 
     private build(): void {
@@ -165,19 +48,19 @@ export class Pathfinder {
 
         // 1. Classroom door points.
         for (const c of graph.classrooms) {
-            const id = this.addPoint(this.classroomDoorPos(c))
+            const id = this.astar.addPoint(this.classroomDoorPos(c))
             this.pointIdToClassroom.set(id, c)
             this.classroomIdToPoint.set(c.id.toString(), id)
         }
 
         // 2. Corridor endpoint points + internal segment.
         for (const cor of graph.corridors) {
-            const startId = this.addPoint(this.corridorStartPos(cor))
-            const endId = this.addPoint(this.corridorEndPos(cor))
+            const startId = this.astar.addPoint(this.corridorStartPos(cor))
+            const endId = this.astar.addPoint(this.corridorEndPos(cor))
             this.pointIdToCorridor.set(startId, cor)
             this.pointIdToCorridor.set(endId, cor)
             this.corridorIdToPoints.set(cor.id.toString(), [startId, endId])
-            this.connect(startId, endId)
+            this.astar.connect(startId, endId)
         }
 
         // 3. Corridor-to-corridor links by spatial proximity (same storey,
@@ -191,19 +74,19 @@ export class Pathfinder {
                 if (corA.storey !== corB.storey) continue
                 const ptsB = this.corridorIdToPoints.get(corB.id.toString())!
 
-                const posA0 = this.points.get(ptsA[0])!
-                const posA1 = this.points.get(ptsA[1])!
-                const posB0 = this.points.get(ptsB[0])!
-                const posB1 = this.points.get(ptsB[1])!
+                const posA0 = this.astar.getPoint(ptsA[0])!
+                const posA1 = this.astar.getPoint(ptsA[1])!
+                const posB0 = this.astar.getPoint(ptsB[0])!
+                const posB1 = this.astar.getPoint(ptsB[1])!
 
                 if (dist(posA0, posB0) < CONNECTION_THRESHOLD) {
-                    this.connect(ptsA[0], ptsB[0])
+                    this.astar.connect(ptsA[0], ptsB[0])
                 } else if (dist(posA0, posB1) < CONNECTION_THRESHOLD) {
-                    this.connect(ptsA[0], ptsB[1])
+                    this.astar.connect(ptsA[0], ptsB[1])
                 } else if (dist(posA1, posB0) < CONNECTION_THRESHOLD) {
-                    this.connect(ptsA[1], ptsB[0])
+                    this.astar.connect(ptsA[1], ptsB[0])
                 } else if (dist(posA1, posB1) < CONNECTION_THRESHOLD) {
-                    this.connect(ptsA[1], ptsB[1])
+                    this.astar.connect(ptsA[1], ptsB[1])
                 }
             }
         }
@@ -212,7 +95,7 @@ export class Pathfinder {
         //    corridor endpoint.
         for (const c of graph.classrooms) {
             const classroomPointId = this.classroomIdToPoint.get(c.id.toString())!
-            const classroomPos = this.points.get(classroomPointId)!
+            const classroomPos = this.astar.getPoint(classroomPointId)!
 
             let closestId = -1
             let closestDist = Infinity
@@ -222,7 +105,7 @@ export class Pathfinder {
                 const pts = this.corridorIdToPoints.get(cor.id.toString())
                 if (!pts) continue
                 for (const pid of pts) {
-                    const d = dist(classroomPos, this.points.get(pid)!)
+                    const d = dist(classroomPos, this.astar.getPoint(pid)!)
                     if (d < closestDist) {
                         closestDist = d
                         closestId = pid
@@ -230,7 +113,7 @@ export class Pathfinder {
                 }
             }
 
-            if (closestId !== -1) this.connect(classroomPointId, closestId)
+            if (closestId !== -1) this.astar.connect(classroomPointId, closestId)
         }
 
         // 5. Storey connectors — lifts if barrier-free, otherwise stairs.
@@ -245,7 +128,7 @@ export class Pathfinder {
             const storeyMap = new Map<number, number>()
             for (let storey = connector.min_storey; storey <= connector.max_storey; storey++) {
                 const pos = this.connectorPosOnStorey(connector, storey)
-                const id = this.addPoint(pos)
+                const id = this.astar.addPoint(pos)
                 this.pointIdToStoreyConnector.set(id, { connector, storey })
                 storeyMap.set(storey, id)
             }
@@ -253,7 +136,7 @@ export class Pathfinder {
 
             const storeys = [...storeyMap.keys()].sort((a, b) => a - b)
             for (let k = 0; k < storeys.length - 1; k++) {
-                this.connect(storeyMap.get(storeys[k])!, storeyMap.get(storeys[k + 1])!)
+                this.astar.connect(storeyMap.get(storeys[k])!, storeyMap.get(storeys[k + 1])!)
             }
         }
 
@@ -262,15 +145,15 @@ export class Pathfinder {
         for (const connector of allConnectors) {
             const storeyMap = connectorStoreyPoints.get(connector.id.toString())!
             for (const [storey, connectorPoint] of storeyMap) {
-                const connectorPos = this.points.get(connectorPoint)!
+                const connectorPos = this.astar.getPoint(connectorPoint)!
 
                 for (const cor of graph.corridors) {
                     if (cor.storey !== storey || cor.building_id !== connector.building_id) continue
                     const pts = this.corridorIdToPoints.get(cor.id.toString())!
-                    const dStart = dist(connectorPos, this.points.get(pts[0])!)
-                    const dEnd = dist(connectorPos, this.points.get(pts[1])!)
+                    const dStart = dist(connectorPos, this.astar.getPoint(pts[0])!)
+                    const dEnd = dist(connectorPos, this.astar.getPoint(pts[1])!)
                     const target = dStart < dEnd ? pts[0] : pts[1]
-                    this.connect(connectorPoint, target)
+                    this.astar.connect(connectorPoint, target)
                 }
             }
         }

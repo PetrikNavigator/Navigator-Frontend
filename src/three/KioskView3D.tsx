@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
 
 import type { FullGraph } from "../types/FullGraph"
-import type { Vec3 } from "./path/pathfinder"
 import { createCamera, createRenderer, createScene } from "./runtime/createRenderer"
 import { createRenderLoop } from "./runtime/renderLoop"
 import { observeContainerResize } from "./runtime/resizeObserver"
@@ -14,6 +13,7 @@ import type {
     KioskHighlight,
     KioskSelection,
 } from "./kiosk/types"
+import type { Vec3 } from "../types/three/vector"
 
 type Props = {
     graph: FullGraph | null

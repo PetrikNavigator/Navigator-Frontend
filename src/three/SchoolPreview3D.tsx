@@ -13,7 +13,7 @@ import { createCamera, createRenderer, createScene } from "./runtime/createRende
 import { createRenderLoop } from "./runtime/renderLoop"
 import { observeContainerResize } from "./runtime/resizeObserver"
 import type { FullGraph } from "../types/FullGraph"
-import type { Vec3 } from "./path/pathfinder"
+import type { Vec3 } from "../types/three/vector"
 
 type Props = {
     graph: FullGraph | null

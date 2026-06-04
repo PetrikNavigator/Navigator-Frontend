@@ -3,8 +3,9 @@ import { useGraph } from "../contexts/other/GraphContext"
 import KioskView3D from "../three/KioskView3D"
 import type { Classroom } from "../types/navigator/Classroom"
 import type { IsolatedFloor, KioskSelection } from "../three/kiosk/types"
-import { Pathfinder, type Vec3 } from "../three/path/pathfinder"
 import { useSearchParams } from "react-router"
+import type { Vec3 } from "../types/three/vector"
+import { GraphPathBuilder } from "../three/path/pathbuilder"
 
 /**
  * Demo host for the kiosk 3D view. Owns all interaction state:
@@ -37,8 +38,7 @@ export default function Kiosk() {
         if (barrierFree)
             setBarrierFree(barrierFree == "1")
 
-        if (start || end)
-            setSelection({ start, end })
+        setSelection({ start, end })
     }, [searchParams])
 
     // The selection cycle lives here, not in the 3D component: 1st tap =
@@ -80,6 +80,15 @@ export default function Kiosk() {
         setIsolatedFloor({ buildingId, storey })
     }
 
+    const handleRemove = () => {
+        setSearchParams((prev) => {
+            prev.delete("start")
+            prev.delete("end")
+
+            return prev;
+        })
+    }
+
     const classroomById = useMemo(() => {
         const m = new Map<string, Classroom>()
         graph?.classrooms.forEach((c) => m.set(c.id, c))
@@ -101,11 +110,10 @@ export default function Kiosk() {
     // (or the graph / barrier-free flag) change.
     const path = useMemo<Vec3[]>(() => {
         if (!graph || !selection?.start || !selection?.end) return []
-        const result = new Pathfinder(graph, barrierFree).findPath(
-            selection.start,
-            selection.end,
-        )
-        return result.length >= 2 ? result : []
+        const builder = new GraphPathBuilder(graph, barrierFree)
+        const res = builder.getPath(selection.start, selection.end)
+
+        return res.length >= 2 ? res : []
     }, [graph, selection, barrierFree])
 
     const noRoute = !!selection?.start && !!selection?.end && path.length < 2
@@ -173,7 +181,7 @@ export default function Kiosk() {
                     </div>
                     <button
                         className="btn btn-xs btn-outline mt-2 w-fit"
-                        onClick={() => setSelection(null)}
+                        onClick={handleRemove}
                         disabled={!selection?.start && !selection?.end}
                     >
                         Törlés

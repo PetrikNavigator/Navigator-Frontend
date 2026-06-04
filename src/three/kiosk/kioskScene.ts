@@ -1,11 +1,11 @@
 import type * as THREE from "three"
 import type { FullGraph } from "../../types/FullGraph"
-import type { Vec3 } from "../path/pathfinder"
 import { buildKioskCampus } from "./geometry/buildKioskCampus"
 import { buildKioskPath } from "./pathOverlay"
 import { disposeDeep } from "./materials"
 import { applyAppearance } from "./appearance"
 import type { KioskAppearance, KioskNode } from "./types"
+import type { Vec3 } from "../../types/three/vector"
 
 /** Owns the campus geometry for the kiosk. Geometry is rebuilt only when
  *  the graph identity changes; everything else (isolation, selection,

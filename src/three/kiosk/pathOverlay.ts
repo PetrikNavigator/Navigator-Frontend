@@ -1,5 +1,5 @@
 import * as THREE from "three"
-import type { Vec3 } from "../path/pathfinder"
+import type { Vec3 } from "../../types/three/vector"
 
 const PATH_COLOR = 0x00ff88
 const START_COLOR = 0x55ddff

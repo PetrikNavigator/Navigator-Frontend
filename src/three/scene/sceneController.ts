@@ -11,8 +11,8 @@ import {
     findHighlightTarget,
 } from "../gizmo/attachHandlesForHighlight"
 import type { SceneRegistry } from "./sceneRegistry"
-import type { Vec3 } from "../path/pathfinder"
 import { buildPathOverlay } from "../path/buildPathOverlay"
+import type { Vec3 } from "../../types/three/vector"
 
 export type SceneControllerState = {
     graph: FullGraph
