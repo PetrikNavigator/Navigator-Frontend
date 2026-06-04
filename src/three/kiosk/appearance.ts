@@ -35,8 +35,11 @@ function visibleUnder(node: KioskNode, iso: IsolatedFloor): boolean {
 
 function classroomEmphasis(node: KioskNode, state: KioskAppearance): Emphasis {
     const { selection, highlight } = state
-    if (selection?.start && selection.start === node.id) return "start"
-    if (selection?.end && selection.end === node.id) return "end"
+
+    if (selection) {
+        if (selection.start && selection.start === node.id) return "start"
+        else if (selection.end && selection.end === node.id) return "end"
+    }
 
     if (highlight) {
         const byId = highlight.classroomIds?.includes(node.id) ?? false
@@ -49,7 +52,8 @@ function classroomEmphasis(node: KioskNode, state: KioskAppearance): Emphasis {
             (highlight.classroomIds?.length ?? 0) > 0
         if (filtering && highlight.dimOthers) return "dim"
     }
-    return "base"
+
+    return selection ? "dim" : "base"
 }
 
 function accentColor(e: Emphasis): number {
@@ -84,8 +88,8 @@ function applyMesh(mesh: THREE.Object3D, emphasis: Emphasis): void {
     const accent = accentColor(emphasis)
     const opacity =
         app.role === "fill" ? Math.max(app.baseOpacity, 0.85)
-        : app.role === "line" ? 1
-        : Math.max(app.baseOpacity, 0.9)
+            : app.role === "line" ? 1
+                : Math.max(app.baseOpacity, 0.9)
     paint(mesh, accent, opacity)
 }
 

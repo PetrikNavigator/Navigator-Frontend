@@ -15,7 +15,7 @@ export default function Kiosk() {
     const { graph, getFullGraph, isLoading, isError, error } = useGraph()
 
     const [isolatedFloor, setIsolatedFloor] = useState<IsolatedFloor>(null)
-    const [selection, setSelection] = useState<KioskSelection>({})
+    const [selection, setSelection] = useState<KioskSelection | null>(null)
     const [highlightTypeIds, setHighlightTypeIds] = useState<string[]>([])
     const [dimOthers, setDimOthers] = useState(false)
     const [hoveredId, setHoveredId] = useState<string | null>(null)
@@ -29,6 +29,8 @@ export default function Kiosk() {
     // clears it.
     const handleClassroomClick = (id: string): void => {
         setSelection((prev) => {
+            if (!prev) return { start: id, end: null }
+
             if (!prev.start || (prev.start && prev.end)) return { start: id, end: null }
             if (prev.start === id) return {}
             return { start: prev.start, end: id }
@@ -110,17 +112,17 @@ export default function Kiosk() {
                     <div className="flex flex-col gap-1 text-sm">
                         <div className="flex items-center gap-2">
                             <span className="h-3 w-3 rounded-full" style={{ background: "#55ddff" }} />
-                            <span>Kiindulás: <b>{nameOf(selection.start)}</b></span>
+                            <span>Kiindulás: <b>{nameOf(selection?.start)}</b></span>
                         </div>
                         <div className="flex items-center gap-2">
                             <span className="h-3 w-3 rounded-full" style={{ background: "#ff5577" }} />
-                            <span>Cél: <b>{nameOf(selection.end)}</b></span>
+                            <span>Cél: <b>{nameOf(selection?.end)}</b></span>
                         </div>
                     </div>
                     <button
                         className="btn btn-xs btn-outline mt-2 w-fit"
                         onClick={() => setSelection({})}
-                        disabled={!selection.start && !selection.end}
+                        disabled={!selection?.start && !selection?.end}
                     >
                         Törlés
                     </button>
@@ -180,7 +182,7 @@ export default function Kiosk() {
                 <KioskView3D
                     graph={graph}
                     isolatedFloor={isolatedFloor}
-                    selection={selection}
+                    selection={selection ?? undefined}
                     highlight={highlight}
                     onFloorClick={handleFloorClick}
                     onClassroomClick={handleClassroomClick}
