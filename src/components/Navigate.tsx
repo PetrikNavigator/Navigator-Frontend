@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react"
-import { type Vec3, Pathfinder } from "../../three/path/pathfinder"
-import type { FullGraph } from "../../types/FullGraph"
-import type { Classroom } from "../../types/navigator/Classroom"
-import { useGraph } from "../../contexts/other/GraphContext"
-import SchoolPreview3D from "../../three/SchoolPreview3D"
+import { type Vec3, Pathfinder } from "../three/path/pathfinder"
+import type { FullGraph } from "../types/FullGraph"
+import type { Classroom } from "../types/navigator/Classroom"
+import { useGraph } from "../contexts/other/GraphContext"
+import SchoolPreview3D from "../three/SchoolPreview3D"
 
 export default function Navigate() {
     const { graph, getFullGraph, isLoading, isError, error } = useGraph()
@@ -74,8 +74,8 @@ export default function Navigate() {
     const toFiltered = filteredClassrooms.filter(x => x.id !== fromId)
 
     return (
-        <div className="xl:flex xl:space-x-6">
-            <div className="overflow-x-auto xl:max-w-[20%] max-h-[100%]">
+        <div className="xl:flex xl:space-x-6 h-full w-full">
+            <div className="overflow-x-auto flex-shrink-0 w-80">
                 <h1 className="text-2xl font-bold text-primary">Útvonaltervező</h1>
 
                 <p className="mb-5 text-sm opacity-70"></p>
@@ -175,11 +175,11 @@ export default function Navigate() {
                 </div>
             </div>
 
-            <div className="rounded-xl w-full border border-slate-700 overflow-hidden h-[80vh]">
+            <div className="rounded-xl w-full min-h-[100%]" style={{ minWidth: 0 }}>
                 <SchoolPreview3D
                     graph={graph}
                     path={path}
-                    className="w-full h-full"
+                    className="border border-slate-700 rounded-lg"
                     highlight={{
                         dimOthers: true,
                         isEditing: false,

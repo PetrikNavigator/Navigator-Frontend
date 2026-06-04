@@ -1,8 +1,8 @@
-import Navigate from "../components/student/Navigate";
+import Navigate from "../components/Navigate";
 
 export default function PublicDashboard() {
     return (
-        <div>
+        <div className="mt-4 mx-4 card card-body border-2 border-primary">
             <Navigate />
         </div>
     )
