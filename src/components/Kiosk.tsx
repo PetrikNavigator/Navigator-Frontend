@@ -3,6 +3,7 @@ import { useGraph } from "../contexts/other/GraphContext"
 import KioskView3D from "../three/KioskView3D"
 import type { Classroom } from "../types/navigator/Classroom"
 import type { IsolatedFloor, KioskSelection } from "../three/kiosk/types"
+import { Pathfinder, type Vec3 } from "../three/path/pathfinder"
 
 /**
  * Demo host for the kiosk 3D view. Owns all interaction state:
@@ -18,6 +19,7 @@ export default function Kiosk() {
     const [selection, setSelection] = useState<KioskSelection | null>(null)
     const [highlightTypeIds, setHighlightTypeIds] = useState<string[]>([])
     const [dimOthers, setDimOthers] = useState(false)
+    const [barrierFree, setBarrierFree] = useState(false)
     const [hoveredId, setHoveredId] = useState<string | null>(null)
 
     useEffect(() => {
@@ -57,6 +59,19 @@ export default function Kiosk() {
         () => ({ typeIds: highlightTypeIds, dimOthers }),
         [highlightTypeIds, dimOthers],
     )
+
+    // Route between the selected start/end. Recomputed only when those
+    // (or the graph / barrier-free flag) change.
+    const path = useMemo<Vec3[]>(() => {
+        if (!graph || !selection?.start || !selection?.end) return []
+        const result = new Pathfinder(graph, barrierFree).findPath(
+            selection.start,
+            selection.end,
+        )
+        return result.length >= 2 ? result : []
+    }, [graph, selection, barrierFree])
+
+    const noRoute = !!selection?.start && !!selection?.end && path.length < 2
 
     const nameOf = (id?: string | null): string =>
         id ? classroomById.get(id)?.name ?? id : "—"
@@ -121,11 +136,25 @@ export default function Kiosk() {
                     </div>
                     <button
                         className="btn btn-xs btn-outline mt-2 w-fit"
-                        onClick={() => setSelection({})}
+                        onClick={() => setSelection(null)}
                         disabled={!selection?.start && !selection?.end}
                     >
                         Törlés
                     </button>
+                    <label className="label cursor-pointer justify-start gap-2 mt-2">
+                        <input
+                            type="checkbox"
+                            className="checkbox checkbox-sm checkbox-primary"
+                            checked={barrierFree}
+                            onChange={(e) => setBarrierFree(e.target.checked)}
+                        />
+                        <span className="text-sm">Akadálymentes (liftek)</span>
+                    </label>
+                    {noRoute && (
+                        <div className="alert alert-warning mt-2 py-2 text-xs">
+                            <span>Nem található útvonal a két pont között.</span>
+                        </div>
+                    )}
                     <p className="text-xs opacity-60 mt-2">
                         Kattints a termekre: 1. = kiindulás, 2. = cél, 3. = új kiindulás.
                     </p>
@@ -184,6 +213,7 @@ export default function Kiosk() {
                     isolatedFloor={isolatedFloor}
                     selection={selection ?? undefined}
                     highlight={highlight}
+                    path={path}
                     onFloorClick={handleFloorClick}
                     onClassroomClick={handleClassroomClick}
                     onClassroomHover={setHoveredId}

@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
 
 import type { FullGraph } from "../types/FullGraph"
+import type { Vec3 } from "./path/pathfinder"
 import { createCamera, createRenderer, createScene } from "./runtime/createRenderer"
 import { createRenderLoop } from "./runtime/renderLoop"
 import { observeContainerResize } from "./runtime/resizeObserver"
@@ -22,6 +23,8 @@ type Props = {
     selection?: KioskSelection
     /** How to emphasize classrooms (by type, by id, …). */
     highlight?: KioskHighlight
+    /** A* route waypoints to draw as an overlay. Empty/undefined clears it. */
+    path?: Vec3[]
     /** Tap on a floor plate. */
     onFloorClick?: (buildingId: string, storey: number) => void
     /** Tap on a classroom. */
@@ -48,6 +51,7 @@ export default function KioskView3D({
     isolatedFloor,
     selection,
     highlight,
+    path,
     onFloorClick,
     onClassroomClick,
     onClassroomHover,
@@ -157,6 +161,7 @@ export default function KioskView3D({
             selection,
             highlight,
         })
+        controller.setPath(path)
 
         const floorKey = floorKeyOf(isolatedFloor ?? null)
         const floorChanged = floorKeyRef.current !== floorKey
@@ -166,7 +171,7 @@ export default function KioskView3D({
         if (graphChanged || floorChanged) rig?.frameFloor(isolatedFloor ?? null)
 
         requestRenderRef.current?.()
-    }, [graph, isolatedFloor, selection, highlight])
+    }, [graph, isolatedFloor, selection, highlight, path])
 
     return (
         <div
