@@ -8,6 +8,8 @@ import { buildClassroomNode } from "./classroomNode"
 import { buildCorridorNode } from "./corridorNode"
 import { buildLiftNode, buildStairsNode } from "./verticalNode"
 import type { KioskCampus, KioskNode } from "../types"
+import { GraphPathBuilder } from "../../path/pathbuilder"
+import { buildAstarNodes } from "../pathOverlay"
 
 /** Build the whole campus once, neutral. Every storey of every building
  *  is present and visible — floor isolation and highlighting are applied
@@ -52,6 +54,10 @@ export function buildKioskCampus(graph: FullGraph): KioskCampus {
     }
 
     for (const node of nodes) root.add(node.object)
+
+
+    const astarBuilder = new GraphPathBuilder(graph, false)
+    root.add(buildAstarNodes(astarBuilder.getAstar()))
 
     const center = computeCampusCenter(graph)
     root.position.set(-center.x, 0, -center.y)

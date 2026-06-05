@@ -99,6 +99,10 @@ export class Astar {
         return ids.map(id => this.points.get(id)!)
     }
 
+    getPoints(): Map<number, Vec3> {
+        return this.points
+    }
+
     addPoint(pos: Vec3): number {
         const id = this.nextId++
         this.points.set(id, pos)

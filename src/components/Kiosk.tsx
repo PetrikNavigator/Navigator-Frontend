@@ -107,7 +107,6 @@ export default function Kiosk() {
     )
 
 
-
     const pathBuilder = useMemo(() => {
         if (!graph)
             return
@@ -122,6 +121,7 @@ export default function Kiosk() {
 
         return res.length >= 2 ? res : []
     }, [pathBuilder, selection, barrierFree])
+    
 
     const noRoute = !!selection?.start && !!selection?.end && path.length < 2
 

@@ -1,5 +1,6 @@
 import * as THREE from "three"
 import type { Vec3 } from "../../types/three/vector"
+import type { Astar } from "../path/astar"
 
 const PATH_COLOR = 0x00ff88
 const START_COLOR = 0x55ddff
@@ -112,6 +113,25 @@ export function buildKioskPath(path: Vec3[]): THREE.Group {
 
     group.add(makeMarker(raw[0], START_COLOR))
     group.add(makeMarker(raw[raw.length - 1], END_COLOR))
+
+    return group
+}
+
+export function buildAstarNodes(astar: Astar) {
+    const points = astar.getPoints()
+
+    const group = new THREE.Group()
+
+    for (const p of points) {
+        const mesh =
+            new THREE.Mesh(
+                new THREE.SphereGeometry(1, 1, 1),
+                new THREE.MeshBasicMaterial({ color: PATH_COLOR, transparent: true, opacity: 0.95 }),
+            )
+        
+        mesh.position.set(p[1].x, p[1].y, p[1].z)
+        group.add(mesh)
+    }
 
     return group
 }
