@@ -10,7 +10,7 @@ import { Astar } from "./astar"
 
 type Connector = (Lift | Stair) & { isLift: boolean }
 
-const CONNECTION_THRESHOLD = 30
+const CONNECTION_THRESHOLD = 10
 const CORRIDOR_POINTS = 15
 
 export class GraphPathBuilder {
@@ -35,9 +35,14 @@ export class GraphPathBuilder {
         this.build()
     }
 
-    getPath(fromClassroomId: string, toClassroomId: string): Vec3[] {
+    getPath(fromClassroomId: string, toClassroomId: string, isBarrierFree: boolean): Vec3[] {
         const start = this.classroomIdToPoint.get(fromClassroomId)
         const end = this.classroomIdToPoint.get(toClassroomId)
+
+        if (this.barrierFree !== isBarrierFree) {
+            this.barrierFree = isBarrierFree
+            this.build()
+        }
 
         if (!start || !end) return [];
 
@@ -46,6 +51,17 @@ export class GraphPathBuilder {
 
     private build(): void {
         const graph = this.graph
+        this.pointIdToClassroom = new Map<number, Classroom>()
+        this.pointIdToCorridor = new Map<number, Corridor>()
+        this.pointIdToStoreyConnector = new Map<
+            number,
+            { connector: Connector; storey: number }
+        >()
+
+        this.corridorIdToPoints = new Map<string, number[]>()
+        this.classroomIdToPoint = new Map<string, number>()
+
+        this.astar = new Astar()
 
         // 1. Classroom door points.
         for (const c of graph.classrooms) {
@@ -56,6 +72,9 @@ export class GraphPathBuilder {
 
         // 2. Corridor endpoint points + internal segment.
         for (const cor of graph.corridors) {
+            if (!cor.barrier_free && this.barrierFree)
+                continue
+
             const points = this.buildCorridorPoints(cor)
 
             let prevId = -1
@@ -76,33 +95,56 @@ export class GraphPathBuilder {
             }
         }
 
-        // 3. Corridor-to-corridor links by spatial proximity (same storey,
-        //    first matching endpoint pair within threshold).
-        /*const corridors = graph.corridors
+        //Connect corriodors to other corridors
+        const corridors = graph.corridors
         for (let i = 0; i < corridors.length; i++) {
             const corA = corridors[i]
-            const ptsA = this.corridorIdToPoints.get(corA.id.toString())!
+            const ptsA = this.corridorIdToPoints.get(corA.id)
+
+            if (!ptsA || ptsA.length < 2)
+                continue
+
             for (let j = i + 1; j < corridors.length; j++) {
                 const corB = corridors[j]
-                if (corA.storey !== corB.storey) continue
-                const ptsB = this.corridorIdToPoints.get(corB.id.toString())!
 
-                const posA0 = this.astar.getPoint(ptsA[0])!
-                const posA1 = this.astar.getPoint(ptsA[1])!
-                const posB0 = this.astar.getPoint(ptsB[0])!
-                const posB1 = this.astar.getPoint(ptsB[1])!
+                if (corB.storey !== corA.storey ||
+                    (corB.building_id !== corA.building_id && (!corB.is_outdoor && !corA.is_outdoor))
+                )
+                    continue
 
-                if (dist(posA0, posB0) < CONNECTION_THRESHOLD) {
-                    this.astar.connect(ptsA[0], ptsB[0])
-                } else if (dist(posA0, posB1) < CONNECTION_THRESHOLD) {
-                    this.astar.connect(ptsA[0], ptsB[1])
-                } else if (dist(posA1, posB0) < CONNECTION_THRESHOLD) {
-                    this.astar.connect(ptsA[1], ptsB[0])
-                } else if (dist(posA1, posB1) < CONNECTION_THRESHOLD) {
-                    this.astar.connect(ptsA[1], ptsB[1])
+                const ptsB = this.corridorIdToPoints.get(corB.id)
+
+                if (!ptsB || ptsB.length < 2)
+                    continue
+
+                let closestDistSq = Infinity
+                let closestA = -1
+                let closestB = -1
+
+                for (const idA of ptsA) {
+                    const pA = this.astar.getPoint(idA)!
+
+                    for (const idB of ptsB) {
+                        const pB = this.astar.getPoint(idB)!
+
+                        const dx = pA.x - pB.x
+                        const dy = pA.y - pB.y
+                        const distSq = dx * dx + dy * dy
+
+                        if (distSq < closestDistSq) {
+                            closestDistSq = distSq
+                            closestA = idA
+                            closestB = idB
+                        }
+                    }
+                }
+
+                if (closestDistSq <= CONNECTION_THRESHOLD * CONNECTION_THRESHOLD) {
+                    this.astar.connect(closestA, closestB)
                 }
             }
-        }*/
+        }
+
 
         // 4. Connect each classroom to its closest same-building/same-storey
         //    corridor endpoint.
@@ -153,23 +195,35 @@ export class GraphPathBuilder {
             }
         }
 
-        /*// 6. Connect each connector storey-point to the nearer endpoint of
+        // 6. Connect each connector storey-point to the nearer endpoint of
         //    every same-building, same-storey corridor.
         for (const connector of allConnectors) {
             const storeyMap = connectorStoreyPoints.get(connector.id.toString())!
             for (const [storey, connectorPoint] of storeyMap) {
                 const connectorPos = this.astar.getPoint(connectorPoint)!
 
+                let closestId = -1
+                let closestDist = Infinity
                 for (const cor of graph.corridors) {
                     if (cor.storey !== storey || cor.building_id !== connector.building_id) continue
-                    const pts = this.corridorIdToPoints.get(cor.id.toString())!
-                    const dStart = dist(connectorPos, this.astar.getPoint(pts[0])!)
-                    const dEnd = dist(connectorPos, this.astar.getPoint(pts[1])!)
-                    const target = dStart < dEnd ? pts[0] : pts[1]
-                    this.astar.connect(connectorPoint, target)
+
+                    const pts = this.corridorIdToPoints.get(cor.id)!
+
+                    if (!pts) continue
+
+                    for (const pid of pts) {
+                        const d = dist(connectorPos, this.astar.getPoint(pid)!)
+                        if (d < closestDist) {
+                            closestDist = d
+                            closestId = pid
+                        }
+                    }
                 }
+
+                if (closestId !== -1)
+                    this.astar.connect(connectorPoint, closestId)
             }
-        }*/
+        }
     }
 
     private getBuilding(id: string): Building {

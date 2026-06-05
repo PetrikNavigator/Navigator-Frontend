@@ -106,15 +106,22 @@ export default function Kiosk() {
         [highlightTypeIds, dimOthers],
     )
 
-    // Route between the selected start/end. Recomputed only when those
-    // (or the graph / barrier-free flag) change.
+
+
+    const pathBuilder = useMemo(() => {
+        if (!graph)
+            return
+
+        return new GraphPathBuilder(graph, barrierFree)
+    }, [graph])
+
     const path = useMemo<Vec3[]>(() => {
-        if (!graph || !selection?.start || !selection?.end) return []
-        const builder = new GraphPathBuilder(graph, barrierFree)
-        const res = builder.getPath(selection.start, selection.end)
+        if (!pathBuilder || !selection?.start || !selection?.end) return []
+
+        const res = pathBuilder.getPath(selection.start, selection.end, barrierFree)
 
         return res.length >= 2 ? res : []
-    }, [graph, selection, barrierFree])
+    }, [pathBuilder, selection, barrierFree])
 
     const noRoute = !!selection?.start && !!selection?.end && path.length < 2
 
