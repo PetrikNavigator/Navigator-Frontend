@@ -10,7 +10,7 @@ import { Astar } from "./astar"
 
 type Connector = (Lift | Stair) & { isLift: boolean }
 
-const CORRIDOR_CONNECTION_THRESHOLD = 0
+const CORRIDOR_CONNECTION_THRESHOLD = 3
 const CLASSROOM_CONNECTION_THRESHOLD = 15
 const CORRIDOR_POINTS = 2
 
@@ -143,7 +143,6 @@ export class GraphPathBuilder {
 
                 for (const idA of ptsA) {
                     const pA = this.astar.getPoint(idA)!
-                    const halfWidth = corA.width / 2
 
                     for (const idB of ptsB) {
                         const pB = this.astar.getPoint(idB)!
@@ -151,9 +150,6 @@ export class GraphPathBuilder {
                         const dx = pA.x - pB.x
                         const dy = pA.z - pB.z
                         const distSq = dx * dx + dy * dy
-
-                        if (distSq > halfWidth * halfWidth)
-                            continue
 
                         if (distSq < closestDistSq) {
                             closestDistSq = distSq
@@ -163,7 +159,7 @@ export class GraphPathBuilder {
                     }
                 }
 
-                if (closestA > -1 && closestB > -1) {
+                if (closestA > -1 && closestB > -1 && closestDistSq <= (corA.width + CORRIDOR_CONNECTION_THRESHOLD) * (corA.width + CORRIDOR_CONNECTION_THRESHOLD)) {
                     this.astar.connect(closestA, closestB)
                 }
 
