@@ -53,7 +53,12 @@ function classroomEmphasis(node: KioskNode, state: KioskAppearance): Emphasis {
         if (filtering && highlight.dimOthers) return "dim"
     }
 
-    return selection ? "dim" : "base"
+    if (selection) {
+        if (selection.end || selection.start)
+            return "dim"
+    }
+
+    return "base"
 }
 
 function accentColor(e: Emphasis): number {
