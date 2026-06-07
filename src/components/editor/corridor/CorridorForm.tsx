@@ -191,7 +191,7 @@ export default function CorridorForm({ onSubmit, onFormChange: setForm, isError,
                             min={0.1}
                             max={20}
                             className="input input-bordered w-full"
-                            value={form.width}
+                            value={Math.round(form.width * 10) / 10}
                             onChange={(e) =>
                                 setForm({
                                     ...form,

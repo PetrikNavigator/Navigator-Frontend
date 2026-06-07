@@ -142,31 +142,59 @@ function buildKioskDebugPath(path: Vec3[]): THREE.Group {
     return group
 }
 
+function createTextSprite(text: string) {
+    const canvas = document.createElement("canvas")
+    const ctx = canvas.getContext("2d")!
+
+    const fontSize = 64
+    ctx.font = `${fontSize}px Arial`
+
+    const padding = 20
+    const textWidth = ctx.measureText(text).width
+
+    canvas.width = textWidth + padding * 2
+    canvas.height = fontSize + padding * 2
+
+    ctx.font = `${fontSize}px Arial`
+
+    ctx.fillStyle = "white"
+    ctx.fillText(text, padding, fontSize)
+
+    const texture = new THREE.CanvasTexture(canvas)
+    texture.minFilter = THREE.LinearFilter
+
+    const material = new THREE.SpriteMaterial({ map: texture, transparent: true })
+    const sprite = new THREE.Sprite(material)
+
+    // scale controls world size of label
+    sprite.scale.set(2, 2, 1)
+
+    return sprite
+}
+
 export function buildAstarNodes(astar: Astar) {
     const points = astar.getPoints()
     const adj = astar.getAdj()
 
     const group = new THREE.Group()
 
+    // nodes
     for (const p of points) {
-        const mesh =
-            new THREE.Mesh(
-                new THREE.SphereGeometry(1, 1, 1),
-                new THREE.MeshBasicMaterial({ color: PATH_COLOR, transparent: true, opacity: 0.95 }),
-            )
-
-        mesh.position.set(p[1].x, p[1].y, p[1].z)
-        group.add(mesh)
+        /*const label = createTextSprite(String(p[0]))
+        label.position.set(p[1].x, p[1].y + 3, p[1].z)
+        group.add(label)*/
     }
 
+    console.log(adj)
+
+    // edges
     for (const c of adj) {
-        const ps = [] as Vec3[]
+        const startPt = points.get(c[0])!
 
         for (const p of c[1]) {
-            ps.push(points.get(p)!)
+            group.add(buildKioskDebugPath([startPt, points.get(p)!]))
         }
 
-        group.add(buildKioskDebugPath(ps))
     }
 
     return group

@@ -7,10 +7,10 @@ import { floorPositionOf } from "../entities/building/buildingHelpers"
 import type { Lift } from "../../types/navigator/Lift"
 import type { Stair } from "../../types/navigator/Stair"
 import { Astar } from "./astar"
+import { corridorsIntersect } from "../../types/three/corridorHelper"
 
 type Connector = (Lift | Stair) & { isLift: boolean }
 
-const CORRIDOR_CONNECTION_THRESHOLD = 10
 const CLASSROOM_CONNECTION_THRESHOLD = 15
 const CORRIDOR_POINTS = 2
 
@@ -83,11 +83,7 @@ export class GraphPathBuilder {
     }
 
     private buildCorridorPoints() {
-        const filteredCorridors = this.graph.corridors.filter(x => this.barrierFree ? x.barrier_free : true)
-        for (const cor of filteredCorridors) {
-            if (!cor.barrier_free && this.barrierFree)
-                continue
-
+        for (const cor of this.graph.corridors) {
             const points = this.getCorridorPoints(cor)
 
             let prevId = -1
@@ -101,8 +97,9 @@ export class GraphPathBuilder {
                 corToP.push(currId)
                 this.corridorIdToPoints.set(cor.id, corToP)
 
-                if (prevId >= 0)
+                if (prevId >= 0) {
                     this.astar.connect(prevId, currId)
+                }
 
                 prevId = currId
             }
@@ -110,44 +107,29 @@ export class GraphPathBuilder {
     }
 
     private connectCorridors() {
-        const filteredCorridors = this.graph.corridors.filter(x => this.barrierFree ? x.barrier_free : true)
-        for (let i = 0; i < filteredCorridors.length; i++) {
-            const corA = filteredCorridors[i]
-            const ptsA = this.corridorIdToPoints.get(corA.id)
+        for (let i = 0; i < this.graph.corridors.length; i++) {
+            const corA = this.graph.corridors[i]
 
-            if (!ptsA || ptsA.length < 2)
-                continue
+            for (let j = i + 1; j < this.graph.corridors.length; j++) {
+                const corB = this.graph.corridors[j]
 
-            const endpointsA = [ptsA[0], ptsA[ptsA.length - 1]]
+                if (corA.storey !== corB.storey)
+                    continue
 
-            for (const idA of endpointsA) {
+                if (this.barrierFree && !corB.barrier_free)
+                    continue
+
+                if (!corridorsIntersect(corA, corB, this.graph.buildings))
+                    continue
+
                 let closestDistSq = Infinity
                 let closestA = -1
                 let closestB = -1
-                const pA = this.astar.getPoint(idA)!
 
-                for (let j = i + 1; j < filteredCorridors.length; j++) {
-                    if (j === i)
-                        continue
+                for (const idA of this.corridorIdToPoints.get(corA.id)!) {
+                    const pA = this.astar.getPoint(idA)!
 
-                    const corB = filteredCorridors[j]
-
-                    const sameStorey = corA.storey === corB.storey
-
-                    const canConnect =
-                        corA.building_id === corB.building_id ||
-                        corA.is_outdoor ||
-                        corB.is_outdoor
-
-                    if (!sameStorey || !canConnect)
-                        continue
-
-                    const ptsB = this.corridorIdToPoints.get(corB.id)
-
-                    if (!ptsB || ptsB.length < 2)
-                        continue
-
-                    for (const idB of ptsB) {
+                    for (const idB of this.corridorIdToPoints.get(corB.id)!) {
                         const pB = this.astar.getPoint(idB)!
 
                         const dx = pA.x - pB.x
@@ -162,7 +144,7 @@ export class GraphPathBuilder {
                     }
                 }
 
-                if (closestA > -1 && closestB > -1 && closestDistSq <= (corA.width + CORRIDOR_CONNECTION_THRESHOLD) * (corA.width + CORRIDOR_CONNECTION_THRESHOLD)) {
+                if (closestA > -1 && closestB > -1) {
                     this.astar.connect(closestA, closestB)
                 }
             }
@@ -256,6 +238,7 @@ export class GraphPathBuilder {
 
 
 
+
     private getBuilding(id: string): Building {
         const b = this.graph.buildings.find(x => x.id === id)
         if (!b) throw new Error(`Building ${id} not found`)
@@ -297,10 +280,19 @@ export class GraphPathBuilder {
         const startPoint = this.corridorStartPos(cor)
         const endPoint = this.corridorEndPos(cor)
         const floorPos = floorPositionOf(this.graph, cor.building_id, cor.storey)
+        const length = dist(startPoint, endPoint)
 
-        for (let i = 0; i < 1; i += 1 / dist(endPoint, startPoint) * (10 / CORRIDOR_POINTS)) {
-            const x = startPoint.x + (endPoint.x - startPoint.x) * i;
-            const z = startPoint.z + (endPoint.z - startPoint.z) * i;
+        if (length < 0.01)
+            return [startPoint]
+
+        const step = Math.min(
+            1,
+            (10 / CORRIDOR_POINTS) / length
+        )
+
+        for (let t = 0; t < 1; t += step) {
+            const x = startPoint.x + (endPoint.x - startPoint.x) * t;
+            const z = startPoint.z + (endPoint.z - startPoint.z) * t;
 
             out.push({ x, y: floorPos, z })
         }
