@@ -32,6 +32,7 @@ export type EditorFilter = {
  *  `dimOthers` the rest fade. Matches against `KioskNode.id`. */
 export type EditorEmphasis = {
     highlightIds?: string[]
+    kind?: EditKind
     dimOthers?: boolean
 }
 

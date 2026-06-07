@@ -1,4 +1,3 @@
-import { useMemo, useState } from "react"
 import type { Classroom } from "../../../types/navigator/Classroom"
 import type { Building } from "../../../types/navigator/Building"
 
@@ -11,55 +10,15 @@ type Props = {
 }
 
 export default function ClassroomsTable({ classrooms, buildings, onRemove, onEdit, onHover }: Props) {
-    const [selectedBuildingId, setSelectedBuildingId] = useState<string | null>(null)
-    const [selectedFloor, setSelectedFloor] = useState<number>(-1)
+
 
     const buildingName = (id: string) => {
         return buildings.find(x => x.id === id)?.name
     }
 
-    const availableFloors = [...new Set(classrooms.map(x => x.storey))]
-
-    const filteredClassrooms = useMemo(() => {
-        return classrooms.filter(c => (selectedBuildingId ? c.building_id === selectedBuildingId : true) && (selectedFloor >= 0 ? c.storey === selectedFloor : true))
-    }, [selectedFloor, selectedBuildingId, classrooms])
-
-
     return (
         <div>
-            <div className="flex space-x-2">
-                <fieldset className="fieldset">
-                    <legend className="label">Épület</legend>
-                    <select
-                        className="select select-bordered"
-                        value={selectedBuildingId || ""}
-                        onChange={(e) => setSelectedBuildingId(e.target.value || null)}
-                    >
-                        <option value="">Összes</option>
-                        {buildings.map((b) => (
-                            <option key={b.id} value={b.id}>
-                                {b.name}
-                            </option>
-                        ))}
-                    </select>
-                </fieldset>
-
-                <fieldset className="fieldset">
-                    <legend className="label">Szint</legend>
-                    <select
-                        className="select select-bordered"
-                        value={selectedFloor}
-                        onChange={(e) => setSelectedFloor(Number(e.target.value))}
-                    >
-                        <option value="-1">Összes</option>
-                        {availableFloors.map((b) => (
-                            <option key={b} value={b}>
-                                {b}
-                            </option>
-                        ))}
-                    </select>
-                </fieldset>
-            </div>
+            
 
             <table className="table table-pin-rows">
                 <thead>
@@ -73,7 +32,7 @@ export default function ClassroomsTable({ classrooms, buildings, onRemove, onEdi
                 </thead>
 
                 <tbody>
-                    {filteredClassrooms.map((c) => (
+                    {classrooms.map((c) => (
                         <tr onMouseOver={() => onHover(c)}
                             className="hover:bg-base-200"
                             key={c.id.toString()}
@@ -99,7 +58,7 @@ export default function ClassroomsTable({ classrooms, buildings, onRemove, onEdi
                         </tr>
                     ))}
 
-                    {filteredClassrooms.length === 0 && (
+                    {classrooms.length === 0 && (
                         <tr>
                             <td
                                 colSpan={4}

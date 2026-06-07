@@ -32,18 +32,22 @@ function has(arr: string[] | number[] | null | undefined): boolean {
 function passesFilter(node: KioskNode, filter: EditorFilter | undefined): boolean {
     if (!filter) return true
 
-    if (has(filter.buildingIds) && !filter.buildingIds!.includes(node.buildingId)) {
-        return false
+    if (filter.buildingIds) {
+        if (!filter.buildingIds.includes(node.buildingId)) {
+            return false
+        }
     }
 
-    if (has(filter.storeys)) {
-        const storeys = filter.storeys as number[]
-        if (node.kind === "lift" || node.kind === "stairs") {
-            const lo = node.storeyMin ?? 0
-            const hi = node.storeyMax ?? 0
-            if (!storeys.some((s) => s >= lo && s <= hi)) return false
-        } else if (node.storey === undefined || !storeys.includes(node.storey)) {
-            return false
+    if (filter.storeys) {
+        if (has(filter.storeys)) {
+            const storeys = filter.storeys as number[]
+            if (node.kind === "lift" || node.kind === "stairs") {
+                const lo = node.storeyMin ?? 0
+                const hi = node.storeyMax ?? 0
+                if (!storeys.some((s) => s >= lo && s <= hi)) return false
+            } else if (node.storey === undefined || !storeys.includes(node.storey)) {
+                return false
+            }
         }
     }
 
@@ -57,8 +61,12 @@ function passesFilter(node: KioskNode, filter: EditorFilter | undefined): boolea
 
 function emphasisOf(node: KioskNode, app: EditorAppearance): Emphasis {
     const emph = app.emphasis
-    if (!emph || !has(emph.highlightIds)) return "base"
-    if (emph.highlightIds!.includes(node.id)) return "highlight"
+    if (!emph)
+        return "base"
+
+    if (node.kind === emph?.kind && emph.highlightIds?.includes(node.id))
+        return "highlight"
+
     return emph.dimOthers ? "dim" : "base"
 }
 
