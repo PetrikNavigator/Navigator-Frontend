@@ -121,7 +121,6 @@ export default function Kiosk() {
 
         return res.length >= 2 ? res : []
     }, [pathBuilder, selection, barrierFree])
-    
 
     const noRoute = !!selection?.start && !!selection?.end && path.length < 2
 
@@ -220,7 +219,7 @@ export default function Kiosk() {
                 {/* Type highlight */}
                 <div className="card bg-base-200 p-3">
                     <h2 className="font-semibold mb-2">Terem kiemelés (típus)</h2>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2 overflow-y-auto max-h-72">
                         {graph?.classroom_types.map((t) => {
                             const active = highlightTypeIds.includes(t.id)
                             return (
