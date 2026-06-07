@@ -4,8 +4,7 @@ import { useStairs } from "../../../contexts/navigator/StairsContext"
 import type { AddStair, Stair } from "../../../types/navigator/Stair"
 import StairsTable from "./StairsTable"
 import EditorView3D from "../../../three/EditorView3D"
-import EditorViewControls from "../EditorViewControls"
-import type { EditorAppearance, EditorFilter, EditTarget } from "../../../three/editor/types"
+import type { EditorAppearance, EditTarget } from "../../../three/editor/types"
 import { useGraph } from "../../../contexts/other/GraphContext"
 import useUpdateEffect from "../../../useUpdateEffect"
 import StairForm from "./StairForm"
@@ -32,9 +31,6 @@ export default function StairsTab() {
     const [editorOpen, setEditorOpen] = useState(false)
 
     const [highlightedStairId, setHighlightedStairId] = useState<string | null>(null)
-
-    const [filter, setFilter] = useState<EditorFilter>({})
-    const [dimOthers, setDimOthers] = useState(false)
 
     const [err, setErr] = useState("")
     const [form, setForm] = useState(emptyForm)
@@ -150,10 +146,10 @@ export default function StairsTab() {
 
     const highlightId = editorOpen ? editing?.id : highlightedStairId
     const appearance: EditorAppearance = {
-        filter,
         emphasis: {
             highlightIds: highlightId ? [highlightId] : [],
-            dimOthers: dimOthers || editorOpen || !!highlightedStairId,
+            kind: "stairs",
+            dimOthers: editorOpen || !!highlightedStairId,
         },
     }
 
@@ -197,13 +193,7 @@ export default function StairsTab() {
                     }
                 </div>
 
-                <div className="hidden xl:flex flex-col gap-3 w-full h-[80vh]">
-                    <EditorViewControls
-                        graph={graph}
-                        showTypeFilter={false}
-                        onChange={(f, d) => { setFilter(f); setDimOthers(d) }}
-                    />
-                    <div className="flex-1 rounded-xl border border-slate-700 overflow-hidden">
+                <div className="hidden xl:flex rounded-xl w-full border border-slate-700 overflow-hidden h-[80vh]">
                     <EditorView3D
                         className="w-full h-full"
                         initialDistance={120}
@@ -236,9 +226,8 @@ export default function StairsTab() {
                             }))
                         }
                     />
-                    </div>
                 </div>
-            </div>
+            </div >
         </>
     )
 }

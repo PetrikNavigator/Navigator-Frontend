@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
 import EditorView3D from "../../../three/EditorView3D"
-import EditorViewControls from "../EditorViewControls"
 import type { Building } from "../../../types/navigator/Building"
 import Modal from "../../Modal"
-import type { EditorAppearance, EditorFilter, EditTarget } from "../../../three/editor/types"
+import type { EditTarget, EditorAppearance } from "../../../three/editor/types"
 import { useGraph } from "../../../contexts/other/GraphContext"
 import useUpdateEffect from "../../../useUpdateEffect"
 
@@ -19,8 +18,6 @@ export default function BuildingEditorModal({ building, open, setOpen }: Props) 
     const { graph, getFullGraph, invalidateGraph } = useGraph()
     const [form, setForm] = useState<Building>({ id: "", description: "", name: "", x: 0, y: 0 })
     const [err, setErr] = useState<string>("")
-    const [filter, setFilter] = useState<EditorFilter>({})
-    const [dimOthers, setDimOthers] = useState(false)
 
     const onClose = () => {
         setOpen(false)
@@ -97,10 +94,10 @@ export default function BuildingEditorModal({ building, open, setOpen }: Props) 
         : null
 
     const appearance: EditorAppearance = {
-        filter,
         emphasis: {
             highlightIds: building?.id ? [building.id] : [],
-            dimOthers: dimOthers || open,
+            kind: "building",
+            dimOthers: true,
         },
     }
 
@@ -232,11 +229,6 @@ export default function BuildingEditorModal({ building, open, setOpen }: Props) 
                             }
                         />
                     </div>
-
-                    <EditorViewControls
-                        graph={graph}
-                        onChange={(f, d) => { setFilter(f); setDimOthers(d) }}
-                    />
 
                     <p className="text-xs opacity-60 leading-relaxed">
                         A szerkesztett épület termei narancssárgával kiemelve. A kék

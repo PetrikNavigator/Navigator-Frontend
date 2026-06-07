@@ -64,7 +64,13 @@ function emphasisOf(node: KioskNode, app: EditorAppearance): Emphasis {
     if (!emph)
         return "base"
 
-    if (node.kind === emph?.kind && emph.highlightIds?.includes(node.id))
+    if (!emph.kind)
+        return "base"
+
+    if (emph.kind === "building" && emph.highlightIds?.includes(node.buildingId))
+        return "highlight"
+
+    if (node.kind === emph.kind && emph.highlightIds?.includes(node.id))
         return "highlight"
 
     return emph.dimOthers ? "dim" : "base"

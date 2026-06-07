@@ -4,8 +4,7 @@ import { useLifts } from "../../../contexts/navigator/LiftsContext"
 import type { AddLift, Lift } from "../../../types/navigator/Lift"
 import LiftsTable from "./LiftsTable"
 import EditorView3D from "../../../three/EditorView3D"
-import EditorViewControls from "../EditorViewControls"
-import type { EditorAppearance, EditorFilter, EditTarget } from "../../../three/editor/types"
+import type { EditorAppearance, EditTarget } from "../../../three/editor/types"
 import { useGraph } from "../../../contexts/other/GraphContext"
 import useUpdateEffect from "../../../useUpdateEffect"
 import LiftForm from "./LiftForm"
@@ -28,9 +27,6 @@ export default function LiftsTab() {
     const [editorOpen, setEditorOpen] = useState(false)
 
     const [highlightedLiftId, setHighlightedLiftId] = useState<string | null>(null)
-
-    const [filter, setFilter] = useState<EditorFilter>({})
-    const [dimOthers, setDimOthers] = useState(false)
 
     const [err, setErr] = useState("")
     const [form, setForm] = useState(emptyForm)
@@ -145,10 +141,10 @@ export default function LiftsTab() {
 
     const highlightId = editorOpen ? editing?.id : highlightedLiftId
     const appearance: EditorAppearance = {
-        filter,
         emphasis: {
             highlightIds: highlightId ? [highlightId] : [],
-            dimOthers: dimOthers || editorOpen || !!highlightedLiftId,
+            kind: "lift",
+            dimOthers: editorOpen || !!highlightedLiftId,
         },
     }
 
@@ -192,13 +188,7 @@ export default function LiftsTab() {
                     }
                 </div>
 
-                <div className="hidden xl:flex flex-col gap-3 w-full h-[80vh]">
-                    <EditorViewControls
-                        graph={graph}
-                        showTypeFilter={false}
-                        onChange={(f, d) => { setFilter(f); setDimOthers(d) }}
-                    />
-                    <div className="flex-1 rounded-xl border border-slate-700 overflow-hidden">
+                <div className="hidden xl:flex rounded-xl w-full border border-slate-700 overflow-hidden h-[80vh]">
                     <EditorView3D
                         className="w-full h-full"
                         initialDistance={120}
@@ -224,7 +214,6 @@ export default function LiftsTab() {
                             }))
                         }
                     />
-                    </div>
                 </div>
             </div>
         </>

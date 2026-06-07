@@ -177,7 +177,7 @@ export default function CorridorsTab() {
         emphasis: {
             highlightIds: highlightId ? [highlightId] : [],
             kind: "corridor",
-            dimOthers: true || editorOpen || !!highlightedCorridorId,
+            dimOthers: editorOpen || !!highlightedCorridorId,
         },
     }
 
