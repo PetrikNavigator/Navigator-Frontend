@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect } from "react"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
 import { useStairs } from "../../../contexts/navigator/StairsContext"
 import type { AddStair, Stair } from "../../../types/navigator/Stair"
@@ -132,32 +132,30 @@ export default function StairsTab() {
         }
     }, [editorOpen])
 
-    const edit = useMemo<EditTarget | null>(() => (
-        editorOpen
-            ? {
-                kind: "stairs",
-                id: editing?.id,
-                preview: {
-                    name: form.name || "új lépcső",
-                    x: form.x,
-                    y: form.y,
-                    min_storey: form.min_storey,
-                    max_storey: form.max_storey,
-                    rotation: form.rotation,
-                    building_id: buildingId,
-                },
-            }
-            : null
-    ), [editorOpen, editing?.id, form, buildingId])
+    const edit: EditTarget | null = editorOpen
+        ? {
+            kind: "stairs",
+            id: editing?.id,
+            preview: {
+                name: form.name || "új lépcső",
+                x: form.x,
+                y: form.y,
+                min_storey: form.min_storey,
+                max_storey: form.max_storey,
+                rotation: form.rotation,
+                building_id: buildingId,
+            },
+        }
+        : null
 
     const highlightId = editorOpen ? editing?.id : highlightedStairId
-    const appearance = useMemo<EditorAppearance>(() => ({
+    const appearance: EditorAppearance = {
         filter,
         emphasis: {
             highlightIds: highlightId ? [highlightId] : [],
             dimOthers: dimOthers || editorOpen || !!highlightedStairId,
         },
-    }), [filter, dimOthers, editorOpen, highlightId, highlightedStairId])
+    }
 
     return (
         <>

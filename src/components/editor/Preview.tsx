@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import EditorView3D from "../../three/EditorView3D";
 import { useGraph } from "../../contexts/other/GraphContext";
 import EditorViewControls from "./EditorViewControls";
@@ -14,10 +14,7 @@ export default function Preview() {
         getFullGraph()
     }, []);
 
-    const appearance = useMemo<EditorAppearance>(
-        () => ({ filter, emphasis: { dimOthers } }),
-        [filter, dimOthers],
-    )
+    const appearance: EditorAppearance = { filter, emphasis: { dimOthers } }
 
     return (
         <div className="w-full flex flex-col xl:flex-row gap-4 justify-center items-start">

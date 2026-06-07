@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect } from "react"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
 import { useLifts } from "../../../contexts/navigator/LiftsContext"
 import type { AddLift, Lift } from "../../../types/navigator/Lift"
@@ -128,31 +128,29 @@ export default function LiftsTab() {
         }
     }, [editorOpen])
 
-    const edit = useMemo<EditTarget | null>(() => (
-        editorOpen
-            ? {
-                kind: "lift",
-                id: editing?.id,
-                preview: {
-                    name: form.name || "új lift",
-                    x: form.x,
-                    y: form.y,
-                    min_storey: form.min_storey,
-                    max_storey: form.max_storey,
-                    building_id: buildingId,
-                },
-            }
-            : null
-    ), [editorOpen, editing?.id, form, buildingId])
+    const edit: EditTarget | null = editorOpen
+        ? {
+            kind: "lift",
+            id: editing?.id,
+            preview: {
+                name: form.name || "új lift",
+                x: form.x,
+                y: form.y,
+                min_storey: form.min_storey,
+                max_storey: form.max_storey,
+                building_id: buildingId,
+            },
+        }
+        : null
 
     const highlightId = editorOpen ? editing?.id : highlightedLiftId
-    const appearance = useMemo<EditorAppearance>(() => ({
+    const appearance: EditorAppearance = {
         filter,
         emphasis: {
             highlightIds: highlightId ? [highlightId] : [],
             dimOthers: dimOthers || editorOpen || !!highlightedLiftId,
         },
-    }), [filter, dimOthers, editorOpen, highlightId, highlightedLiftId])
+    }
 
     return (
         <>

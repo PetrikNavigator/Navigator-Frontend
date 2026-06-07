@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect } from "react"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
 import { useCorridor } from "../../../contexts/navigator/CorridorContext"
 import type { AddCorridor, Corridor } from "../../../types/navigator/Corridor"
@@ -141,35 +141,33 @@ export default function CorridorsTab() {
         }
     }, [editorOpen])
 
-    const edit = useMemo<EditTarget | null>(() => (
-        editorOpen
-            ? {
-                kind: "corridor",
-                id: editing?.id,
-                preview: {
-                    name: form.name || "új folyosó",
-                    storey: form.storey,
-                    x1: form.x1,
-                    y1: form.y1,
-                    x2: form.x2,
-                    y2: form.y2,
-                    width: form.width,
-                    barrier_free: form.barrier_free,
-                    is_outdoor: form.is_outdoor,
-                    building_id: buildingId,
-                },
-            }
-            : null
-    ), [editorOpen, editing?.id, form, buildingId])
+    const edit: EditTarget | null = editorOpen
+        ? {
+            kind: "corridor",
+            id: editing?.id,
+            preview: {
+                name: form.name || "új folyosó",
+                storey: form.storey,
+                x1: form.x1,
+                y1: form.y1,
+                x2: form.x2,
+                y2: form.y2,
+                width: form.width,
+                barrier_free: form.barrier_free,
+                is_outdoor: form.is_outdoor,
+                building_id: buildingId,
+            },
+        }
+        : null
 
     const highlightId = editorOpen ? editing?.id : highlightedCorridorId
-    const appearance = useMemo<EditorAppearance>(() => ({
+    const appearance: EditorAppearance = {
         filter,
         emphasis: {
             highlightIds: highlightId ? [highlightId] : [],
             dimOthers: dimOthers || editorOpen || !!highlightedCorridorId,
         },
-    }), [filter, dimOthers, editorOpen, highlightId, highlightedCorridorId])
+    }
 
     return (
         <>

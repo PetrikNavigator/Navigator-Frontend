@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect } from "react"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
 import { useClassroom } from "../../../contexts/navigator/ClassroomContext"
 import type { AddClassroom, Classroom } from "../../../types/navigator/Classroom"
@@ -148,37 +148,35 @@ export default function ClassroomsTab() {
         }
     }, [editorOpen])
 
-    const edit = useMemo<EditTarget | null>(() => (
-        editorOpen
-            ? {
-                kind: "classroom",
-                id: editing?.id,
-                preview: {
-                    name: form.name || "új terem",
-                    capacity: form.capacity,
-                    storey: form.storey,
-                    x: form.x,
-                    y: form.y,
-                    rotation: form.rotation,
-                    size_x: form.size_x,
-                    size_y: form.size_y,
-                    size_z: form.size_z,
-                    description: form.description,
-                    building_id: buildingId,
-                    type_id: typeId,
-                },
-            }
-            : null
-    ), [editorOpen, editing?.id, form, buildingId, typeId])
+    const edit: EditTarget | null = editorOpen
+        ? {
+            kind: "classroom",
+            id: editing?.id,
+            preview: {
+                name: form.name || "új terem",
+                capacity: form.capacity,
+                storey: form.storey,
+                x: form.x,
+                y: form.y,
+                rotation: form.rotation,
+                size_x: form.size_x,
+                size_y: form.size_y,
+                size_z: form.size_z,
+                description: form.description,
+                building_id: buildingId,
+                type_id: typeId,
+            },
+        }
+        : null
 
     const highlightId = editorOpen ? editing?.id : highlightedClassroomId
-    const appearance = useMemo<EditorAppearance>(() => ({
+    const appearance: EditorAppearance = {
         filter,
         emphasis: {
             highlightIds: highlightId ? [highlightId] : [],
             dimOthers: dimOthers || editorOpen || !!highlightedClassroomId,
         },
-    }), [filter, dimOthers, editorOpen, highlightId, highlightedClassroomId])
+    }
 
     return (
         <>

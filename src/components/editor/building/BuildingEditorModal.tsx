@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
 import EditorView3D from "../../../three/EditorView3D"
 import EditorViewControls from "../EditorViewControls"
@@ -83,28 +83,26 @@ export default function BuildingEditorModal({ building, open, setOpen }: Props) 
 
     const editing = building !== null
 
-    const edit = useMemo<EditTarget | null>(() => (
-        open
-            ? {
-                kind: "building",
-                id: building?.id,
-                preview: {
-                    name: form.name || "új épület",
-                    description: form.description,
-                    x: form.x,
-                    y: form.y,
-                },
-            }
-            : null
-    ), [open, building?.id, form])
+    const edit: EditTarget | null = open
+        ? {
+            kind: "building",
+            id: building?.id,
+            preview: {
+                name: form.name || "új épület",
+                description: form.description,
+                x: form.x,
+                y: form.y,
+            },
+        }
+        : null
 
-    const appearance = useMemo<EditorAppearance>(() => ({
+    const appearance: EditorAppearance = {
         filter,
         emphasis: {
             highlightIds: building?.id ? [building.id] : [],
             dimOthers: dimOthers || open,
         },
-    }), [filter, dimOthers, open, building?.id])
+    }
 
     return (
         <Modal
