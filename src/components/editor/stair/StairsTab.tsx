@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
 import { useStairs } from "../../../contexts/navigator/StairsContext"
 import type { AddStair, Stair } from "../../../types/navigator/Stair"
 import StairsTable from "./StairsTable"
-import SchoolPreview3D from "../../../three/SchoolPreview3D"
-import type { Highlight } from "../../../types/three/build-scene-types"
+import EditorView3D from "../../../three/EditorView3D"
+import EditorViewControls from "../EditorViewControls"
+import type { EditorAppearance, EditorFilter, EditTarget } from "../../../three/editor/types"
 import { useGraph } from "../../../contexts/other/GraphContext"
 import useUpdateEffect from "../../../useUpdateEffect"
 import StairForm from "./StairForm"
@@ -31,6 +32,9 @@ export default function StairsTab() {
     const [editorOpen, setEditorOpen] = useState(false)
 
     const [highlightedStairId, setHighlightedStairId] = useState<string | null>(null)
+
+    const [filter, setFilter] = useState<EditorFilter>({})
+    const [dimOthers, setDimOthers] = useState(false)
 
     const [err, setErr] = useState("")
     const [form, setForm] = useState(emptyForm)
@@ -128,28 +132,32 @@ export default function StairsTab() {
         }
     }, [editorOpen])
 
-    const highlight: Highlight | undefined = editorOpen ?
-        {
-            kind: "stairs",
-            dimOthers: true,
-            isEditing: true,
-            id: editing?.id,
-            preview: {
-                name: form.name || "új lépcső",
-                x: form.x,
-                y: form.y,
-                min_storey: form.min_storey,
-                max_storey: form.max_storey,
-                rotation: form.rotation,
-                building_id: buildingId,
-            },
-        } : highlightedStairId ?
-            {
-                id: highlightedStairId,
-                dimOthers: true,
-                isEditing: false,
-                kind: "stairs"
-            } : undefined
+    const edit = useMemo<EditTarget | null>(() => (
+        editorOpen
+            ? {
+                kind: "stairs",
+                id: editing?.id,
+                preview: {
+                    name: form.name || "új lépcső",
+                    x: form.x,
+                    y: form.y,
+                    min_storey: form.min_storey,
+                    max_storey: form.max_storey,
+                    rotation: form.rotation,
+                    building_id: buildingId,
+                },
+            }
+            : null
+    ), [editorOpen, editing?.id, form, buildingId])
+
+    const highlightId = editorOpen ? editing?.id : highlightedStairId
+    const appearance = useMemo<EditorAppearance>(() => ({
+        filter,
+        emphasis: {
+            highlightIds: highlightId ? [highlightId] : [],
+            dimOthers: dimOthers || editorOpen || !!highlightedStairId,
+        },
+    }), [filter, dimOthers, editorOpen, highlightId, highlightedStairId])
 
     return (
         <>
@@ -191,16 +199,21 @@ export default function StairsTab() {
                     }
                 </div>
 
-                <div
-                    className="hidden xl:flex rounded-xl w-full border border-slate-700 overflow-hidden h-[80vh]"
-                >
-                    <SchoolPreview3D
+                <div className="hidden xl:flex flex-col gap-3 w-full h-[80vh]">
+                    <EditorViewControls
+                        graph={graph}
+                        showTypeFilter={false}
+                        onChange={(f, d) => { setFilter(f); setDimOthers(d) }}
+                    />
+                    <div className="flex-1 rounded-xl border border-slate-700 overflow-hidden">
+                    <EditorView3D
                         className="w-full h-full"
                         initialDistance={120}
                         showAxes
                         graph={graph}
-                        highlight={highlight}
-                        onResize={(patch) =>
+                        edit={edit}
+                        appearance={appearance}
+                        onTransform={(patch) =>
                             setForm((f) => ({
                                 ...f,
                                 ...(patch.x !== undefined
@@ -225,6 +238,7 @@ export default function StairsTab() {
                             }))
                         }
                     />
+                    </div>
                 </div>
             </div>
         </>

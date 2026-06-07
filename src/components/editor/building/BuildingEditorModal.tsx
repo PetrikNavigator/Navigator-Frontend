@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
-import SchoolPreview3D from "../../../three/SchoolPreview3D"
+import EditorView3D from "../../../three/EditorView3D"
+import EditorViewControls from "../EditorViewControls"
 import type { Building } from "../../../types/navigator/Building"
 import Modal from "../../Modal"
-import type { Highlight } from "../../../types/three/build-scene-types"
+import type { EditorAppearance, EditorFilter, EditTarget } from "../../../three/editor/types"
 import { useGraph } from "../../../contexts/other/GraphContext"
 import useUpdateEffect from "../../../useUpdateEffect"
 
@@ -18,6 +19,8 @@ export default function BuildingEditorModal({ building, open, setOpen }: Props) 
     const { graph, getFullGraph, invalidateGraph } = useGraph()
     const [form, setForm] = useState<Building>({ id: "", description: "", name: "", x: 0, y: 0 })
     const [err, setErr] = useState<string>("")
+    const [filter, setFilter] = useState<EditorFilter>({})
+    const [dimOthers, setDimOthers] = useState(false)
 
     const onClose = () => {
         setOpen(false)
@@ -78,22 +81,30 @@ export default function BuildingEditorModal({ building, open, setOpen }: Props) 
         getFullGraph()
     }, [open])
 
-    const buildingHighlight: Highlight = open
-        ? {
-            kind: "building",
-            isEditing: true,
-            dimOthers: true,
-            id: building?.id,
-            preview: {
-                name: form.name || "új épület",
-                description: form.description,
-                x: form.x,
-                y: form.y,
-            },
-        }
-        : null
-
     const editing = building !== null
+
+    const edit = useMemo<EditTarget | null>(() => (
+        open
+            ? {
+                kind: "building",
+                id: building?.id,
+                preview: {
+                    name: form.name || "új épület",
+                    description: form.description,
+                    x: form.x,
+                    y: form.y,
+                },
+            }
+            : null
+    ), [open, building?.id, form])
+
+    const appearance = useMemo<EditorAppearance>(() => ({
+        filter,
+        emphasis: {
+            highlightIds: building?.id ? [building.id] : [],
+            dimOthers: dimOthers || open,
+        },
+    }), [filter, dimOthers, open, building?.id])
 
     return (
         <Modal
@@ -203,13 +214,14 @@ export default function BuildingEditorModal({ building, open, setOpen }: Props) 
                     </div>
 
                     <div className="rounded-box overflow-hidden border border-base-300 h-[420px] bg-base-300/20">
-                        <SchoolPreview3D
+                        <EditorView3D
                             graph={graph}
-                            highlight={buildingHighlight}
+                            edit={edit}
+                            appearance={appearance}
                             className="w-full h-full"
                             initialDistance={120}
                             showAxes={true}
-                            onResize={(patch) =>
+                            onTransform={(patch) =>
                                 setForm((f) => ({
                                     ...f,
                                     ...(patch.x !== undefined
@@ -222,6 +234,11 @@ export default function BuildingEditorModal({ building, open, setOpen }: Props) 
                             }
                         />
                     </div>
+
+                    <EditorViewControls
+                        graph={graph}
+                        onChange={(f, d) => { setFilter(f); setDimOthers(d) }}
+                    />
 
                     <p className="text-xs opacity-60 leading-relaxed">
                         A szerkesztett épület termei narancssárgával kiemelve. A kék

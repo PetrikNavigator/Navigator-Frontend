@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
 import { useCorridor } from "../../../contexts/navigator/CorridorContext"
 import type { AddCorridor, Corridor } from "../../../types/navigator/Corridor"
 import CorridorsTable from "./CorridorsTable"
-import SchoolPreview3D from "../../../three/SchoolPreview3D"
-import type { Highlight } from "../../../types/three/build-scene-types"
+import EditorView3D from "../../../three/EditorView3D"
+import EditorViewControls from "../EditorViewControls"
+import type { EditorAppearance, EditorFilter, EditTarget } from "../../../three/editor/types"
 import { useGraph } from "../../../contexts/other/GraphContext"
 import useUpdateEffect from "../../../useUpdateEffect"
 import CorridorForm from "./CorridorForm"
@@ -31,6 +32,9 @@ export default function CorridorsTab() {
     const [editorOpen, setEditorOpen] = useState(false)
 
     const [highlightedCorridorId, setHighlightedCorridorId] = useState<string | null>(null)
+
+    const [filter, setFilter] = useState<EditorFilter>({})
+    const [dimOthers, setDimOthers] = useState(false)
 
     const [err, setErr] = useState("")
     const [form, setForm] = useState(emptyForm)
@@ -137,31 +141,35 @@ export default function CorridorsTab() {
         }
     }, [editorOpen])
 
-    const highlight: Highlight | undefined = editorOpen ?
-        {
-            kind: "corridor",
-            dimOthers: true,
-            isEditing: true,
-            id: editing?.id,
-            preview: {
-                name: form.name || "új folyosó",
-                storey: form.storey,
-                x1: form.x1,
-                y1: form.y1,
-                x2: form.x2,
-                y2: form.y2,
-                width: form.width,
-                barrier_free: form.barrier_free,
-                is_outdoor: form.is_outdoor,
-                building_id: buildingId,
-            },
-        } : highlightedCorridorId ?
-            {
-                id: highlightedCorridorId,
-                dimOthers: true,
-                isEditing: false,
-                kind: "corridor"
-            } : undefined
+    const edit = useMemo<EditTarget | null>(() => (
+        editorOpen
+            ? {
+                kind: "corridor",
+                id: editing?.id,
+                preview: {
+                    name: form.name || "új folyosó",
+                    storey: form.storey,
+                    x1: form.x1,
+                    y1: form.y1,
+                    x2: form.x2,
+                    y2: form.y2,
+                    width: form.width,
+                    barrier_free: form.barrier_free,
+                    is_outdoor: form.is_outdoor,
+                    building_id: buildingId,
+                },
+            }
+            : null
+    ), [editorOpen, editing?.id, form, buildingId])
+
+    const highlightId = editorOpen ? editing?.id : highlightedCorridorId
+    const appearance = useMemo<EditorAppearance>(() => ({
+        filter,
+        emphasis: {
+            highlightIds: highlightId ? [highlightId] : [],
+            dimOthers: dimOthers || editorOpen || !!highlightedCorridorId,
+        },
+    }), [filter, dimOthers, editorOpen, highlightId, highlightedCorridorId])
 
     return (
         <>
@@ -203,16 +211,21 @@ export default function CorridorsTab() {
                     }
                 </div>
 
-                <div
-                    className="hidden xl:flex rounded-xl w-full border border-slate-700 overflow-hidden h-[80vh]"
-                >
-                    <SchoolPreview3D
+                <div className="hidden xl:flex flex-col gap-3 w-full h-[80vh]">
+                    <EditorViewControls
+                        graph={graph}
+                        showTypeFilter={false}
+                        onChange={(f, d) => { setFilter(f); setDimOthers(d) }}
+                    />
+                    <div className="flex-1 rounded-xl border border-slate-700 overflow-hidden">
+                    <EditorView3D
                         className="w-full h-full"
                         initialDistance={120}
                         showAxes
                         graph={graph}
-                        highlight={highlight}
-                        onResize={(patch) =>
+                        edit={edit}
+                        appearance={appearance}
+                        onTransform={(patch) =>
                             setForm((f) => ({
                                 ...f,
                                 ...(patch.x1 !== undefined
@@ -233,6 +246,7 @@ export default function CorridorsTab() {
                             }))
                         }
                     />
+                    </div>
                 </div>
             </div>
         </>

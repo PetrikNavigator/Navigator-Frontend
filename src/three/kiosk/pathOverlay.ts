@@ -142,35 +142,35 @@ function buildKioskDebugPath(path: Vec3[]): THREE.Group {
     return group
 }
 
-function createTextSprite(text: string) {
-    const canvas = document.createElement("canvas")
-    const ctx = canvas.getContext("2d")!
+// function createTextSprite(text: string) {
+//     const canvas = document.createElement("canvas")
+//     const ctx = canvas.getContext("2d")!
 
-    const fontSize = 64
-    ctx.font = `${fontSize}px Arial`
+//     const fontSize = 64
+//     ctx.font = `${fontSize}px Arial`
 
-    const padding = 20
-    const textWidth = ctx.measureText(text).width
+//     const padding = 20
+//     const textWidth = ctx.measureText(text).width
 
-    canvas.width = textWidth + padding * 2
-    canvas.height = fontSize + padding * 2
+//     canvas.width = textWidth + padding * 2
+//     canvas.height = fontSize + padding * 2
 
-    ctx.font = `${fontSize}px Arial`
+//     ctx.font = `${fontSize}px Arial`
 
-    ctx.fillStyle = "white"
-    ctx.fillText(text, padding, fontSize)
+//     ctx.fillStyle = "white"
+//     ctx.fillText(text, padding, fontSize)
 
-    const texture = new THREE.CanvasTexture(canvas)
-    texture.minFilter = THREE.LinearFilter
+//     const texture = new THREE.CanvasTexture(canvas)
+//     texture.minFilter = THREE.LinearFilter
 
-    const material = new THREE.SpriteMaterial({ map: texture, transparent: true })
-    const sprite = new THREE.Sprite(material)
+//     const material = new THREE.SpriteMaterial({ map: texture, transparent: true })
+//     const sprite = new THREE.Sprite(material)
 
-    // scale controls world size of label
-    sprite.scale.set(2, 2, 1)
+//     // scale controls world size of label
+//     sprite.scale.set(2, 2, 1)
 
-    return sprite
-}
+//     return sprite
+// }
 
 export function buildAstarNodes(astar: Astar) {
     const points = astar.getPoints()
@@ -179,11 +179,11 @@ export function buildAstarNodes(astar: Astar) {
     const group = new THREE.Group()
 
     // nodes
-    for (const p of points) {
+    // for (const p of points) {
         /*const label = createTextSprite(String(p[0]))
         label.position.set(p[1].x, p[1].y + 3, p[1].z)
         group.add(label)*/
-    }
+    // }
 
     console.log(adj)
 

@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
 import { useClassroom } from "../../../contexts/navigator/ClassroomContext"
 import type { AddClassroom, Classroom } from "../../../types/navigator/Classroom"
 import ClassroomsTable from "./ClassroomsTable"
-import SchoolPreview3D from "../../../three/SchoolPreview3D"
-import type { Highlight } from "../../../types/three/build-scene-types"
+import EditorView3D from "../../../three/EditorView3D"
+import EditorViewControls from "../EditorViewControls"
+import type { EditorAppearance, EditorFilter, EditTarget } from "../../../three/editor/types"
 import { useGraph } from "../../../contexts/other/GraphContext"
 import useUpdateEffect from "../../../useUpdateEffect"
 import ClassroomForm from "./ClassroomForm"
@@ -36,6 +37,9 @@ export default function ClassroomsTab() {
     const [editorOpen, setEditorOpen] = useState(false)
 
     const [highlightedClassroomId, setHighlightedClassroomId] = useState<string | null>(null)
+
+    const [filter, setFilter] = useState<EditorFilter>({})
+    const [dimOthers, setDimOthers] = useState(false)
 
     const [err, setErr] = useState("")
     const [form, setForm] = useState(emptyForm)
@@ -144,33 +148,37 @@ export default function ClassroomsTab() {
         }
     }, [editorOpen])
 
-    const highlight: Highlight | undefined = editorOpen ?
-        {
-            kind: "classroom",
-            dimOthers: true,
-            isEditing: true,
-            id: editing?.id,
-            preview: {
-                name: form.name || "új terem",
-                capacity: form.capacity,
-                storey: form.storey,
-                x: form.x,
-                y: form.y,
-                rotation: form.rotation,
-                size_x: form.size_x,
-                size_y: form.size_y,
-                size_z: form.size_z,
-                description: form.description,
-                building_id: buildingId,
-                type_id: typeId
-            },
-        } : highlightedClassroomId ?
-            {
-                id: highlightedClassroomId,
-                dimOthers: true,
-                isEditing: false,
-                kind: "classroom"
-            } : undefined
+    const edit = useMemo<EditTarget | null>(() => (
+        editorOpen
+            ? {
+                kind: "classroom",
+                id: editing?.id,
+                preview: {
+                    name: form.name || "új terem",
+                    capacity: form.capacity,
+                    storey: form.storey,
+                    x: form.x,
+                    y: form.y,
+                    rotation: form.rotation,
+                    size_x: form.size_x,
+                    size_y: form.size_y,
+                    size_z: form.size_z,
+                    description: form.description,
+                    building_id: buildingId,
+                    type_id: typeId,
+                },
+            }
+            : null
+    ), [editorOpen, editing?.id, form, buildingId, typeId])
+
+    const highlightId = editorOpen ? editing?.id : highlightedClassroomId
+    const appearance = useMemo<EditorAppearance>(() => ({
+        filter,
+        emphasis: {
+            highlightIds: highlightId ? [highlightId] : [],
+            dimOthers: dimOthers || editorOpen || !!highlightedClassroomId,
+        },
+    }), [filter, dimOthers, editorOpen, highlightId, highlightedClassroomId])
 
     return (
         <>
@@ -215,16 +223,20 @@ export default function ClassroomsTab() {
                 </div>
 
 
-                <div
-                    className="hidden xl:flex rounded-xl w-full border border-slate-700 overflow-hidden h-[80vh]"
-                >
-                    <SchoolPreview3D
+                <div className="hidden xl:flex flex-col gap-3 w-full h-[80vh]">
+                    <EditorViewControls
+                        graph={graph}
+                        onChange={(f, d) => { setFilter(f); setDimOthers(d) }}
+                    />
+                    <div className="flex-1 rounded-xl border border-slate-700 overflow-hidden">
+                    <EditorView3D
                         className="w-full h-full"
                         initialDistance={120}
                         showAxes
                         graph={graph}
-                        highlight={highlight}
-                        onResize={(patch) =>
+                        edit={edit}
+                        appearance={appearance}
+                        onTransform={(patch) =>
                             setForm((f) => ({
                                 ...f,
                                 ...(patch.size_x !== undefined
@@ -269,6 +281,7 @@ export default function ClassroomsTab() {
                             }))
                         }
                     />
+                    </div>
                 </div>
             </div>
         </>
