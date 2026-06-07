@@ -41,15 +41,15 @@ export class GraphPathBuilder {
     }
 
     getPath(fromClassroomId: string, toClassroomId: string, isBarrierFree: boolean): Vec3[] {
-        const start = this.classroomIdToPoint.get(fromClassroomId)
-        const end = this.classroomIdToPoint.get(toClassroomId)
-
         if (this.barrierFree !== isBarrierFree) {
             this.barrierFree = isBarrierFree
             this.build()
         }
 
-        if (!start || !end) return [];
+        const start = this.classroomIdToPoint.get(fromClassroomId)
+        const end = this.classroomIdToPoint.get(toClassroomId)
+
+        if (start === undefined || end === undefined) return [];
 
         return this.astar.findPath(start, end)
     }
