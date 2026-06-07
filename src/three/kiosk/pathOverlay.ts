@@ -7,7 +7,7 @@ const START_COLOR = 0x55ddff
 const END_COLOR = 0xff5577
 
 // Slimmer than the old overlay (was 0.45). Reads as a guide line, not a pipe.
-const TUBE_RADIUS = 0.22
+const TUBE_RADIUS = 1
 // Lifted just above corridor lines (those sit at +0.25 on each storey).
 const VERTICAL_LIFT = 0.8
 // Largest corner fillet; always clamped to half of each adjacent segment so

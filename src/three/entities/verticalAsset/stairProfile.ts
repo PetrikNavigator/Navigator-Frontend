@@ -1,8 +1,8 @@
 import type { StoreyResolver } from "../../../types/three/storey-types"
 
-const TARGET_RISE = 0.5
-const SEGMENT_MAX_RISE = 5
-const SEGMENT_RUN = 3
+const TARGET_RISE = 1.5
+const SEGMENT_MAX_RISE = 10
+const SEGMENT_RUN = 7
 const LANDING_DEPTH = 0.5
 
 export type StairProfile = Array<[number, number]>

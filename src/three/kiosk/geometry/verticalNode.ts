@@ -9,8 +9,8 @@ import { ownLineMat, tagApp } from "../materials"
 import { KIOSK_COLORS, KIOSK_OPACITY } from "../palette"
 import type { KioskNode } from "../types"
 
-const FOOTPRINT = 1.0
-const STAIR_WIDTH = 2.5
+const FOOTPRINT = 2.0
+const STAIR_WIDTH = 7
 
 /** Lift shaft: outline box spanning its storeys + per-deck "stops here"
  *  squares with an X. */
