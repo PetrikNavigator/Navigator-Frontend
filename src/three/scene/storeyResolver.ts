@@ -1,7 +1,7 @@
 import type { Classroom } from "../../types/navigator/Classroom"
 import type { StoreyResolver } from "../../types/three/storey-types"
 
-export const FLOOR_GAP = 10
+export const FLOOR_GAP = 30
 
 // Per-building storey stack: storey N+1 sits on the cumulative sum of
 // storeys 0..N. Storey height = tallest room on that storey (+1m headroom),
