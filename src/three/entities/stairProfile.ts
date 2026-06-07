@@ -1,4 +1,4 @@
-import type { StoreyResolver } from "../../../types/three/storey-types"
+import type { StoreyResolver } from "../../types/three/storey-types"
 
 const TARGET_RISE = 1.5
 const SEGMENT_MAX_RISE = 10

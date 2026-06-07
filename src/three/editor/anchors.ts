@@ -9,9 +9,9 @@ import type {
     LiftHighlightUserData,
     StairsHighlightUserData,
 } from "../../types/three/highlight-userdata-types"
-import { computeCorridorEndpoints } from "../entities/corridor/corridorGeometry"
-import { computeShaftBounds } from "../entities/verticalAsset/verticalAssetCommon"
+import { computeCorridorEndpoints } from "../entities/corridorGeometry"
 import type { MergedEntity } from "./merge"
+import { computeShaftBounds } from "../entities/verticalAssetCommon"
 
 /** An invisible, oriented `Object3D` carrying the per-kind `userData` the
  *  gizmo handle/drag layer reads. Decoupled from rendering: it only exists

@@ -1,7 +1,7 @@
-import type { Building } from "../../../types/navigator/Building"
-import type { Classroom } from "../../../types/navigator/Classroom"
-import type { FullGraph } from "../../../types/FullGraph"
-import { FLOOR_GAP } from "../../scene/storeyResolver"
+import type { Building } from "../../types/navigator/Building"
+import type { Classroom } from "../../types/navigator/Classroom"
+import type { FullGraph } from "../../types/FullGraph"
+import { FLOOR_GAP } from "../scene/storeyResolver"
 
 export function getClassroomsInBuilding(graph: FullGraph, building: Building): Classroom[] {
     return graph.classrooms.filter((c) => c.building_id === building.id)

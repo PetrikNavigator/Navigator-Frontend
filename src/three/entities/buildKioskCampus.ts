@@ -1,13 +1,13 @@
 import * as THREE from "three"
-import type { FullGraph } from "../../../types/FullGraph"
-import { buildStoreyResolver } from "../../scene/storeyResolver"
-import { computeCampusCenter } from "../../scene/bounds"
-import { getClassroomsInBuilding, getValidStoreys } from "../../entities/building/buildingHelpers"
-import { buildFloorNode } from "./floorNode"
+import type { FullGraph } from "../../types/FullGraph"
+import { buildStoreyResolver } from "../scene/storeyResolver"
+import { computeCampusCenter } from "../scene/bounds"
+import { getClassroomsInBuilding, getValidStoreys } from "./buildingHelpers"
+import type { KioskCampus, KioskNode } from "../kiosk/types"
 import { buildClassroomNode } from "./classroomNode"
 import { buildCorridorNode } from "./corridorNode"
+import { buildFloorNode } from "./floorNode"
 import { buildLiftNode, buildStairsNode } from "./verticalNode"
-import type { KioskCampus, KioskNode } from "../types"
 
 /** Build the whole campus once, neutral. Every storey of every building
  *  is present and visible — floor isolation and highlighting are applied

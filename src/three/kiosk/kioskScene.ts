@@ -1,6 +1,6 @@
 import type * as THREE from "three"
 import type { FullGraph } from "../../types/FullGraph"
-import { buildKioskCampus } from "./geometry/buildKioskCampus"
+import { buildKioskCampus } from "../entities/buildKioskCampus"
 import { buildKioskPath } from "./pathOverlay"
 import { disposeDeep } from "./materials"
 import { applyAppearance } from "./appearance"

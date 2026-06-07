@@ -1,15 +1,15 @@
 import * as THREE from "three"
-import type { Building } from "../../../types/navigator/Building"
-import type { Corridor } from "../../../types/navigator/Corridor"
-import type { StoreyResolver } from "../../../types/three/storey-types"
+import type { Building } from "../../types/navigator/Building"
+import type { Corridor } from "../../types/navigator/Corridor"
+import type { StoreyResolver } from "../../types/three/storey-types"
 import {
     buildSideRails,
     buildTickMarks,
     computeCorridorEndpoints,
-} from "../../entities/corridor/corridorGeometry"
-import { ownLineMat, tagApp } from "../materials"
-import { KIOSK_COLORS, KIOSK_OPACITY } from "../palette"
-import type { KioskNode } from "../types"
+} from "./corridorGeometry"
+import { ownLineMat, tagApp } from "../kiosk/materials"
+import { KIOSK_COLORS, KIOSK_OPACITY } from "../kiosk/palette"
+import type { KioskNode } from "../kiosk/types"
 
 /** Corridor centerline + rails + ticks + direction chevron. Not pickable
  *  (only floors and classrooms respond to taps). */

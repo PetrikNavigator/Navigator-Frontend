@@ -1,8 +1,8 @@
 import type { FullGraph } from "../../types/FullGraph"
 import type { StoreyResolver } from "../../types/three/storey-types"
-import { buildClassroomNode } from "../kiosk/geometry/classroomNode"
-import { buildCorridorNode } from "../kiosk/geometry/corridorNode"
-import { buildLiftNode, buildStairsNode } from "../kiosk/geometry/verticalNode"
+import { buildClassroomNode } from "../entities/classroomNode"
+import { buildCorridorNode } from "../entities/corridorNode"
+import { buildLiftNode, buildStairsNode } from "../entities/verticalNode"
 import type { KioskNode } from "../kiosk/types"
 import type { MergedEntity } from "./merge"
 

@@ -1,4 +1,4 @@
-import type { StoreyResolver } from "../../../types/three/storey-types"
+import type { StoreyResolver } from "../../types/three/storey-types"
 
 export type ShaftBounds = {
     bottom: number

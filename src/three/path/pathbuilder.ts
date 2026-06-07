@@ -3,11 +3,11 @@ import type { Building } from "../../types/navigator/Building"
 import type { Classroom } from "../../types/navigator/Classroom"
 import type { Corridor } from "../../types/navigator/Corridor"
 import { dist, type Vec3 } from "../../types/three/vector"
-import { floorPositionOf } from "../entities/building/buildingHelpers"
+import { floorPositionOf } from "../entities/buildingHelpers"
 import type { Lift } from "../../types/navigator/Lift"
 import type { Stair } from "../../types/navigator/Stair"
 import { Astar } from "./astar"
-import { corridorsIntersect } from "../../types/three/corridorHelper"
+import { corridorsIntersect } from "../entities/corridorHelper"
 
 type Connector = (Lift | Stair) & { isLift: boolean }
 
