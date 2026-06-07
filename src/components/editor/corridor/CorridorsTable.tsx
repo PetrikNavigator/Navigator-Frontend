@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import type { Corridor } from "../../../types/navigator/Corridor"
 import type { Building } from "../../../types/navigator/Building"
 
@@ -14,36 +14,55 @@ const storeyLabel = (n: number) => (n === 0 ? "Földszint" : n.toString())
 
 export default function CorridorsTable({ corridors, buildings, onRemove, onEdit, onHover }: Props) {
     const [selectedBuildingId, setSelectedBuildingId] = useState<string | null>(null)
+    const [selectedFloor, setSelectedFloor] = useState<number>(-1)
 
     const buildingName = (id: string) => {
         return buildings.find(x => x.id === id)?.name
     }
 
-    const filteredCorridors = selectedBuildingId
-        ? corridors.filter(c => c.building_id === selectedBuildingId)
-        : corridors
+    const availableFloors = [...new Set(corridors.map(x => x.storey))]
+
+    const filteredCorridors = useMemo(() => {
+        return corridors.filter(c => (selectedBuildingId ? c.building_id === selectedBuildingId : true) && (selectedFloor >= 0 ? c.storey === selectedFloor : true))
+    }, [selectedFloor, selectedBuildingId, corridors])
+
 
     return (
-        <div className="space-y-4">
-            <div>
-                <label className="form-control w-full max-w-xs">
-                    <div className="label">
-                        <span className="label-text">Szűrés épület szerint</span>
-                    </div>
+        <div>
+            <div className="flex space-x-2">
+                <fieldset className="fieldset">
+                    <legend className="label">Épület</legend>
                     <select
                         className="select select-bordered"
                         value={selectedBuildingId || ""}
                         onChange={(e) => setSelectedBuildingId(e.target.value || null)}
                     >
-                        <option value="">Összes épület</option>
+                        <option value="">Összes</option>
                         {buildings.map((b) => (
                             <option key={b.id} value={b.id}>
                                 {b.name}
                             </option>
                         ))}
                     </select>
-                </label>
+                </fieldset>
+
+                <fieldset className="fieldset">
+                    <legend className="label">Szint</legend>
+                    <select
+                        className="select select-bordered"
+                        value={selectedFloor}
+                        onChange={(e) => setSelectedFloor(Number(e.target.value))}
+                    >
+                        <option value="-1">Összes</option>
+                        {availableFloors.map((b) => (
+                            <option key={b} value={b}>
+                                {b}
+                            </option>
+                        ))}
+                    </select>
+                </fieldset>
             </div>
+
             <table className="table table-pin-rows">
                 <thead>
                     <tr>
