@@ -117,8 +117,34 @@ export function buildKioskPath(path: Vec3[]): THREE.Group {
     return group
 }
 
+function buildKioskDebugPath(path: Vec3[]): THREE.Group {
+    const group = new THREE.Group()
+    if (path.length < 2) return group
+
+    const raw = path.map((p) => new THREE.Vector3(p.x, p.y + VERTICAL_LIFT, p.z))
+    const rounded = roundCorners(raw, MAX_CORNER_RADIUS)
+
+    // The points are already smooth, so a centripetal Catmull spline over
+    // them only removes faceting — it can't reintroduce overshoot.
+    const curve = new THREE.CatmullRomCurve3(rounded, false, "centripetal", 0.5)
+    const tubularSegments = Math.max(32, rounded.length * 3)
+    const tube = new THREE.TubeGeometry(curve, tubularSegments, 0.1, 8, false)
+    group.add(
+        new THREE.Mesh(
+            tube,
+            new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95 }),
+        ),
+    )
+
+    group.add(makeMarker(raw[0], START_COLOR))
+    group.add(makeMarker(raw[raw.length - 1], START_COLOR))
+
+    return group
+}
+
 export function buildAstarNodes(astar: Astar) {
     const points = astar.getPoints()
+    const adj = astar.getAdj()
 
     const group = new THREE.Group()
 
@@ -128,9 +154,19 @@ export function buildAstarNodes(astar: Astar) {
                 new THREE.SphereGeometry(1, 1, 1),
                 new THREE.MeshBasicMaterial({ color: PATH_COLOR, transparent: true, opacity: 0.95 }),
             )
-        
+
         mesh.position.set(p[1].x, p[1].y, p[1].z)
         group.add(mesh)
+    }
+
+    for (const c of adj) {
+        const ps = [] as Vec3[]
+
+        for (const p of c[1]) {
+            ps.push(points.get(p)!)
+        }
+
+        group.add(buildKioskDebugPath(ps))
     }
 
     return group

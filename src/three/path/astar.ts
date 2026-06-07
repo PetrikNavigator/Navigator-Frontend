@@ -99,6 +99,10 @@ export class Astar {
         return ids.map(id => this.points.get(id)!)
     }
 
+    getAdj(): Map<number, Set<number>> {
+        return this.adj
+    }
+
     getPoints(): Map<number, Vec3> {
         return this.points
     }

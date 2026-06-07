@@ -10,7 +10,7 @@ import { Astar } from "./astar"
 
 type Connector = (Lift | Stair) & { isLift: boolean }
 
-const CORRIDOR_CONNECTION_THRESHOLD = 3
+const CORRIDOR_CONNECTION_THRESHOLD = 10
 const CLASSROOM_CONNECTION_THRESHOLD = 15
 const CORRIDOR_POINTS = 2
 
@@ -118,31 +118,34 @@ export class GraphPathBuilder {
             if (!ptsA || ptsA.length < 2)
                 continue
 
-            for (let j = i + 1; j < filteredCorridors.length; j++) {
-                const corB = filteredCorridors[j]
+            const endpointsA = [ptsA[0], ptsA[ptsA.length - 1]]
 
-                const sameStorey = corA.storey === corB.storey
-
-                const canConnect =
-                    corA.building_id === corB.building_id ||
-                    corA.is_outdoor ||
-                    corB.is_outdoor
-
-                if (!sameStorey || !canConnect)
-                    continue
-
-                const ptsB = this.corridorIdToPoints.get(corB.id)
-
-                if (!ptsB || ptsB.length < 2)
-                    continue
-
-
+            for (const idA of endpointsA) {
                 let closestDistSq = Infinity
                 let closestA = -1
                 let closestB = -1
+                const pA = this.astar.getPoint(idA)!
 
-                for (const idA of ptsA) {
-                    const pA = this.astar.getPoint(idA)!
+                for (let j = i + 1; j < filteredCorridors.length; j++) {
+                    if (j === i)
+                        continue
+
+                    const corB = filteredCorridors[j]
+
+                    const sameStorey = corA.storey === corB.storey
+
+                    const canConnect =
+                        corA.building_id === corB.building_id ||
+                        corA.is_outdoor ||
+                        corB.is_outdoor
+
+                    if (!sameStorey || !canConnect)
+                        continue
+
+                    const ptsB = this.corridorIdToPoints.get(corB.id)
+
+                    if (!ptsB || ptsB.length < 2)
+                        continue
 
                     for (const idB of ptsB) {
                         const pB = this.astar.getPoint(idB)!
@@ -162,9 +165,7 @@ export class GraphPathBuilder {
                 if (closestA > -1 && closestB > -1 && closestDistSq <= (corA.width + CORRIDOR_CONNECTION_THRESHOLD) * (corA.width + CORRIDOR_CONNECTION_THRESHOLD)) {
                     this.astar.connect(closestA, closestB)
                 }
-
             }
-
         }
     }
 
@@ -178,6 +179,7 @@ export class GraphPathBuilder {
 
             for (const cor of this.graph.corridors) {
                 if (cor.storey !== c.storey || cor.building_id !== c.building_id) continue
+                if (cor.is_outdoor) continue
                 const pts = this.corridorIdToPoints.get(cor.id)
 
                 if (!pts) continue
@@ -296,12 +298,14 @@ export class GraphPathBuilder {
         const endPoint = this.corridorEndPos(cor)
         const floorPos = floorPositionOf(this.graph, cor.building_id, cor.storey)
 
-        for (let i = 0; i <= 1; i += 1 / dist(endPoint, startPoint) * 10 / CORRIDOR_POINTS) {
+        for (let i = 0; i < 1; i += 1 / dist(endPoint, startPoint) * (10 / CORRIDOR_POINTS)) {
             const x = startPoint.x + (endPoint.x - startPoint.x) * i;
             const z = startPoint.z + (endPoint.z - startPoint.z) * i;
 
             out.push({ x, y: floorPos, z })
         }
+
+        out.push({ x: endPoint.x, y: floorPos, z: endPoint.z })
 
         return out
     }
