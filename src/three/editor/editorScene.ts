@@ -18,9 +18,10 @@ import { buildEditAnchor } from "./anchors"
 import { mergeEntity } from "./merge"
 import { buildPreviewNode } from "./previewNode"
 import type { EditKind, EditorAppearance, EditTarget } from "./types"
-import { buildLocationMarker, locationFloorY } from "../entities/locationMarker"
+import { buildLocationMarker } from "../entities/locationMarker"
 import { makeTranslatePad } from "../gizmo/handles/makeTranslatePad"
 import type { MyLocation } from "../../types/navigator/MyLocation"
+import { floorPositionOf } from "../entities/buildingHelpers"
 
 /** Owns the campus geometry for the editor. Geometry is built once per
  *  graph; appearance (filter/highlight/dim) is a cheap in-place pass; the
@@ -43,9 +44,9 @@ export type EditorSceneController = {
 /** An invisible anchor carrying a translate pad in the floor plane, used
  *  to drag the location marker exactly like a classroom. `userData.x/y`
  *  feed the translate drag; the emitted patch carries the new x/y. */
-function buildLocationAnchor(loc: MyLocation): THREE.Object3D {
+function buildLocationAnchor(graph: FullGraph, loc: MyLocation): THREE.Object3D {
     const anchor = new THREE.Group()
-    anchor.position.set(loc.x, locationFloorY(loc.storey), loc.y)
+    anchor.position.set(loc.x, floorPositionOf(graph, loc.buildingId, loc.storey), loc.y)
     anchor.userData = { x: loc.x, y: loc.y }
     const { pad, arrows } = makeTranslatePad({ kind: "translate" }, 2.5, 0.2)
     anchor.add(pad)
@@ -128,10 +129,10 @@ export function createEditorScene(scene: THREE.Scene): EditorSceneController {
     // the location or the root changes.
     const rebuildLocation = (): void => {
         clearLocation()
-        if (!root || !locationData) return
-        locationMarker = buildLocationMarker(locationData)
+        if (!root || !locationData || !graphRef) return
+        locationMarker = buildLocationMarker(graphRef, locationData)
         root.add(locationMarker)
-        locationAnchor = buildLocationAnchor(locationData)
+        locationAnchor = buildLocationAnchor(graphRef, locationData)
         root.add(locationAnchor)
     }
 

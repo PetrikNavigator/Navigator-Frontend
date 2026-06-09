@@ -5,6 +5,7 @@ export type MyLocation = {
     x: number
     y: number
     storey: number
+    buildingId: string
 }
 
 /** localStorage key the location is persisted under. */
@@ -17,8 +18,10 @@ export function loadMyLocation(): MyLocation | null {
     if (!raw) return null
     try {
         const parsed = JSON.parse(raw) as Partial<MyLocation>
-        if (typeof parsed?.x !== "number" || typeof parsed?.y !== "number") return null
-        return { x: parsed.x, y: parsed.y, storey: typeof parsed.storey === "number" ? parsed.storey : 0 }
+        if (typeof parsed?.x !== "number" || typeof parsed?.y !== "number" || typeof parsed?.storey !== "number" || !parsed.buildingId)
+            return null
+
+        return { x: parsed.x, y: parsed.y, storey: parsed.storey, buildingId: parsed.buildingId }
     } catch {
         return null
     }

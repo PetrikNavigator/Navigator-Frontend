@@ -4,46 +4,48 @@ import { useGraph } from "../contexts/other/GraphContext";
 import {
     loadMyLocation,
     saveMyLocation,
-    type MyLocation,
 } from "../types/navigator/MyLocation";
 import { getStoreyRange } from "../three/entities/buildingHelpers";
 
-const DEFAULT_LOCATION: MyLocation = { x: 0, y: 0, storey: 0 };
-
 export default function Settings() {
     const { graph, getFullGraph } = useGraph()
-    const [location, setLocation] = useState<MyLocation>(DEFAULT_LOCATION);
+    const [storey, setStorey] = useState(0)
+    const [buildingId, setBuildingId] = useState("")
+    const [xCoord, setXCoord] = useState(0)
+    const [yCoord, setYCoord] = useState(0)
 
     const [saved, setSaved] = useState(false);
 
     useEffect(() => {
         getFullGraph()
+
         const stored = loadMyLocation();
-        if (stored) setLocation(stored);
+        if (!stored)
+            return
+
+        setStorey(stored.storey)
+        setBuildingId(stored.buildingId)
+        setXCoord(stored.x)
+        setYCoord(stored.y)
     }, []);
 
-    const storeyRange = useMemo(
-        () => (graph ? getStoreyRange(graph) : { min: 0, max: 0 }),
-        [graph],
+    const storeyRange = useMemo(() =>
+        (graph ? getStoreyRange(graph) : { min: 0, max: 0 }),
+        [graph]
     );
 
-    const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
-
-    const setStorey = (storey: number) =>
-        setLocation((prev) => ({
-            ...prev,
-            storey: clamp(Math.round(storey), storeyRange.min, storeyRange.max),
-        }));
-
     const saveLocation = () => {
-        saveMyLocation(location);
+        saveMyLocation({ x: xCoord, y: yCoord, storey, buildingId });
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
     };
 
     const clearLocation = () => {
         saveMyLocation(null);
-        setLocation(DEFAULT_LOCATION);
+        setStorey(0)
+        setBuildingId("")
+        setXCoord(0)
+        setYCoord(0)
     };
 
     return (
@@ -51,23 +53,14 @@ export default function Settings() {
             <div className="xl:flex xl:space-x-6">
                 <div>
                     <h1 className="card-title text-2xl">Beállítások</h1>
-                    <p className="text-sm opacity-70 mt-1 max-w-xs">
-                        Húzd a piros jelölőt a 3D nézetben a saját pozíciód
-                        beállításához, vagy add meg a koordinátákat kézzel.
-                    </p>
 
                     <fieldset className="fieldset">
                         <legend className="label">X</legend>
                         <input
                             type="number"
                             className="input input-bordered"
-                            value={location.x}
-                            onChange={(e) =>
-                                setLocation((prev) => ({
-                                    ...prev,
-                                    x: Number(e.target.value),
-                                }))
-                            }
+                            value={xCoord}
+                            onChange={(e) => setXCoord(Number(e.target.value))}
                         />
                     </fieldset>
 
@@ -76,13 +69,8 @@ export default function Settings() {
                         <input
                             type="number"
                             className="input input-bordered"
-                            value={location.y}
-                            onChange={(e) =>
-                                setLocation((prev) => ({
-                                    ...prev,
-                                    y: Number(e.target.value),
-                                }))
-                            }
+                            value={yCoord}
+                            onChange={(e) => setYCoord(Number(e.target.value))}
                         />
                     </fieldset>
 
@@ -95,9 +83,25 @@ export default function Settings() {
                             className="input input-bordered"
                             min={storeyRange.min}
                             max={storeyRange.max}
-                            value={location.storey}
+                            value={storey}
                             onChange={(e) => setStorey(Number(e.target.value))}
                         />
+                    </fieldset>
+
+                    <fieldset className="fieldset">
+                        <legend className="label">Épület</legend>
+                        <select
+                            className="select select-bordered"
+                            value={buildingId}
+                            onChange={(e) => setBuildingId(e.target.value)}
+                        >
+                            <option value="" disabled>Válassz</option>
+                            {graph?.buildings.map((b) => (
+                                <option key={b.id} value={b.id}>
+                                    {b.name}
+                                </option>
+                            ))}
+                        </select>
                     </fieldset>
 
                     <div className="mt-6 flex gap-2">
@@ -122,14 +126,15 @@ export default function Settings() {
                         initialDistance={120}
                         showAxes
                         graph={graph}
-                        myLocation={location}
-                        onTransform={(patch) =>
-                            setLocation((prev) => ({
-                                ...prev,
-                                ...(patch.x !== undefined ? { x: Math.round(patch.x) } : {}),
-                                ...(patch.y !== undefined ? { y: Math.round(patch.y) } : {}),
-                            }))
-                        }
+                        myLocation={{ x: xCoord, y: yCoord, storey, buildingId }}
+                        onTransform={(patch) => {
+                            setXCoord(
+                                (Math.round((patch.x ?? 0) * 10) / 10)
+                            )
+                            setYCoord(
+                                (Math.round((patch.y ?? 0) * 10) / 10)
+                            )
+                        }}
                     />
                 </div>
             </div>

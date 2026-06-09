@@ -2,6 +2,8 @@ import * as THREE from "three"
 import type { MyLocation } from "../../types/navigator/MyLocation"
 import { FLOOR_HEIGHT } from "../../types/three/material-types"
 import { FLOOR_GAP } from "../scene/storeyResolver"
+import { floorPositionOf } from "./buildingHelpers"
+import type { FullGraph } from "../../types/FullGraph"
 
 const MARKER_COLOR = 0xff2a2a
 
@@ -10,12 +12,6 @@ const MARKER_COLOR = 0xff2a2a
  *  but with FLOOR_GAP this is a close global approximation for placing a
  *  location marker that isn't tied to a single building. */
 export const STOREY_SPACING = FLOOR_HEIGHT + FLOOR_GAP
-
-/** Approximate world-space Y of a storey's floor for the standalone
- *  location marker (which has no owning building). */
-export function locationFloorY(storey: number): number {
-    return storey * STOREY_SPACING
-}
 
 /** A camera-facing text label drawn on a canvas sprite. Own texture +
  *  material so the kiosk/editor deep-dispose can free it. */
@@ -65,9 +61,9 @@ function makeLabelSprite(text: string): THREE.Sprite {
  *  (same frame entity nodes live in), so it inherits the centering offset
  *  when added under `root`. Not pickable and not tagged for the appearance
  *  layer — it stays red and visible regardless of selection/isolation. */
-export function buildLocationMarker(loc: MyLocation, label = "Itt vagy"): THREE.Group {
+export function buildLocationMarker(graph: FullGraph, loc: MyLocation, label = "Itt vagy"): THREE.Group {
     const group = new THREE.Group()
-    const floorY = locationFloorY(loc.storey)
+    const floorY = floorPositionOf(graph, loc.buildingId, loc.storey)
 
     const mat = new THREE.MeshBasicMaterial({ color: MARKER_COLOR })
 

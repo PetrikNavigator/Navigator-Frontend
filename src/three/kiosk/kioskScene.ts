@@ -56,8 +56,8 @@ export function createKioskScene(scene: THREE.Scene): KioskSceneController {
             disposeDeep(markerGroup)
             markerGroup = null
         }
-        if (root && markerData) {
-            markerGroup = buildLocationMarker(markerData)
+        if (root && markerData && graphRef) {
+            markerGroup = buildLocationMarker(graphRef, markerData)
             root.add(markerGroup)
         }
     }
