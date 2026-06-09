@@ -18,6 +18,9 @@ import { buildEditAnchor } from "./anchors"
 import { mergeEntity } from "./merge"
 import { buildPreviewNode } from "./previewNode"
 import type { EditKind, EditorAppearance, EditTarget } from "./types"
+import { buildLocationMarker, locationFloorY } from "../entities/locationMarker"
+import { makeTranslatePad } from "../gizmo/handles/makeTranslatePad"
+import type { MyLocation } from "../../types/navigator/MyLocation"
 
 /** Owns the campus geometry for the editor. Geometry is built once per
  *  graph; appearance (filter/highlight/dim) is a cheap in-place pass; the
@@ -28,9 +31,26 @@ export type EditorSceneController = {
     applyAppearance: (app: EditorAppearance) => void
     /** Show/clear the gizmo + live preview for one entity. */
     setEdit: (target: EditTarget | null) => void
+    /** Show/clear the draggable "my location" marker. When set (and no
+     *  entity is being edited) the marker's translate handle becomes the
+     *  active gizmo target. */
+    setMyLocation: (loc: MyLocation | null) => void
     /** The current gizmo anchor (handle-bearing Object3D), or null. */
     getGizmoTarget: () => THREE.Object3D | null
     dispose: () => void
+}
+
+/** An invisible anchor carrying a translate pad in the floor plane, used
+ *  to drag the location marker exactly like a classroom. `userData.x/y`
+ *  feed the translate drag; the emitted patch carries the new x/y. */
+function buildLocationAnchor(loc: MyLocation): THREE.Object3D {
+    const anchor = new THREE.Group()
+    anchor.position.set(loc.x, locationFloorY(loc.storey), loc.y)
+    anchor.userData = { x: loc.x, y: loc.y }
+    const { pad, arrows } = makeTranslatePad({ kind: "translate" }, 2.5, 0.2)
+    anchor.add(pad)
+    anchor.add(arrows)
+    return anchor
 }
 
 function attachHandles(anchor: THREE.Object3D, kind: EditKind): void {
@@ -56,6 +76,11 @@ export function createEditorScene(scene: THREE.Scene): EditorSceneController {
     let hiddenOriginal: KioskNode | null = null
     // Building moves are previewed by translating its existing nodes.
     let buildingShift: { dx: number; dz: number; moved: KioskNode[] } | null = null
+
+    // "My location" marker state (decoupled from entity editing).
+    let locationData: MyLocation | null = null
+    let locationMarker: THREE.Object3D | null = null
+    let locationAnchor: THREE.Object3D | null = null
 
     const keyOf = (kind: string, id: string): string => `${kind}:${id}`
 
@@ -84,8 +109,35 @@ export function createEditorScene(scene: THREE.Scene): EditorSceneController {
         }
     }
 
+    const clearLocation = (): void => {
+        if (locationMarker) {
+            locationMarker.parent?.remove(locationMarker)
+            disposeDeep(locationMarker)
+            locationMarker = null
+        }
+        if (locationAnchor) {
+            disposeHandleMaterials(locationAnchor)
+            locationAnchor.parent?.remove(locationAnchor)
+            disposeDeep(locationAnchor)
+            locationAnchor = null
+        }
+    }
+
+    // The marker + its drag anchor are children of `root` so they inherit
+    // the campus centering offset, like the entity nodes. Rebuilt whenever
+    // the location or the root changes.
+    const rebuildLocation = (): void => {
+        clearLocation()
+        if (!root || !locationData) return
+        locationMarker = buildLocationMarker(locationData)
+        root.add(locationMarker)
+        locationAnchor = buildLocationAnchor(locationData)
+        root.add(locationAnchor)
+    }
+
     const clearGraph = (): void => {
         clearEdit()
+        clearLocation()
         if (root) {
             scene.remove(root)
             disposeDeep(root)
@@ -107,6 +159,12 @@ export function createEditorScene(scene: THREE.Scene): EditorSceneController {
         nodesByKey = new Map(nodes.map((n) => [keyOf(n.kind, n.id), n]))
         storeys = buildStoreyResolver(graph.classrooms)
         scene.add(root)
+        rebuildLocation() // re-attach any existing marker to the fresh root
+    }
+
+    const setMyLocation = (loc: MyLocation | null): void => {
+        locationData = loc
+        rebuildLocation()
     }
 
     const applyAppearance = (app: EditorAppearance): void => {
@@ -167,7 +225,10 @@ export function createEditorScene(scene: THREE.Scene): EditorSceneController {
         setGraph,
         applyAppearance,
         setEdit,
-        getGizmoTarget: () => anchor,
+        setMyLocation,
+        // Entity editing takes precedence; otherwise the location marker is
+        // the draggable target.
+        getGizmoTarget: () => anchor ?? locationAnchor,
         dispose: clearGraph,
     }
 }

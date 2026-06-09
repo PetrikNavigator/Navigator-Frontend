@@ -6,6 +6,7 @@ import type { IsolatedFloor, KioskSelection } from "../three/kiosk/types"
 import { useSearchParams } from "react-router"
 import type { Vec3 } from "../types/three/vector"
 import { GraphPathBuilder } from "../three/path/pathbuilder"
+import { loadMyLocation, type MyLocation } from "../types/navigator/MyLocation"
 
 /**
  * Demo host for the kiosk 3D view. Owns all interaction state:
@@ -25,9 +26,14 @@ export default function Kiosk() {
     const [dimOthers, setDimOthers] = useState(false)
     const [barrierFree, setBarrierFree] = useState(false)
     const [hoveredId, setHoveredId] = useState<string | null>(null)
+    // The user's saved "you are here" position (Settings page). When set,
+    // it replaces the start classroom: the route starts here and the user
+    // only picks a target.
+    const [myLocation, setMyLocation] = useState<MyLocation | null>(null)
 
     useEffect(() => {
         getFullGraph()
+        setMyLocation(loadMyLocation())
     }, [])
 
     useEffect(() => {
@@ -41,10 +47,21 @@ export default function Kiosk() {
         setSelection({ start, end })
     }, [searchParams])
 
-    // The selection cycle lives here, not in the 3D component: 1st tap =
-    // start, 2nd = end, 3rd = start again. Tapping the current start again
-    // clears it.
+    // The selection cycle lives here, not in the 3D component. With a saved
+    // location the start is fixed to it, so a tap only picks the target
+    // (tapping the current target again clears it). Otherwise it's the
+    // classic cycle: 1st tap = start, 2nd = end, 3rd = start again.
     const handleClassroomClick = (id: string): void => {
+        if (myLocation) {
+            setSearchParams((prev) => {
+                prev.delete("start");
+                if (prev.get("end") === id) prev.delete("end");
+                else prev.set("end", id);
+                return prev;
+            });
+            return;
+        }
+
         let newStart: string | null = null;
         let newEnd: string | null = null;
 
@@ -111,18 +128,27 @@ export default function Kiosk() {
         if (!graph)
             return
 
-        return new GraphPathBuilder(graph, barrierFree)
-    }, [graph])
+        return new GraphPathBuilder(graph, barrierFree, myLocation)
+    }, [graph, myLocation])
 
     const path = useMemo<Vec3[]>(() => {
-        if (!pathBuilder || !selection?.start || !selection?.end) return []
+        if (!pathBuilder) return []
 
+        // Location mode: route from the saved position to the chosen target.
+        if (myLocation) {
+            if (!selection?.end) return []
+            const res = pathBuilder.getPathFromLocation(selection.end, barrierFree)
+            return res.length >= 2 ? res : []
+        }
+
+        if (!selection?.start || !selection?.end) return []
         const res = pathBuilder.getPath(selection.start, selection.end, barrierFree)
-
         return res.length >= 2 ? res : []
-    }, [pathBuilder, selection, barrierFree])
+    }, [pathBuilder, selection, barrierFree, myLocation])
 
-    const noRoute = !!selection?.start && !!selection?.end && path.length < 2
+    const noRoute = myLocation
+        ? !!selection?.end && path.length < 2
+        : !!selection?.start && !!selection?.end && path.length < 2
 
     const nameOf = (id?: string | null): string =>
         id ? classroomById.get(id)?.name ?? id : "—"
@@ -177,8 +203,14 @@ export default function Kiosk() {
                     <h2 className="font-semibold mb-2">Kiválasztás</h2>
                     <div className="flex flex-col gap-1 text-sm">
                         <div className="flex items-center gap-2">
-                            <span className="h-3 w-3 rounded-full" style={{ background: "#55ddff" }} />
-                            <span>Kiindulás: <b>{nameOf(selection?.start)}</b></span>
+                            <span
+                                className="h-3 w-3 rounded-full"
+                                style={{ background: myLocation ? "#ff2a2a" : "#55ddff" }}
+                            />
+                            <span>
+                                Kiindulás:{" "}
+                                <b>{myLocation ? "Saját pozíció" : nameOf(selection?.start)}</b>
+                            </span>
                         </div>
                         <div className="flex items-center gap-2">
                             <span className="h-3 w-3 rounded-full" style={{ background: "#ff5577" }} />
@@ -212,7 +244,9 @@ export default function Kiosk() {
                         </div>
                     )}
                     <p className="text-xs opacity-60 mt-2">
-                        Kattints a termekre: 1. = kiindulás, 2. = cél, 3. = új kiindulás.
+                        {myLocation
+                            ? "A kiindulás a saját pozíciód. Kattints egy teremre a cél kiválasztásához."
+                            : "Kattints a termekre: 1. = kiindulás, 2. = cél, 3. = új kiindulás."}
                     </p>
                 </div>
 
@@ -268,6 +302,7 @@ export default function Kiosk() {
                     selection={selection ?? undefined}
                     highlight={highlight}
                     path={path}
+                    myLocation={myLocation}
                     onFloorClick={handleFloorClick}
                     onClassroomClick={handleClassroomClick}
                     onClassroomHover={setHoveredId}

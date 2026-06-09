@@ -6,6 +6,7 @@ import { dist, type Vec3 } from "../../types/three/vector"
 import { floorPositionOf } from "../entities/buildingHelpers"
 import type { Lift } from "../../types/navigator/Lift"
 import type { Stair } from "../../types/navigator/Stair"
+import type { MyLocation } from "../../types/navigator/MyLocation"
 import { Astar } from "./astar"
 import { corridorsIntersect } from "../entities/corridorHelper"
 
@@ -17,6 +18,7 @@ const CORRIDOR_POINTS = 2
 export class GraphPathBuilder {
     private graph: FullGraph
     private barrierFree: boolean
+    private myLocation: MyLocation | null
 
     private pointIdToClassroom = new Map<number, Classroom>()
     private pointIdToCorridor = new Map<number, Corridor>()
@@ -27,12 +29,15 @@ export class GraphPathBuilder {
 
     private corridorIdToPoints = new Map<string, number[]>()
     private classroomIdToPoint = new Map<string, number>()
+    /** A* point id of the user's saved location, or -1 if none / unreachable. */
+    private myLocationPointId = -1
 
     private astar = new Astar()
 
-    constructor(graph: FullGraph, barrierFree: boolean) {
+    constructor(graph: FullGraph, barrierFree: boolean, myLocation: MyLocation | null = null) {
         this.graph = graph
         this.barrierFree = barrierFree
+        this.myLocation = myLocation
         this.build()
     }
 
@@ -54,6 +59,23 @@ export class GraphPathBuilder {
         return this.astar.findPath(start, end)
     }
 
+    /** Path from the user's saved location to a classroom. Empty if no
+     *  location is set, the location couldn't be attached to any corridor,
+     *  or the target is unknown. */
+    getPathFromLocation(toClassroomId: string, isBarrierFree: boolean): Vec3[] {
+        if (this.barrierFree !== isBarrierFree) {
+            this.barrierFree = isBarrierFree
+            this.build()
+        }
+
+        if (this.myLocationPointId < 0) return []
+
+        const end = this.classroomIdToPoint.get(toClassroomId)
+        if (end === undefined) return []
+
+        return this.astar.findPath(this.myLocationPointId, end)
+    }
+
     private build(): void {
         this.pointIdToClassroom = new Map<number, Classroom>()
         this.pointIdToCorridor = new Map<number, Corridor>()
@@ -64,6 +86,7 @@ export class GraphPathBuilder {
 
         this.corridorIdToPoints = new Map<string, number[]>()
         this.classroomIdToPoint = new Map<string, number>()
+        this.myLocationPointId = -1
 
         this.astar = new Astar()
 
@@ -72,6 +95,48 @@ export class GraphPathBuilder {
         this.connectCorridors()
         this.connectClassroomsToCorridors()
         this.buildStoreyConnectorPoints()
+        this.connectMyLocation()
+    }
+
+    /** Attach the user's saved location to the nearest corridor point on
+     *  its storey (horizontal distance). Mirrors how classrooms hook into
+     *  corridors, but the location isn't tied to a building, so any
+     *  corridor on the matching storey is a candidate. */
+    private connectMyLocation(): void {
+        if (!this.myLocation) return
+        const loc = this.myLocation
+
+        let closestId = -1
+        let closestDistSq = Infinity
+
+        for (const cor of this.graph.corridors) {
+            if (cor.storey !== loc.storey) continue
+            if (this.barrierFree && !cor.barrier_free) continue
+
+            const pts = this.corridorIdToPoints.get(cor.id)
+            if (!pts) continue
+
+            for (const pid of pts) {
+                const p = this.astar.getPoint(pid)!
+                const dx = p.x - loc.x
+                const dz = p.z - loc.y
+                const distSq = dx * dx + dz * dz
+
+                if (distSq < closestDistSq) {
+                    closestDistSq = distSq
+                    closestId = pid
+                }
+            }
+        }
+
+        if (closestId === -1) return
+
+        // Sit the location point at the matched corridor's floor Y so the
+        // connection is purely horizontal and the A* distance is sane.
+        const corPos = this.astar.getPoint(closestId)!
+        const locId = this.astar.addPoint({ x: loc.x, y: corPos.y, z: loc.y })
+        this.astar.connect(locId, closestId)
+        this.myLocationPointId = locId
     }
 
     private buildClassroomPoints() {

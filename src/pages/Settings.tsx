@@ -1,39 +1,49 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import EditorView3D from "../three/EditorView3D";
 import { useGraph } from "../contexts/other/GraphContext";
+import {
+    loadMyLocation,
+    saveMyLocation,
+    type MyLocation,
+} from "../types/navigator/MyLocation";
+import { getStoreyRange } from "../three/entities/buildingHelpers";
 
-type Coordinates = {
-    x: number;
-    y: number;
-};
+const DEFAULT_LOCATION: MyLocation = { x: 0, y: 0, storey: 0 };
 
 export default function Settings() {
-    const {graph, getFullGraph} = useGraph()
-    const [coordinates, setCoordinates] = useState<Coordinates>({ x: 0, y: 0 });
+    const { graph, getFullGraph } = useGraph()
+    const [location, setLocation] = useState<MyLocation>(DEFAULT_LOCATION);
 
     const [saved, setSaved] = useState(false);
 
     useEffect(() => {
         getFullGraph()
-        const stored = localStorage.getItem("coordinates");
-
-        if (stored) {
-            try {
-                setCoordinates(JSON.parse(stored));
-            } catch (err) {
-                console.error("Failed to parse coordinates", err);
-            }
-        }
+        const stored = loadMyLocation();
+        if (stored) setLocation(stored);
     }, []);
 
-    const saveCoordinates = () => {
-        localStorage.setItem("coordinates", JSON.stringify(coordinates));
+    const storeyRange = useMemo(
+        () => (graph ? getStoreyRange(graph) : { min: 0, max: 0 }),
+        [graph],
+    );
 
+    const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+
+    const setStorey = (storey: number) =>
+        setLocation((prev) => ({
+            ...prev,
+            storey: clamp(Math.round(storey), storeyRange.min, storeyRange.max),
+        }));
+
+    const saveLocation = () => {
+        saveMyLocation(location);
         setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+    };
 
-        setTimeout(() => {
-            setSaved(false);
-        }, 2000);
+    const clearLocation = () => {
+        saveMyLocation(null);
+        setLocation(DEFAULT_LOCATION);
     };
 
     return (
@@ -41,15 +51,19 @@ export default function Settings() {
             <div className="xl:flex xl:space-x-6">
                 <div>
                     <h1 className="card-title text-2xl">Beállítások</h1>
+                    <p className="text-sm opacity-70 mt-1 max-w-xs">
+                        Húzd a piros jelölőt a 3D nézetben a saját pozíciód
+                        beállításához, vagy add meg a koordinátákat kézzel.
+                    </p>
 
                     <fieldset className="fieldset">
                         <legend className="label">X</legend>
                         <input
                             type="number"
                             className="input input-bordered"
-                            value={coordinates.x}
+                            value={location.x}
                             onChange={(e) =>
-                                setCoordinates((prev) => ({
+                                setLocation((prev) => ({
                                     ...prev,
                                     x: Number(e.target.value),
                                 }))
@@ -62,9 +76,9 @@ export default function Settings() {
                         <input
                             type="number"
                             className="input input-bordered"
-                            value={coordinates.y}
+                            value={location.y}
                             onChange={(e) =>
-                                setCoordinates((prev) => ({
+                                setLocation((prev) => ({
                                     ...prev,
                                     y: Number(e.target.value),
                                 }))
@@ -72,12 +86,26 @@ export default function Settings() {
                         />
                     </fieldset>
 
-                    <div className="mt-6">
-                        <button
-                            className="btn btn-primary"
-                            onClick={saveCoordinates}
-                        >
+                    <fieldset className="fieldset">
+                        <legend className="label">
+                            Emelet ({storeyRange.min}–{storeyRange.max})
+                        </legend>
+                        <input
+                            type="number"
+                            className="input input-bordered"
+                            min={storeyRange.min}
+                            max={storeyRange.max}
+                            value={location.storey}
+                            onChange={(e) => setStorey(Number(e.target.value))}
+                        />
+                    </fieldset>
+
+                    <div className="mt-6 flex gap-2">
+                        <button className="btn btn-primary" onClick={saveLocation}>
                             Mentés
+                        </button>
+                        <button className="btn btn-outline" onClick={clearLocation}>
+                            Törlés
                         </button>
                     </div>
 
@@ -94,57 +122,17 @@ export default function Settings() {
                         initialDistance={120}
                         showAxes
                         graph={graph}
-                        // edit={edit}
-                        // appearance={appearance}
-                        // onTransform={(patch) =>
-                        //     setForm((f) => ({
-                        //         ...f,
-                        //         ...(patch.size_x !== undefined
-                        //             ? {
-                        //                 size_x: Math.round(
-                        //                     patch.size_x
-                        //                 ),
-                        //             }
-                        //             : {}),
-                        //         ...(patch.size_y !== undefined
-                        //             ? {
-                        //                 size_y: Math.round(
-                        //                     patch.size_y
-                        //                 ),
-                        //             }
-                        //             : {}),
-                        //         ...(patch.size_z !== undefined
-                        //             ? {
-                        //                 size_z: Math.round(
-                        //                     patch.size_z
-                        //                 ),
-                        //             }
-                        //             : {}),
-                        //         ...(patch.x !== undefined
-                        //             ? {
-                        //                 x: Math.round(patch.x),
-                        //             }
-                        //             : {}),
-                        //         ...(patch.y !== undefined
-                        //             ? {
-                        //                 y: Math.round(patch.y),
-                        //             }
-                        //             : {}),
-                        //         ...(patch.rotation !== undefined
-                        //             ? {
-                        //                 rotation:
-                        //                     normalizeDoorRotation(
-                        //                         patch.rotation
-                        //                     ),
-                        //             }
-                        //             : {}),
-                        //     }))
-                        // }
+                        myLocation={location}
+                        onTransform={(patch) =>
+                            setLocation((prev) => ({
+                                ...prev,
+                                ...(patch.x !== undefined ? { x: Math.round(patch.x) } : {}),
+                                ...(patch.y !== undefined ? { y: Math.round(patch.y) } : {}),
+                            }))
+                        }
                     />
                 </div>
             </div>
-
-
         </div>
     );
 }

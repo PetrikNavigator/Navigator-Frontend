@@ -14,6 +14,7 @@ import type {
     KioskSelection,
 } from "./kiosk/types"
 import type { Vec3 } from "../types/three/vector"
+import type { MyLocation } from "../types/navigator/MyLocation"
 
 type Props = {
     graph: FullGraph | null
@@ -25,6 +26,8 @@ type Props = {
     highlight?: KioskHighlight
     /** A* route waypoints to draw as an overlay. Empty/undefined clears it. */
     path?: Vec3[]
+    /** Optional "you are here" marker (red arrow + label). Undefined hides it. */
+    myLocation?: MyLocation | null
     /** Tap on a floor plate. */
     onFloorClick?: (buildingId: string, storey: number) => void
     /** Tap on a classroom. */
@@ -52,6 +55,7 @@ export default function KioskView3D({
     selection,
     highlight,
     path,
+    myLocation,
     onFloorClick,
     onClassroomClick,
     onClassroomHover,
@@ -162,6 +166,7 @@ export default function KioskView3D({
             highlight,
         })
         controller.setPath(path)
+        controller.setMyLocation(myLocation)
 
         const floorKey = floorKeyOf(isolatedFloor ?? null)
         const floorChanged = floorKeyRef.current !== floorKey
@@ -171,7 +176,7 @@ export default function KioskView3D({
         if (graphChanged || floorChanged) rig?.frameFloor(isolatedFloor ?? null)
 
         requestRenderRef.current?.()
-    }, [graph, isolatedFloor, selection, highlight, path])
+    }, [graph, isolatedFloor, selection, highlight, path, myLocation])
 
     return (
         <div

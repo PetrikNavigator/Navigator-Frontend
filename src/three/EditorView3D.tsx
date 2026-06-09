@@ -12,6 +12,7 @@ import { observeContainerResize } from "./runtime/resizeObserver"
 import { attachGizmoInteraction } from "./gizmo/attachGizmoInteraction"
 import { createEditorScene, type EditorSceneController } from "./editor/editorScene"
 import type { EditorAppearance, EditTarget } from "./editor/types"
+import type { MyLocation } from "../types/navigator/MyLocation"
 
 type Props = {
     graph: FullGraph | null
@@ -19,6 +20,9 @@ type Props = {
     appearance?: EditorAppearance
     /** Entity being edited (shows gizmo + live preview). `null` = none. */
     edit?: EditTarget | null
+    /** Optional draggable "my location" marker. When set (and no entity is
+     *  being edited) its translate handle drives `onTransform` with x/y. */
+    myLocation?: MyLocation | null
     /** Gizmo drag patch — fold into the form, same shape as the old onResize. */
     onTransform?: (patch: ResizePatch) => void
     showAxes?: boolean
@@ -38,6 +42,7 @@ export default function EditorView3D({
     graph,
     appearance,
     edit,
+    myLocation,
     onTransform,
     showAxes,
     className = "w-full h-full",
@@ -127,9 +132,10 @@ export default function EditorView3D({
         graphRef.current = graph
         controller.applyAppearance(appearance ?? {})
         controller.setEdit(edit ?? null)
+        controller.setMyLocation(myLocation ?? null)
 
         requestRenderRef.current?.()
-    }, [graph, appearance, edit])
+    }, [graph, appearance, edit, myLocation])
 
     return (
         <div className={className} style={{ position: "relative", overflow: "hidden", minHeight: 0, minWidth: 0 }}>
