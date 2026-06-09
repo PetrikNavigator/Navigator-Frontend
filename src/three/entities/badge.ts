@@ -4,7 +4,7 @@ import * as THREE from "three"
  *  kiosk's deep-dispose can free it without touching the editor's cached
  *  badges in blueprint/storeyBadge.ts. */
 export function makeKioskBadge(storey: number, color: number): THREE.Sprite {
-    const size = 128
+    const size = 64
     const cv = document.createElement("canvas")
     cv.width = size
     cv.height = size

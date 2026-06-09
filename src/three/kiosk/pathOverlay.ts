@@ -2,7 +2,7 @@ import * as THREE from "three"
 import type { Vec3 } from "../../types/three/vector"
 import type { Astar } from "../path/astar"
 
-const PATH_COLOR = 0x00ff88
+const PATH_COLOR = 0xf6ff00
 const START_COLOR = 0x55ddff
 const END_COLOR = 0xff5577
 

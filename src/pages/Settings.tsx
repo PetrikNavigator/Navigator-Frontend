@@ -35,6 +35,11 @@ export default function Settings() {
     );
 
     const saveLocation = () => {
+        if(buildingId === "") {
+            alert("Nincs épület kiválasztva!")
+            return
+        }
+
         saveMyLocation({ x: xCoord, y: yCoord, storey, buildingId });
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);

@@ -23,7 +23,6 @@ export default function Kiosk() {
     const [isolatedFloor, setIsolatedFloor] = useState<IsolatedFloor>(null)
     const [selection, setSelection] = useState<KioskSelection | null>(null)
     const [highlightTypeIds, setHighlightTypeIds] = useState<string[]>([])
-    const [dimOthers, setDimOthers] = useState(false)
     const [barrierFree, setBarrierFree] = useState(false)
     const [hoveredId, setHoveredId] = useState<string | null>(null)
     // The user's saved "you are here" position (Settings page). When set,
@@ -119,8 +118,8 @@ export default function Kiosk() {
     }, [graph])
 
     const highlight = useMemo(
-        () => ({ typeIds: highlightTypeIds, dimOthers }),
-        [highlightTypeIds, dimOthers],
+        () => ({ typeIds: highlightTypeIds, dimOthers: true }),
+        [highlightTypeIds],
     )
 
 
@@ -271,15 +270,6 @@ export default function Kiosk() {
                             )
                         })}
                     </div>
-                    <label className="label cursor-pointer justify-start gap-2 mt-2">
-                        <input
-                            type="checkbox"
-                            className="checkbox checkbox-sm checkbox-primary"
-                            checked={dimOthers}
-                            onChange={(e) => setDimOthers(e.target.checked)}
-                        />
-                        <span className="text-sm">Többi elhalványítása</span>
-                    </label>
                     {highlightTypeIds.length > 0 && (
                         <button
                             className="btn btn-xs btn-outline mt-2 w-fit"
