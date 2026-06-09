@@ -1,12 +1,12 @@
 import * as THREE from "three"
-import type { Building } from "../../../types/navigator/Building"
-import type { FullGraph } from "../../../types/FullGraph"
-import type { StoreyResolver } from "../../../types/three/storey-types"
-import { GetBuildingBounds } from "../../scene/bounds"
-import { ownFillMat, tagApp } from "../materials"
-import { KIOSK_OPACITY, kioskStoreyColor } from "../palette"
+import type { Building } from "../../types/navigator/Building"
+import type { FullGraph } from "../../types/FullGraph"
+import type { StoreyResolver } from "../../types/three/storey-types"
+import { GetBuildingBounds } from "../scene/bounds"
+import { ownFillMat, tagApp } from "../kiosk/materials"
+import { KIOSK_OPACITY, kioskStoreyColor } from "../kiosk/palette"
 import { makeKioskBadge } from "./badge"
-import type { KioskNode } from "../types"
+import type { KioskNode } from "../kiosk/types"
 
 const FLOOR_MARGIN = 2
 

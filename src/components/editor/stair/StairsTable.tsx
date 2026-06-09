@@ -25,25 +25,21 @@ export default function StairsTable({ stairs, buildings, onRemove, onEdit, onHov
 
     return (
         <div className="space-y-4">
-            <div>
-                <label className="form-control w-full max-w-xs">
-                    <div className="label">
-                        <span className="label-text">Szűrés épület szerint</span>
-                    </div>
-                    <select
-                        className="select select-bordered"
-                        value={selectedBuildingId || ""}
-                        onChange={(e) => setSelectedBuildingId(e.target.value || null)}
-                    >
-                        <option value="">Összes épület</option>
-                        {buildings.map((b) => (
-                            <option key={b.id} value={b.id}>
-                                {b.name}
-                            </option>
-                        ))}
-                    </select>
-                </label>
-            </div>
+            <fieldset className="fieldset">
+                <legend className="label">Épület</legend>
+                <select
+                    className="select select-bordered"
+                    value={selectedBuildingId || ""}
+                    onChange={(e) => setSelectedBuildingId(e.target.value || null)}
+                >
+                    <option value="">Összes</option>
+                    {buildings.map((b) => (
+                        <option key={b.id} value={b.id}>
+                            {b.name}
+                        </option>
+                    ))}
+                </select>
+            </fieldset>
             <table className="table table-pin-rows">
                 <thead>
                     <tr>

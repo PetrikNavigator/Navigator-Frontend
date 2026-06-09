@@ -3,6 +3,7 @@ import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import { useAuth } from "./contexts/other/AuthContext";
 import { useLayoutEffect, useState } from "react";
+import Settings from "./pages/Settings";
 
 export default function App() {
   const { getMe } = useAuth()
@@ -25,7 +26,7 @@ export default function App() {
 
       <Route path="/*" element={<Dashboard />} />
       <Route path="/bejelentkezes" element={<Login />} />
-      <Route path="/beallitasok" element={<p>Beállítások</p>} />
+      <Route path="/beallitasok" element={<Settings />} />
 
     </Routes>
   )

@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
 import { useClassroom } from "../../../contexts/navigator/ClassroomContext"
 import type { AddClassroom, Classroom } from "../../../types/navigator/Classroom"
 import ClassroomsTable from "./ClassroomsTable"
-import SchoolPreview3D from "../../../three/SchoolPreview3D"
-import type { Highlight } from "../../../types/three/build-scene-types"
+import EditorView3D from "../../../three/EditorView3D"
+import type { EditorAppearance, EditorFilter, EditTarget } from "../../../three/editor/types"
 import { useGraph } from "../../../contexts/other/GraphContext"
 import useUpdateEffect from "../../../useUpdateEffect"
 import ClassroomForm from "./ClassroomForm"
@@ -41,6 +41,9 @@ export default function ClassroomsTab() {
     const [form, setForm] = useState(emptyForm)
     const [buildingId, setBuildingId] = useState("")
     const [typeId, setTypeId] = useState("")
+
+    const [selectedBuildingId, setSelectedBuildingId] = useState<string | null>(null)
+    const [selectedFloor, setSelectedFloor] = useState<number>(-1)
 
     const onClose = () => {
         setEditorOpen(false)
@@ -144,11 +147,9 @@ export default function ClassroomsTab() {
         }
     }, [editorOpen])
 
-    const highlight: Highlight | undefined = editorOpen ?
-        {
+    const edit: EditTarget | null = editorOpen
+        ? {
             kind: "classroom",
-            dimOthers: true,
-            isEditing: true,
             id: editing?.id,
             preview: {
                 name: form.name || "új terem",
@@ -162,15 +163,32 @@ export default function ClassroomsTab() {
                 size_z: form.size_z,
                 description: form.description,
                 building_id: buildingId,
-                type_id: typeId
+                type_id: typeId,
             },
-        } : highlightedClassroomId ?
-            {
-                id: highlightedClassroomId,
-                dimOthers: true,
-                isEditing: false,
-                kind: "classroom"
-            } : undefined
+        }
+        : null
+
+    const highlightId = editorOpen ? editing?.id : highlightedClassroomId
+
+    const filter = {
+        buildingIds: (selectedBuildingId ? [selectedBuildingId] : undefined),
+        storeys: (selectedFloor >= 0 ? [selectedFloor] : undefined)
+    } as EditorFilter
+
+    const appearance: EditorAppearance = {
+        filter,
+        emphasis: {
+            highlightIds: highlightId ? [highlightId] : [],
+            kind: "classroom",
+            dimOthers: false || editorOpen || !!highlightedClassroomId,
+        },
+    }
+
+    const availableFloors = [...new Set(classrooms.map(x => x.storey))]
+
+    const filteredClassrooms = useMemo(() => {
+        return classrooms.filter(c => (selectedBuildingId ? c.building_id === selectedBuildingId : true) && (selectedFloor >= 0 ? c.storey === selectedFloor : true))
+    }, [selectedFloor, selectedBuildingId, classrooms])
 
     return (
         <>
@@ -204,27 +222,61 @@ export default function ClassroomsTab() {
                                 </button>
                             </>
                             :
-                            <ClassroomsTable
-                                buildings={buildings}
-                                classrooms={classrooms}
-                                onEdit={onEdit}
-                                onRemove={onRemove}
-                                onHover={onHover}
-                            />
+                            <>
+                                <div className="flex space-x-2">
+                                    <fieldset className="fieldset">
+                                        <legend className="label">Épület</legend>
+                                        <select
+                                            className="select select-bordered"
+                                            value={selectedBuildingId || ""}
+                                            onChange={(e) => setSelectedBuildingId(e.target.value || null)}
+                                        >
+                                            <option value="">Összes</option>
+                                            {buildings.map((b) => (
+                                                <option key={b.id} value={b.id}>
+                                                    {b.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </fieldset>
+
+                                    <fieldset className="fieldset">
+                                        <legend className="label">Szint</legend>
+                                        <select
+                                            className="select select-bordered"
+                                            value={selectedFloor}
+                                            onChange={(e) => setSelectedFloor(Number(e.target.value))}
+                                        >
+                                            <option value="-1">Összes</option>
+                                            {availableFloors.map((b) => (
+                                                <option key={b} value={b}>
+                                                    {b}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </fieldset>
+                                </div>
+                                <ClassroomsTable
+                                    buildings={buildings}
+                                    classrooms={filteredClassrooms}
+                                    onEdit={onEdit}
+                                    onRemove={onRemove}
+                                    onHover={onHover}
+                                />
+                            </>
                     }
                 </div>
 
 
-                <div
-                    className="hidden xl:flex rounded-xl w-full border border-slate-700 overflow-hidden h-[80vh]"
-                >
-                    <SchoolPreview3D
+                <div className="hidden xl:flex rounded-xl w-full border border-slate-700 overflow-hidden h-[80vh]">
+                    <EditorView3D
                         className="w-full h-full"
                         initialDistance={120}
                         showAxes
                         graph={graph}
-                        highlight={highlight}
-                        onResize={(patch) =>
+                        edit={edit}
+                        appearance={appearance}
+                        onTransform={(patch) =>
                             setForm((f) => ({
                                 ...f,
                                 ...(patch.size_x !== undefined

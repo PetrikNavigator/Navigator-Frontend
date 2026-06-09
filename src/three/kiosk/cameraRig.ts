@@ -31,7 +31,7 @@ export function createCameraRig(
         box.getSize(_size)
         const radius = Math.max(_size.x, _size.y, _size.z, 1) * 0.5
         const fov = (camera.fov * Math.PI) / 180
-        const dist = (radius / Math.sin(fov / 2)) * 1.25
+        const dist = (radius / Math.sin(fov / 2))
 
         controls.target.copy(_center)
         camera.position.copy(_center).addScaledVector(_dir, dist)
@@ -44,9 +44,9 @@ export function createCameraRig(
 
     const belongsToFloor = (n: KioskNode, floor: NonNullable<IsolatedFloor>): boolean => {
         if (n.buildingId !== floor.buildingId) return false
-        if (n.kind === "lift" || n.kind === "stairs") {
-            return floor.storey >= (n.storeyMin ?? 0) && floor.storey <= (n.storeyMax ?? 0)
-        }
+        if (n.kind === "lift" || n.kind === "stairs")
+            return false
+
         return n.storey === floor.storey
     }
 

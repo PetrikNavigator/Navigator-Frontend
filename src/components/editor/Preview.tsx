@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import SchoolPreview3D from "../../three/SchoolPreview3D";
+import EditorView3D from "../../three/EditorView3D";
 import { useGraph } from "../../contexts/other/GraphContext";
 
 export default function Preview() {
@@ -10,18 +10,18 @@ export default function Preview() {
     }, []);
 
     return (
-        <div className="w-full flex justify-center items-center">
+        <div className="w-full flex flex-col xl:flex-row gap-4 justify-center items-start">
             <div
                 className="
-            rounded-xl border border-slate-700
-            w-full
-            max-w-[85vw]
-            aspect-video
-            max-h-[85vh]
-            overflow-hidden
-        "
+                rounded-xl border border-slate-700
+                w-full
+                max-w-[85vw]
+                aspect-video
+                max-h-[85vh]
+                overflow-hidden
+            "
             >
-                <SchoolPreview3D
+                <EditorView3D
                     className="w-full h-full"
                     initialDistance={120}
                     showAxes

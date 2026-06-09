@@ -3,8 +3,8 @@ import { useBuildings } from "../../../contexts/navigator/BuildingContext"
 import { useLifts } from "../../../contexts/navigator/LiftsContext"
 import type { AddLift, Lift } from "../../../types/navigator/Lift"
 import LiftsTable from "./LiftsTable"
-import SchoolPreview3D from "../../../three/SchoolPreview3D"
-import type { Highlight } from "../../../types/three/build-scene-types"
+import EditorView3D from "../../../three/EditorView3D"
+import type { EditorAppearance, EditTarget } from "../../../three/editor/types"
 import { useGraph } from "../../../contexts/other/GraphContext"
 import useUpdateEffect from "../../../useUpdateEffect"
 import LiftForm from "./LiftForm"
@@ -124,11 +124,9 @@ export default function LiftsTab() {
         }
     }, [editorOpen])
 
-    const highlight: Highlight | undefined = editorOpen ?
-        {
+    const edit: EditTarget | null = editorOpen
+        ? {
             kind: "lift",
-            dimOthers: true,
-            isEditing: true,
             id: editing?.id,
             preview: {
                 name: form.name || "új lift",
@@ -138,13 +136,17 @@ export default function LiftsTab() {
                 max_storey: form.max_storey,
                 building_id: buildingId,
             },
-        } : highlightedLiftId ?
-            {
-                id: highlightedLiftId,
-                dimOthers: true,
-                isEditing: false,
-                kind: "lift"
-            } : undefined
+        }
+        : null
+
+    const highlightId = editorOpen ? editing?.id : highlightedLiftId
+    const appearance: EditorAppearance = {
+        emphasis: {
+            highlightIds: highlightId ? [highlightId] : [],
+            kind: "lift",
+            dimOthers: editorOpen || !!highlightedLiftId,
+        },
+    }
 
     return (
         <>
@@ -186,16 +188,15 @@ export default function LiftsTab() {
                     }
                 </div>
 
-                <div
-                    className="hidden xl:flex rounded-xl w-full border border-slate-700 overflow-hidden h-[80vh]"
-                >
-                    <SchoolPreview3D
+                <div className="hidden xl:flex rounded-xl w-full border border-slate-700 overflow-hidden h-[80vh]">
+                    <EditorView3D
                         className="w-full h-full"
                         initialDistance={120}
                         showAxes
                         graph={graph}
-                        highlight={highlight}
-                        onResize={(patch) =>
+                        edit={edit}
+                        appearance={appearance}
+                        onTransform={(patch) =>
                             setForm((f) => ({
                                 ...f,
                                 ...(patch.x !== undefined

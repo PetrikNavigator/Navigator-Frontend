@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
 import { useCorridor } from "../../../contexts/navigator/CorridorContext"
 import type { AddCorridor, Corridor } from "../../../types/navigator/Corridor"
 import CorridorsTable from "./CorridorsTable"
-import SchoolPreview3D from "../../../three/SchoolPreview3D"
-import type { Highlight } from "../../../types/three/build-scene-types"
+import EditorView3D from "../../../three/EditorView3D"
+import type { EditorAppearance, EditorFilter, EditTarget } from "../../../three/editor/types"
 import { useGraph } from "../../../contexts/other/GraphContext"
 import useUpdateEffect from "../../../useUpdateEffect"
 import CorridorForm from "./CorridorForm"
@@ -31,6 +31,9 @@ export default function CorridorsTab() {
     const [editorOpen, setEditorOpen] = useState(false)
 
     const [highlightedCorridorId, setHighlightedCorridorId] = useState<string | null>(null)
+
+    const [selectedBuildingId, setSelectedBuildingId] = useState<string | null>(null)
+    const [selectedFloor, setSelectedFloor] = useState<number>(-1)
 
     const [err, setErr] = useState("")
     const [form, setForm] = useState(emptyForm)
@@ -137,11 +140,9 @@ export default function CorridorsTab() {
         }
     }, [editorOpen])
 
-    const highlight: Highlight | undefined = editorOpen ?
-        {
+    const edit: EditTarget | null = editorOpen
+        ? {
             kind: "corridor",
-            dimOthers: true,
-            isEditing: true,
             id: editing?.id,
             preview: {
                 name: form.name || "új folyosó",
@@ -155,13 +156,30 @@ export default function CorridorsTab() {
                 is_outdoor: form.is_outdoor,
                 building_id: buildingId,
             },
-        } : highlightedCorridorId ?
-            {
-                id: highlightedCorridorId,
-                dimOthers: true,
-                isEditing: false,
-                kind: "corridor"
-            } : undefined
+        }
+        : null
+
+    const highlightId = editorOpen ? editing?.id : highlightedCorridorId
+
+    const availableFloors = [...new Set(corridors.map(x => x.storey))]
+
+    const filteredCorridors = useMemo(() => {
+        return corridors.filter(c => (selectedBuildingId ? c.building_id === selectedBuildingId : true) && (selectedFloor >= 0 ? c.storey === selectedFloor : true))
+    }, [selectedFloor, selectedBuildingId, corridors])
+
+    const filter = {
+        buildingIds: (selectedBuildingId ? [selectedBuildingId] : undefined),
+        storeys: (selectedFloor >= 0 ? [selectedFloor] : undefined)
+    } as EditorFilter
+
+    const appearance: EditorAppearance = {
+        filter,
+        emphasis: {
+            highlightIds: highlightId ? [highlightId] : [],
+            kind: "corridor",
+            dimOthers: editorOpen || !!highlightedCorridorId,
+        },
+    }
 
     return (
         <>
@@ -193,26 +211,60 @@ export default function CorridorsTab() {
                                 </button>
                             </>
                             :
-                            <CorridorsTable
-                                buildings={buildings}
-                                corridors={corridors}
-                                onEdit={onEdit}
-                                onRemove={onRemove}
-                                onHover={onHover}
-                            />
+                            <>
+                                <div className="flex space-x-2">
+                                    <fieldset className="fieldset">
+                                        <legend className="label">Épület</legend>
+                                        <select
+                                            className="select select-bordered"
+                                            value={selectedBuildingId || ""}
+                                            onChange={(e) => setSelectedBuildingId(e.target.value || null)}
+                                        >
+                                            <option value="">Összes</option>
+                                            {buildings.map((b) => (
+                                                <option key={b.id} value={b.id}>
+                                                    {b.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </fieldset>
+
+                                    <fieldset className="fieldset">
+                                        <legend className="label">Szint</legend>
+                                        <select
+                                            className="select select-bordered"
+                                            value={selectedFloor}
+                                            onChange={(e) => setSelectedFloor(Number(e.target.value))}
+                                        >
+                                            <option value="-1">Összes</option>
+                                            {availableFloors.map((b) => (
+                                                <option key={b} value={b}>
+                                                    {b}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </fieldset>
+                                </div>
+                                <CorridorsTable
+                                    buildings={buildings}
+                                    corridors={filteredCorridors}
+                                    onEdit={onEdit}
+                                    onRemove={onRemove}
+                                    onHover={onHover}
+                                />
+                            </>
                     }
                 </div>
 
-                <div
-                    className="hidden xl:flex rounded-xl w-full border border-slate-700 overflow-hidden h-[80vh]"
-                >
-                    <SchoolPreview3D
+                <div className="hidden xl:flex rounded-xl w-full border border-slate-700 overflow-hidden h-[80vh]">
+                    <EditorView3D
                         className="w-full h-full"
                         initialDistance={120}
                         showAxes
                         graph={graph}
-                        highlight={highlight}
-                        onResize={(patch) =>
+                        edit={edit}
+                        appearance={appearance}
+                        onTransform={(patch) =>
                             setForm((f) => ({
                                 ...f,
                                 ...(patch.x1 !== undefined
@@ -234,7 +286,7 @@ export default function CorridorsTab() {
                         }
                     />
                 </div>
-            </div>
+            </div >
         </>
     )
 }

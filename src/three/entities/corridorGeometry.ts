@@ -1,5 +1,5 @@
 import * as THREE from "three"
-import type { Corridor } from "../../../types/navigator/Corridor"
+import type { Corridor } from "../../types/navigator/Corridor"
 
 const TICK_SPACING = 3.5
 

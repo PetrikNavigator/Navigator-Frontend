@@ -3,8 +3,8 @@ import { useBuildings } from "../../../contexts/navigator/BuildingContext"
 import { useStairs } from "../../../contexts/navigator/StairsContext"
 import type { AddStair, Stair } from "../../../types/navigator/Stair"
 import StairsTable from "./StairsTable"
-import SchoolPreview3D from "../../../three/SchoolPreview3D"
-import type { Highlight } from "../../../types/three/build-scene-types"
+import EditorView3D from "../../../three/EditorView3D"
+import type { EditorAppearance, EditTarget } from "../../../three/editor/types"
 import { useGraph } from "../../../contexts/other/GraphContext"
 import useUpdateEffect from "../../../useUpdateEffect"
 import StairForm from "./StairForm"
@@ -128,11 +128,9 @@ export default function StairsTab() {
         }
     }, [editorOpen])
 
-    const highlight: Highlight | undefined = editorOpen ?
-        {
+    const edit: EditTarget | null = editorOpen
+        ? {
             kind: "stairs",
-            dimOthers: true,
-            isEditing: true,
             id: editing?.id,
             preview: {
                 name: form.name || "új lépcső",
@@ -143,13 +141,17 @@ export default function StairsTab() {
                 rotation: form.rotation,
                 building_id: buildingId,
             },
-        } : highlightedStairId ?
-            {
-                id: highlightedStairId,
-                dimOthers: true,
-                isEditing: false,
-                kind: "stairs"
-            } : undefined
+        }
+        : null
+
+    const highlightId = editorOpen ? editing?.id : highlightedStairId
+    const appearance: EditorAppearance = {
+        emphasis: {
+            highlightIds: highlightId ? [highlightId] : [],
+            kind: "stairs",
+            dimOthers: editorOpen || !!highlightedStairId,
+        },
+    }
 
     return (
         <>
@@ -191,16 +193,15 @@ export default function StairsTab() {
                     }
                 </div>
 
-                <div
-                    className="hidden xl:flex rounded-xl w-full border border-slate-700 overflow-hidden h-[80vh]"
-                >
-                    <SchoolPreview3D
+                <div className="hidden xl:flex rounded-xl w-full border border-slate-700 overflow-hidden h-[80vh]">
+                    <EditorView3D
                         className="w-full h-full"
                         initialDistance={120}
                         showAxes
                         graph={graph}
-                        highlight={highlight}
-                        onResize={(patch) =>
+                        edit={edit}
+                        appearance={appearance}
+                        onTransform={(patch) =>
                             setForm((f) => ({
                                 ...f,
                                 ...(patch.x !== undefined
@@ -226,7 +227,7 @@ export default function StairsTab() {
                         }
                     />
                 </div>
-            </div>
+            </div >
         </>
     )
 }

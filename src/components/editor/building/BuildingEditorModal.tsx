@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
-import SchoolPreview3D from "../../../three/SchoolPreview3D"
+import EditorView3D from "../../../three/EditorView3D"
 import type { Building } from "../../../types/navigator/Building"
 import Modal from "../../Modal"
-import type { Highlight } from "../../../types/three/build-scene-types"
+import type { EditTarget, EditorAppearance } from "../../../three/editor/types"
 import { useGraph } from "../../../contexts/other/GraphContext"
 import useUpdateEffect from "../../../useUpdateEffect"
 
@@ -78,11 +78,11 @@ export default function BuildingEditorModal({ building, open, setOpen }: Props) 
         getFullGraph()
     }, [open])
 
-    const buildingHighlight: Highlight = open
+    const editing = building !== null
+
+    const edit: EditTarget | null = open
         ? {
             kind: "building",
-            isEditing: true,
-            dimOthers: true,
             id: building?.id,
             preview: {
                 name: form.name || "új épület",
@@ -93,7 +93,13 @@ export default function BuildingEditorModal({ building, open, setOpen }: Props) 
         }
         : null
 
-    const editing = building !== null
+    const appearance: EditorAppearance = {
+        emphasis: {
+            highlightIds: building?.id ? [building.id] : [],
+            kind: "building",
+            dimOthers: true,
+        },
+    }
 
     return (
         <Modal
@@ -203,13 +209,14 @@ export default function BuildingEditorModal({ building, open, setOpen }: Props) 
                     </div>
 
                     <div className="rounded-box overflow-hidden border border-base-300 h-[420px] bg-base-300/20">
-                        <SchoolPreview3D
+                        <EditorView3D
                             graph={graph}
-                            highlight={buildingHighlight}
+                            edit={edit}
+                            appearance={appearance}
                             className="w-full h-full"
                             initialDistance={120}
                             showAxes={true}
-                            onResize={(patch) =>
+                            onTransform={(patch) =>
                                 setForm((f) => ({
                                     ...f,
                                     ...(patch.x !== undefined

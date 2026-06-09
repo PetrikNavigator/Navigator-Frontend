@@ -1,11 +1,13 @@
 import type * as THREE from "three"
 import type { FullGraph } from "../../types/FullGraph"
-import { buildKioskCampus } from "./geometry/buildKioskCampus"
+import { buildKioskCampus } from "../entities/buildKioskCampus"
+import { buildLocationMarker } from "../entities/locationMarker"
 import { buildKioskPath } from "./pathOverlay"
 import { disposeDeep } from "./materials"
 import { applyAppearance } from "./appearance"
 import type { KioskAppearance, KioskNode } from "./types"
 import type { Vec3 } from "../../types/three/vector"
+import type { MyLocation } from "../../types/navigator/MyLocation"
 
 /** Owns the campus geometry for the kiosk. Geometry is rebuilt only when
  *  the graph identity changes; everything else (isolation, selection,
@@ -17,6 +19,8 @@ export type KioskSceneController = {
     apply: (state: KioskAppearance) => void
     /** Set (or clear) the A* route overlay. Cheap; rebuilds only the path. */
     setPath: (path: Vec3[] | null | undefined) => void
+    /** Set (or clear) the "you are here" marker overlay. */
+    setMyLocation: (loc: MyLocation | null | undefined) => void
     getNodes: () => KioskNode[]
     getRoot: () => THREE.Group | null
     dispose: () => void
@@ -28,6 +32,8 @@ export function createKioskScene(scene: THREE.Scene): KioskSceneController {
     let graphRef: FullGraph | null = null
     let pathGroup: THREE.Group | null = null
     let pathData: Vec3[] | null = null
+    let markerGroup: THREE.Group | null = null
+    let markerData: MyLocation | null = null
 
     // The path overlay is a child of `root` so it inherits the campus
     // centering offset. It is rebuilt whenever the path or the root changes.
@@ -43,14 +49,28 @@ export function createKioskScene(scene: THREE.Scene): KioskSceneController {
         }
     }
 
+    // The marker is a child of `root` too, for the same centering reason.
+    const rebuildMarker = (): void => {
+        if (markerGroup) {
+            markerGroup.parent?.remove(markerGroup)
+            disposeDeep(markerGroup)
+            markerGroup = null
+        }
+        if (root && markerData && graphRef) {
+            markerGroup = buildLocationMarker(graphRef, markerData)
+            root.add(markerGroup)
+        }
+    }
+
     const clear = (): void => {
         if (root) {
             scene.remove(root)
-            disposeDeep(root) // also disposes pathGroup (a child of root)
+            disposeDeep(root) // also disposes path/marker groups (children of root)
         }
         root = null
         nodes = []
         pathGroup = null
+        markerGroup = null
     }
 
     const setGraph = (graph: FullGraph | null): void => {
@@ -63,11 +83,17 @@ export function createKioskScene(scene: THREE.Scene): KioskSceneController {
         nodes = built.nodes
         scene.add(root)
         rebuildPath() // re-attach any existing path to the fresh root
+        rebuildMarker() // re-attach any existing marker to the fresh root
     }
 
     const setPath = (path: Vec3[] | null | undefined): void => {
         pathData = path ?? null
         rebuildPath()
+    }
+
+    const setMyLocation = (loc: MyLocation | null | undefined): void => {
+        markerData = loc ?? null
+        rebuildMarker()
     }
 
     const apply = (state: KioskAppearance): void => {
@@ -78,6 +104,7 @@ export function createKioskScene(scene: THREE.Scene): KioskSceneController {
         setGraph,
         apply,
         setPath,
+        setMyLocation,
         getNodes: () => nodes,
         getRoot: () => root,
         dispose: clear,

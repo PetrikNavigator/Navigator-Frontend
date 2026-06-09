@@ -1,6 +1,6 @@
-import type { Building } from "../navigator/Building";
-import type { Corridor } from "../navigator/Corridor";
-import { Vec2 } from "./vector";
+import type { Building } from "../../types/navigator/Building";
+import type { Corridor } from "../../types/navigator/Corridor";
+import { Vec2 } from "../../types/three/vector";
 
 function getCorners(cor: Corridor, building?: Building): Vec2[] {
     const start = new Vec2(cor.x1 + (building ? building.x : 0), cor.y1 + (building ? building.y : 0))

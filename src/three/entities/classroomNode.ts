@@ -1,12 +1,12 @@
 import * as THREE from "three"
-import type { Building } from "../../../types/navigator/Building"
-import type { Classroom } from "../../../types/navigator/Classroom"
-import type { FullGraph } from "../../../types/FullGraph"
-import type { StoreyResolver } from "../../../types/three/storey-types"
-import { FLOOR_HEIGHT } from "../../../types/three/material-types"
-import { ownFillMat, ownLineMat, tagApp } from "../materials"
-import { KIOSK_OPACITY, kioskTypeColor } from "../palette"
-import type { KioskNode } from "../types"
+import type { Building } from "../../types/navigator/Building"
+import type { Classroom } from "../../types/navigator/Classroom"
+import type { FullGraph } from "../../types/FullGraph"
+import type { StoreyResolver } from "../../types/three/storey-types"
+import { FLOOR_HEIGHT } from "../../types/three/material-types"
+import { ownFillMat, ownLineMat, tagApp } from "../kiosk/materials"
+import { KIOSK_OPACITY, kioskTypeColor } from "../kiosk/palette"
+import type { KioskNode } from "../kiosk/types"
 
 const DOOR_COLOR = 0xd99a1f
 
