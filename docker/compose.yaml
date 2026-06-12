@@ -1,18 +1,16 @@
-name: petrik-navigator-admin
+name: navigator-admin
 
 version: "3.9"
 
 services:
-  petrik-navigator-admin:
-    container_name: petrik-navigator-admin
-    image: petrik-navigator-admin:latest
+  navigator-admin:
+    container_name: navigator-admin
+    image: navigator-admin:latest
     build:
       context: ..
       dockerfile: docker/Dockerfile
-      args:
-        VITE_API_BASE_URL: /api
     environment:
-      - BACKEND_ORIGIN=http://petrik-navigator-backend:8001
+      - BACKEND_ORIGIN=http://navigator-backend:8001
     ports:
       - "5174:8080"
     restart: unless-stopped
