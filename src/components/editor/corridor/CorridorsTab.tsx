@@ -33,7 +33,7 @@ export default function CorridorsTab() {
     const [highlightedCorridorId, setHighlightedCorridorId] = useState<string | null>(null)
 
     const [selectedBuildingId, setSelectedBuildingId] = useState<string | null>(null)
-    const [selectedFloor, setSelectedFloor] = useState<number>(-1)
+    const [selectedFloor, setSelectedFloor] = useState<string>("")
 
     const [err, setErr] = useState("")
     const [form, setForm] = useState(emptyForm)
@@ -161,15 +161,15 @@ export default function CorridorsTab() {
 
     const highlightId = editorOpen ? editing?.id : highlightedCorridorId
 
-    const availableFloors = [...new Set(corridors.map(x => x.storey))]
+    const availableFloors = [...new Set(corridors.map(x => x.storey))].toSorted()
 
     const filteredCorridors = useMemo(() => {
-        return corridors.filter(c => (selectedBuildingId ? c.building_id === selectedBuildingId : true) && (selectedFloor >= 0 ? c.storey === selectedFloor : true))
+        return corridors.filter(c => (selectedBuildingId ? c.building_id === selectedBuildingId : true) && (selectedFloor !== "" ? c.storey === Number(selectedFloor) : true))
     }, [selectedFloor, selectedBuildingId, corridors])
 
     const filter = {
         buildingIds: (selectedBuildingId ? [selectedBuildingId] : undefined),
-        storeys: (selectedFloor >= 0 ? [selectedFloor] : undefined)
+        storeys: (selectedFloor !== "" ? [Number(selectedFloor)] : undefined)
     } as EditorFilter
 
     const appearance: EditorAppearance = {
@@ -234,9 +234,9 @@ export default function CorridorsTab() {
                                         <select
                                             className="select select-bordered"
                                             value={selectedFloor}
-                                            onChange={(e) => setSelectedFloor(Number(e.target.value))}
+                                            onChange={(e) => setSelectedFloor(e.target.value)}
                                         >
-                                            <option value="-1">Összes</option>
+                                            <option value="">Összes</option>
                                             {availableFloors.map((b) => (
                                                 <option key={b} value={b}>
                                                     {b}

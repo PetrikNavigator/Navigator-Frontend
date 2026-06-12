@@ -43,7 +43,7 @@ export default function ClassroomsTab() {
     const [typeId, setTypeId] = useState("")
 
     const [selectedBuildingId, setSelectedBuildingId] = useState<string | null>(null)
-    const [selectedFloor, setSelectedFloor] = useState<number>(-1)
+    const [selectedFloor, setSelectedFloor] = useState<string>("")
 
     const onClose = () => {
         setEditorOpen(false)
@@ -172,7 +172,7 @@ export default function ClassroomsTab() {
 
     const filter = {
         buildingIds: (selectedBuildingId ? [selectedBuildingId] : undefined),
-        storeys: (selectedFloor >= 0 ? [selectedFloor] : undefined)
+        storeys: (selectedFloor !== "" ? [Number(selectedFloor)] : undefined)
     } as EditorFilter
 
     const appearance: EditorAppearance = {
@@ -184,10 +184,10 @@ export default function ClassroomsTab() {
         },
     }
 
-    const availableFloors = [...new Set(classrooms.map(x => x.storey))]
+    const availableFloors = [...new Set(classrooms.map(x => x.storey))].toSorted()
 
     const filteredClassrooms = useMemo(() => {
-        return classrooms.filter(c => (selectedBuildingId ? c.building_id === selectedBuildingId : true) && (selectedFloor >= 0 ? c.storey === selectedFloor : true))
+        return classrooms.filter(c => (selectedBuildingId ? c.building_id === selectedBuildingId : true) && (selectedFloor !== "" ? c.storey === Number(selectedFloor) : true))
     }, [selectedFloor, selectedBuildingId, classrooms])
 
     return (
@@ -245,9 +245,9 @@ export default function ClassroomsTab() {
                                         <select
                                             className="select select-bordered"
                                             value={selectedFloor}
-                                            onChange={(e) => setSelectedFloor(Number(e.target.value))}
+                                            onChange={(e) => setSelectedFloor(e.target.value)}
                                         >
-                                            <option value="-1">Összes</option>
+                                            <option value="">Összes</option>
                                             {availableFloors.map((b) => (
                                                 <option key={b} value={b}>
                                                     {b}
