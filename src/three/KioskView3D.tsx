@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react"
+import * as THREE from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
 
 import type { FullGraph } from "../types/FullGraph"
@@ -28,6 +29,12 @@ type Props = {
     path?: Vec3[]
     /** Optional "you are here" marker (red arrow + label). Undefined hides it. */
     myLocation?: MyLocation | null
+    /** Canvas/scene background color (e.g. derived from the light/dark theme).
+     *  Updated live without rebuilding anything. */
+    background?: number
+    /** Bump this number to force the camera back to the default campus
+     *  framing (used by the idle reset). */
+    viewResetToken?: number
     /** Tap on a floor plate. */
     onFloorClick?: (buildingId: string, storey: number) => void
     /** Tap on a classroom. */
@@ -56,6 +63,8 @@ export default function KioskView3D({
     highlight,
     path,
     myLocation,
+    background,
+    viewResetToken,
     onFloorClick,
     onClassroomClick,
     onClassroomHover,
@@ -67,6 +76,8 @@ export default function KioskView3D({
     const controllerRef = useRef<KioskSceneController | null>(null)
     const rigRef = useRef<CameraRig | null>(null)
     const requestRenderRef = useRef<(() => void) | null>(null)
+    const rendererRef = useRef<THREE.WebGLRenderer | null>(null)
+    const sceneRef = useRef<THREE.Scene | null>(null)
 
     // Latest callbacks/props read by the (long-lived) interaction handlers.
     const onFloorClickRef = useRef(onFloorClick)
@@ -86,6 +97,8 @@ export default function KioskView3D({
 
         const renderer = createRenderer(container)
         const scene = createScene()
+        rendererRef.current = renderer
+        sceneRef.current = scene
         const camera = createCamera(initialDistance)
         const controls = new OrbitControls(camera, renderer.domElement)
         controls.enableDamping = true
@@ -144,6 +157,8 @@ export default function KioskView3D({
             controllerRef.current = null
             rigRef.current = null
             requestRenderRef.current = null
+            rendererRef.current = null
+            sceneRef.current = null
             renderer.dispose()
             renderer.forceContextLoss()
             container.removeChild(renderer.domElement)
@@ -177,6 +192,25 @@ export default function KioskView3D({
 
         requestRenderRef.current?.()
     }, [graph, isolatedFloor, selection, highlight, path, myLocation])
+
+    // Live theme background: recolor the clear color + scene background
+    // without touching geometry.
+    useEffect(() => {
+        if (background == null) return
+        const renderer = rendererRef.current
+        const scene = sceneRef.current
+        if (!renderer || !scene) return
+        renderer.setClearColor(background)
+        if (scene.background instanceof THREE.Color) scene.background.set(background)
+        else scene.background = new THREE.Color(background)
+        requestRenderRef.current?.()
+    }, [background])
+
+    // Idle/explicit reset: snap the camera back to the default campus shot.
+    useEffect(() => {
+        if (viewResetToken == null) return
+        rigRef.current?.frameCampus()
+    }, [viewResetToken])
 
     return (
         <div
