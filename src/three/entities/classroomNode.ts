@@ -23,20 +23,17 @@ export function buildClassroomNode(
     const storeyY = storeys.bottomY(b.id, c.storey)
 
     const group = new THREE.Group()
-
     const fill = new THREE.Mesh(
         new THREE.BoxGeometry(c.size_x, boxH, c.size_y),
-        ownFillMat(color, KIOSK_OPACITY.fill),
+        new THREE.MeshBasicMaterial({
+            color,
+            transparent: true,
+            opacity: KIOSK_OPACITY.fill,
+            side: THREE.DoubleSide,
+        })
     )
     tagApp(fill, "fill", color, KIOSK_OPACITY.fill)
     group.add(fill)
-
-    const wire = new THREE.LineSegments(
-        new THREE.EdgesGeometry(new THREE.BoxGeometry(c.size_x, boxH, c.size_y)),
-        ownLineMat(color, KIOSK_OPACITY.line),
-    )
-    tagApp(wire, "line", color, KIOSK_OPACITY.line)
-    group.add(wire)
 
     const doorH = Math.min(2.1, boxH - 0.05)
     const doorW = 0.95
@@ -69,7 +66,7 @@ export function buildClassroomNode(
         storey: c.storey,
         typeId: c.type_id,
         object: group,
-        appearance: [fill, wire, door, doorLine],
+        appearance: [fill, door, doorLine],
         pickables: [fill],
         center: group.position.clone(),
     }

@@ -19,7 +19,7 @@ export const KIOSK_COLORS = {
  *  read as ground, rooms read as solid, lines stay crisp. */
 export const KIOSK_OPACITY = {
     floorPlate: 0.18,
-    fill: 0.5,
+    fill: 1.0,
     line: 0.85,
     door: 0.85,
     doorLine: 0.9,

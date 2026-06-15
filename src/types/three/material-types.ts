@@ -5,4 +5,4 @@ export const FLOOR_HEIGHT = 5;
  *  scene is in "edit focus" mode (dimOthers). 0.12 keeps spatial
  *  context faintly visible without competing with the editing
  *  target for attention. */
-export const DIM_OPACITY = 0.1;
+export const DIM_OPACITY = 0.05;

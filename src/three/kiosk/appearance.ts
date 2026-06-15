@@ -75,13 +75,16 @@ function applyMesh(mesh: THREE.Object3D, emphasis: Emphasis): void {
     const app = mesh.userData.app as AppData | undefined
     if (!app) return
 
-    if (emphasis === "base") {
-        paint(mesh, app.baseColor, app.baseOpacity)
-        return
-    }
-    if (emphasis === "dim") {
-        paint(mesh, app.baseColor, app.baseOpacity * DIM_OPACITY)
-        return
+    switch (emphasis) {
+        case "base":
+            paint(mesh, app.baseColor, app.baseOpacity)
+            return;
+        case "dim":
+            paint(mesh, app.baseColor, app.baseOpacity * DIM_OPACITY)
+            return;
+        case "highlight":
+            paint(mesh, app.baseColor, app.baseOpacity)
+            return;
     }
 
     // Accent: door outline stays white for contrast; everything else
