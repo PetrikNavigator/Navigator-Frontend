@@ -84,7 +84,7 @@ export default function SearchPanel({ onSelect, selectedId, onNavigate, resetTok
                                                     className="h-2.5 w-2.5 rounded-full"
                                                     style={{ background: info.typeColor }}
                                                 />
-                                                {info.floorLabel}
+                                                {info.typeName}
                                             </div>
                                         </div>
                                         {

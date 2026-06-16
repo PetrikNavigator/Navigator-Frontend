@@ -50,20 +50,29 @@ export function classroomInfo(graph: FullGraph, c: Classroom): ClassroomInfo {
 export function searchClassrooms(graph: FullGraph | null, query: string): Classroom[] {
     const rooms = graph?.classrooms ?? []
     const q = normalize(query)
-    if (!q) return [...rooms].sort((a, b) => a.name.localeCompare(b.name, "hu"))
 
-    type Ranked = { c: Classroom; rank: number }
-    const out: Ranked[] = []
+    const values: Classroom[] = []
     for (const c of rooms) {
-        const name = normalize(c.name)
-        const desc = normalize(c.description ?? "")
-        let rank = -1
-        if (name.startsWith(q)) rank = 0
-        else if (name.includes(q)) rank = 1
-        else if (desc.includes(q)) rank = 2
-        if (rank >= 0) out.push({ c, rank })
+
+        if (normalize(c.name).includes(q)) {
+            values.push(c)
+            continue
+        }
+
+        if (normalize(c.description).includes(q)) {
+            values.push(c)
+            continue
+        }
+
+        if (!graph)
+            continue
+
+        const info = classroomInfo(graph, c)
+        if (normalize(info.typeName).includes(q)) {
+            values.push(c)
+            continue
+        }
     }
-    return out
-        .sort((a, b) => a.rank - b.rank || a.c.name.localeCompare(b.c.name, "hu"))
-        .map((r) => r.c)
+
+    return values
 }
