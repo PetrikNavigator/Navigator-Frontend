@@ -12,9 +12,9 @@ import {
     storeyLabel,
 } from "../utils/classroomSearch"
 import { useIdleTimer } from "../hooks/useIdleTimer"
-import TypeHighlighter from "./kiosk/TypeHighlighter"
-import KioskNavbar from "./kiosk/KioskNavbar"
-import SearchPanel from "./kiosk/SearchPanel"
+import KioskNavbar from "../components/kiosk/KioskNavbar"
+import SearchPanel from "../components/kiosk/SearchPanel"
+import TypeHighlighter from "../components/kiosk/TypeHighlighter"
 
 /** Canvas background per theme. Dark mirrors the original kiosk palette;
  *  light is a soft slate that keeps the cyan geometry readable. */
