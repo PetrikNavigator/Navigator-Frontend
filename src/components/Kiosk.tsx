@@ -75,7 +75,6 @@ export default function Kiosk() {
         [classroomById],
     )
 
-    // ---- Full reset (idle timeout + the manual "Új keresés" button) --------
     const resetAll = useCallback(() => {
         setView("search")
         setQuery("")
@@ -89,19 +88,13 @@ export default function Kiosk() {
         setViewResetToken((n) => n + 1)
     }, [])
 
-    // Inactivity reset (theme is intentionally preserved).
     useIdleTimer(resetAll, IDLE_MS)
 
-    // ---- Selecting a classroom (search result OR tap in 3D) ----------------
-    const selectTarget = useCallback(
-        (id: string) => {
-            setTargetId(id)
-            const c = classroomById.get(id)
-            // Isolate + frame the floor it lives on so its location is obvious.
-            if (c) setIsolatedFloor({ buildingId: c.building_id, storey: c.storey })
-        },
-        [classroomById],
-    )
+    const selectTarget = (id: string) => {
+        setTargetId(id)
+        const c = classroomById.get(id)
+        if (c) setIsolatedFloor({ buildingId: c.building_id, storey: c.storey })
+    }
 
     const onObjectClick = (x: KioskNode) => {
         if (x.kind !== "classroom")
@@ -187,6 +180,9 @@ export default function Kiosk() {
     )
 
     const startLabel = startId ? nameOf(startId) : myLocation ? "Saját pozíció" : "-"
+
+    if (!graph)
+        return
 
     return (
         <div className="h-screen flex flex-col">

@@ -79,6 +79,11 @@ export default function KioskView3D({
     const graphRef = useRef<FullGraph | null | undefined>(undefined)
     const floorKeyRef = useRef<string | null>(null)
 
+    const onObjectHoverRef = useRef(onObjectHover)
+    const onObjectClickRef = useRef(onObjectClick)
+    useEffect(() => { onObjectHoverRef.current = onObjectHover }, [onObjectHover])
+    useEffect(() => { onObjectClickRef.current = onObjectClick }, [onObjectClick])
+
     useEffect(() => {
         const container = containerRef.current
         if (!container) return
@@ -120,10 +125,10 @@ export default function KioskView3D({
             camera,
             getNodes: () => controller.getNodes(),
             onPick: (pick) => {
-                onObjectClick?.(pick)
+                onObjectClickRef.current?.(pick)
             },
             onHover: (pick) => {
-                onObjectHover?.(pick)
+                onObjectHoverRef.current?.(pick)
             },
             requestRender: loop.requestRender,
         })
