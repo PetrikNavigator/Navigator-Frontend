@@ -71,6 +71,7 @@ export default function SearchPanel({ onSelect, selectedId, onNavigate, resetTok
 
                             return (
                                 <div
+                                    key={x.id}
                                     ref={(el) => {
                                         itemRefs.current[x.id] = el
                                     }}

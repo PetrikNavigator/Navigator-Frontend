@@ -7,14 +7,11 @@ import type { IsolatedFloor, KioskNode } from "../three/kiosk/types"
 import type { Vec3 } from "../types/three/vector"
 import { GraphPathBuilder } from "../three/path/pathbuilder"
 import { loadMyLocation, type MyLocation } from "../types/navigator/MyLocation"
-import {
-    searchClassrooms,
-    storeyLabel,
-} from "../utils/classroomSearch"
 import { useIdleTimer } from "../hooks/useIdleTimer"
 import KioskNavbar from "../components/kiosk/KioskNavbar"
 import SearchPanel from "../components/kiosk/SearchPanel"
 import TypeHighlighter from "../components/kiosk/TypeHighlighter"
+import NavigatePanel from "../components/kiosk/NavigatePanel"
 
 /** Canvas background per theme. Dark mirrors the original kiosk palette;
  *  light is a soft slate that keeps the cyan geometry readable. */
@@ -41,7 +38,6 @@ export default function Kiosk() {
     const { theme, } = useTheme()
 
     const [view, setView] = useState<View>("search")
-    const [startQuery, setStartQuery] = useState("")
 
     // The classroom chosen in search → becomes the navigation target.
     const [targetId, setTargetId] = useState<string | null>(null)
@@ -76,7 +72,6 @@ export default function Kiosk() {
 
     const resetAll = useCallback(() => {
         setView("search")
-        setStartQuery("")
         setTargetId(null)
         setStartId(null)
         setIsolatedFloor(null)
@@ -111,7 +106,6 @@ export default function Kiosk() {
         if (!targetId) return
         setView("navigate")
         setStartId(null) // default to saved location (if any)
-        setStartQuery("")
         setIsolatedFloor(null) // show the whole campus so the route is visible
     }, [targetId])
 
@@ -160,13 +154,6 @@ export default function Kiosk() {
     )
 
     const background = theme ? CANVAS_BG_DARK : CANVAS_BG_LIGHT
-
-    const startResults = useMemo(
-        () => (view === "navigate" ? searchClassrooms(graph, startQuery).slice(0, 30) : []),
-        [graph, startQuery, view],
-    )
-
-    const startLabel = startId ? nameOf(startId) : myLocation ? "Saját pozíció" : "-"
 
     if (!graph)
         return
@@ -221,19 +208,16 @@ export default function Kiosk() {
 
                         ) : (
                             <NavigatePanel
-                                targetName={classroomById.get(targetId!)?.name ?? nameOf(targetId)}
-                                startLabel={startLabel}
-                                startQuery={startQuery}
-                                setStartQuery={setStartQuery}
-                                startResults={startResults}
-                                onPickStart={(id) => { setStartId(id); setStartQuery("") }}
-                                onResetStartToLocation={myLocation ? () => setStartId(null) : undefined}
-                                hasSavedLocation={!!myLocation}
+                                onSelectEnd={setTargetId}
+                                onSelectStart={setStartId}
+                                onBack={backToSearch}
+                                startId={startId}
+                                endId={targetId!}
                                 barrierFree={barrierFree}
                                 setBarrierFree={setBarrierFree}
+                                hasPos={!!myLocation}
                                 needsStart={needsStart}
                                 noRoute={noRoute}
-                                onBack={backToSearch}
                             />
                         )}
 
@@ -245,110 +229,6 @@ export default function Kiosk() {
                     </div>
                 </div>
             </main>
-        </div>
-    )
-}
-
-/* ---------------------------- Navigate view ------------------------------ */
-
-type NavigatePanelProps = {
-    targetName: string
-    startLabel: string
-    startQuery: string
-    setStartQuery: (v: string) => void
-    startResults: Classroom[]
-    onPickStart: (id: string) => void
-    onResetStartToLocation?: () => void
-    hasSavedLocation: boolean
-    barrierFree: boolean
-    setBarrierFree: (v: boolean) => void
-    needsStart: boolean
-    noRoute: boolean
-    onBack: () => void
-}
-
-function NavigatePanel({
-    targetName, startLabel, startQuery, setStartQuery, startResults, onPickStart,
-    onResetStartToLocation, hasSavedLocation, barrierFree, setBarrierFree,
-    needsStart, noRoute, onBack,
-}: NavigatePanelProps) {
-    return (
-        <div className="card bg-base-200 p-3 gap-3">
-            <div className="flex items-center justify-between">
-                <h2 className="font-semibold">Útvonal</h2>
-                <button className="btn btn-ghost btn-xs" onClick={onBack}>← Vissza</button>
-            </div>
-
-            <div className="flex flex-col gap-1 text-sm">
-                <div className="flex items-center gap-2">
-                    <span className="h-3 w-3 rounded-full" style={{ background: "#55ddff" }} />
-                    <span>Kiindulás: <b>{startLabel}</b></span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <span className="h-3 w-3 rounded-full" style={{ background: "#ff5577" }} />
-                    <span>Cél: <b>{targetName}</b></span>
-                </div>
-            </div>
-
-            {/* Choose / change the start point. */}
-            <div className="flex flex-col gap-2">
-                <label className="input input-bordered input-sm flex items-center gap-2">
-                    <span className="opacity-60">🔍</span>
-                    <input
-                        type="text"
-                        className="grow"
-                        placeholder="Kiindulási terem keresése…"
-                        value={startQuery}
-                        onChange={(e) => setStartQuery(e.target.value)}
-                    />
-                </label>
-                {startQuery && (
-                    <ul className="menu menu-sm bg-base-100 rounded-box max-h-44 overflow-y-auto flex-nowrap p-1">
-                        {startResults.length === 0 && (
-                            <li className="px-2 py-2 text-xs opacity-60">Nincs találat.</li>
-                        )}
-                        {startResults.map((c) => (
-                            <li key={c.id}>
-                                <button onClick={() => onPickStart(c.id)}>
-                                    <span>{c.name}</span>
-                                    <span className="text-xs opacity-60 ml-auto">
-                                        {storeyLabel(c.storey)}
-                                    </span>
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-                {hasSavedLocation && onResetStartToLocation && (
-                    <button className="btn btn-xs btn-outline w-fit" onClick={onResetStartToLocation}>
-                        Saját pozícióra állít
-                    </button>
-                )}
-                <p className="text-xs opacity-60">
-                    Keress rá a kiindulási teremre, vagy koppints egy teremre a 3D nézetben.
-                </p>
-            </div>
-
-            <label className="label cursor-pointer justify-start gap-2">
-                <input
-                    type="checkbox"
-                    className="checkbox checkbox-sm checkbox-primary"
-                    checked={barrierFree}
-                    onChange={(e) => setBarrierFree(e.target.checked)}
-                />
-                <span className="text-sm">Akadálymentes (liftek)</span>
-            </label>
-
-            {needsStart && (
-                <div className="alert alert-info py-2 text-xs">
-                    <span>Válassz kiindulási pontot az útvonalhoz.</span>
-                </div>
-            )}
-            {noRoute && (
-                <div className="alert alert-warning py-2 text-xs">
-                    <span>Nem található útvonal a két pont között.</span>
-                </div>
-            )}
         </div>
     )
 }
