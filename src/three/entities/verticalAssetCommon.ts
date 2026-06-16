@@ -1,3 +1,4 @@
+import { FLOOR_HEIGHT } from "../../types/three/material-types"
 import type { StoreyResolver } from "../../types/three/storey-types"
 
 export type ShaftBounds = {
@@ -15,6 +16,6 @@ export function computeShaftBounds(
     maxStorey: number,
 ): ShaftBounds {
     const bottom = storeys.bottomY(buildingId, minStorey)
-    const top = storeys.bottomY(buildingId, maxStorey + 1) - 1.0
-    return { bottom, top, height: Math.max(0, top - bottom) }
+    const top = storeys.bottomY(buildingId, maxStorey)
+    return { bottom, top, height: Math.max(0, top - bottom + FLOOR_HEIGHT) }
 }

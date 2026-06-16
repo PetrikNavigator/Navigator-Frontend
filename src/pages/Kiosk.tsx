@@ -16,7 +16,7 @@ import NavigatePanel from "../components/kiosk/NavigatePanel"
 /** Canvas background per theme. Dark mirrors the original kiosk palette;
  *  light is a soft slate that keeps the cyan geometry readable. */
 const CANVAS_BG_DARK = 0x070d18
-const CANVAS_BG_LIGHT = 0xe7f7f5
+const CANVAS_BG_LIGHT = 0xE8FBED
 
 /** Reset the kiosk after this long with no user input. */
 const IDLE_MS = 60_000
@@ -35,7 +35,7 @@ type View = "search" | "navigate"
  */
 export default function Kiosk() {
     const { graph, getFullGraph, isLoading, isError, error } = useGraph()
-    const { theme, } = useTheme()
+    const { theme } = useTheme()
 
     const [view, setView] = useState<View>("search")
 
@@ -99,6 +99,18 @@ export default function Kiosk() {
         } else {
             selectTarget(x.id)
         }
+    }
+
+    const onObjectHover = (x: KioskNode | null) => {
+        if (!x) {
+            setHoveredId(null)
+            return
+        }
+
+        if (x.kind !== "classroom")
+            return
+
+        setHoveredId(x.id)
     }
 
     // ---- Navigation start/target & pathfinding -----------------------------
@@ -175,17 +187,18 @@ export default function Kiosk() {
                             background={background}
                             viewResetToken={viewResetToken}
                             onObjectClick={onObjectClick}
+                            onObjectHover={onObjectHover}
                             className="w-full h-full"
                         />
 
                         {hoveredId && (
-                            <div className="absolute bottom-2 left-2 badge badge-neutral">
+                            <div className="absolute bottom-2 left-2 badge md:badge-xl bg-base-content text-base-100">
                                 {nameOf(hoveredId)}
                             </div>
                         )}
 
                         <div className="absolute bottom-2 right-2">
-                            <button className="btn btn-xs btn-outline" onClick={resetAll}>Visszaállítás</button>
+                            <button className="btn btn-xs md:btn-md btn-outline" onClick={resetAll}>Visszaállítás</button>
                         </div>
                     </div>
 
