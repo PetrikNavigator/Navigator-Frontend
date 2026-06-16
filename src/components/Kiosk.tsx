@@ -8,13 +8,13 @@ import type { Vec3 } from "../types/three/vector"
 import { GraphPathBuilder } from "../three/path/pathbuilder"
 import { loadMyLocation, type MyLocation } from "../types/navigator/MyLocation"
 import {
-    classroomInfo,
     searchClassrooms,
     storeyLabel,
 } from "../utils/classroomSearch"
 import { useIdleTimer } from "../hooks/useIdleTimer"
 import TypeHighlighter from "./kiosk/TypeHighlighter"
 import KioskNavbar from "./kiosk/KioskNavbar"
+import SearchPanel from "./kiosk/SearchPanel"
 
 /** Canvas background per theme. Dark mirrors the original kiosk palette;
  *  light is a soft slate that keeps the cyan geometry readable. */
@@ -41,7 +41,6 @@ export default function Kiosk() {
     const { theme, } = useTheme()
 
     const [view, setView] = useState<View>("search")
-    const [query, setQuery] = useState("")
     const [startQuery, setStartQuery] = useState("")
 
     // The classroom chosen in search → becomes the navigation target.
@@ -77,7 +76,6 @@ export default function Kiosk() {
 
     const resetAll = useCallback(() => {
         setView("search")
-        setQuery("")
         setStartQuery("")
         setTargetId(null)
         setStartId(null)
@@ -163,17 +161,6 @@ export default function Kiosk() {
 
     const background = theme ? CANVAS_BG_DARK : CANVAS_BG_LIGHT
 
-    // ---- Derived display data ----------------------------------------------
-    const results = useMemo(
-        () => searchClassrooms(graph, query).slice(0, 60),
-        [graph, query],
-    )
-
-    const targetInfo = useMemo(() => {
-        const c = targetId ? classroomById.get(targetId) : null
-        return c && graph ? classroomInfo(graph, c) : null
-    }, [targetId, classroomById, graph])
-
     const startResults = useMemo(
         () => (view === "navigate" ? searchClassrooms(graph, startQuery).slice(0, 30) : []),
         [graph, startQuery, view],
@@ -226,17 +213,15 @@ export default function Kiosk() {
 
                         {view === "search" ? (
                             <SearchPanel
-                                query={query}
-                                setQuery={setQuery}
-                                results={results}
-                                targetId={targetId}
-                                targetInfo={targetInfo}
-                                onSelect={selectTarget}
                                 onNavigate={goToNavigate}
+                                onSelect={selectTarget}
+                                selectedId={targetId}
+                                resetToken={viewResetToken}
                             />
+
                         ) : (
                             <NavigatePanel
-                                targetName={targetInfo?.classroom.name ?? nameOf(targetId)}
+                                targetName={classroomById.get(targetId!)?.name ?? nameOf(targetId)}
                                 startLabel={startLabel}
                                 startQuery={startQuery}
                                 setStartQuery={setStartQuery}
@@ -261,87 +246,6 @@ export default function Kiosk() {
                 </div>
             </main>
         </div>
-    )
-}
-
-/* ----------------------------- Search view ------------------------------- */
-
-type SearchPanelProps = {
-    query: string
-    setQuery: (v: string) => void
-    results: Classroom[]
-    targetId: string | null
-    targetInfo: ReturnType<typeof classroomInfo> | null
-    onSelect: (id: string) => void
-    onNavigate: () => void
-}
-
-function SearchPanel({
-    query, setQuery, results, targetId, targetInfo, onSelect, onNavigate }: SearchPanelProps) {
-    return (
-        <>
-            <div className="card bg-base-200 p-3 gap-2">
-                <label className="input input-bordered flex items-center gap-2">
-                    <span className="opacity-60">🔍</span>
-                    <input
-                        type="text"
-                        className="grow"
-                        placeholder="Terem keresése név vagy leírás alapján…"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        autoFocus
-                    />
-                    {query && (
-                        <button className="btn btn-ghost btn-xs" onClick={() => setQuery("")}>✕</button>
-                    )}
-                </label>
-
-                <ul className="menu menu-sm bg-base-100 rounded-box max-h-72 overflow-y-auto flex-nowrap p-1">
-                    {results.length === 0 && (
-                        <li className="px-2 py-3 text-sm opacity-60">Nincs találat.</li>
-                    )}
-                    {results.map((c) => (
-                        <li key={c.id}>
-                            <button
-                                className={c.id === targetId ? "active" : ""}
-                                onClick={() => onSelect(c.id)}
-                            >
-                                <span className="font-medium">{c.name}</span>
-                                <span className="text-xs opacity-60 ml-auto">
-                                    {storeyLabel(c.storey)}
-                                </span>
-                            </button>
-                        </li>
-                    ))}
-                </ul>
-            </div>
-
-            {targetInfo && (
-                <div className="card bg-base-200 p-3 gap-1">
-                    <div className="flex items-start justify-between gap-2">
-                        <div>
-                            <h2 className="font-bold text-lg">{targetInfo.classroom.name}</h2>
-                            <div className="flex items-center gap-1 text-sm opacity-80">
-                                <span
-                                    className="h-2.5 w-2.5 rounded-full"
-                                    style={{ background: targetInfo.typeColor }}
-                                />
-                                {targetInfo.typeName}
-                            </div>
-                        </div>
-                        <button className="btn btn-primary btn-sm" onClick={onNavigate}>
-                            Navigálás →
-                        </button>
-                    </div>
-                    <div className="text-sm opacity-80 mt-1">
-                        <div>📍 {targetInfo.buildingName} — {targetInfo.floorLabel}</div>
-                        {targetInfo.classroom.description && (
-                            <p className="opacity-70 mt-1">{targetInfo.classroom.description}</p>
-                        )}
-                    </div>
-                </div>
-            )}
-        </>
     )
 }
 
