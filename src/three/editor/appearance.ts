@@ -21,6 +21,7 @@ function paint(
     mat.color.set(color)
     mat.opacity = opacity
     mat.transparent = opacity < 1
+    mat.depthWrite = !mat.transparent
 }
 
 function has(arr: string[] | number[] | null | undefined): boolean {

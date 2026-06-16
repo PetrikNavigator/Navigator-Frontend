@@ -20,6 +20,7 @@ function paint(
     mat.color.set(color)
     mat.opacity = opacity
     mat.transparent = opacity < 1
+    mat.depthWrite = !mat.transparent
 }
 
 /** A node is visible when nothing is isolated, or when it belongs to the
@@ -73,7 +74,7 @@ function accentColor(e: Emphasis): number {
  *  mesh's stored base look so "base"/"dim" always restore cleanly. */
 function applyMesh(mesh: THREE.Object3D, emphasis: Emphasis): void {
     const app = mesh.userData.app as AppData | undefined
-    if (!app) return
+    if (!app) return 
 
     switch (emphasis) {
         case "base":
@@ -87,18 +88,16 @@ function applyMesh(mesh: THREE.Object3D, emphasis: Emphasis): void {
             return;
     }
 
-    // Accent: door outline stays white for contrast; everything else
-    // takes the accent color at a boosted, role-appropriate opacity.
-    if (app.role === "doorLine") {
-        paint(mesh, app.baseColor, 1)
+    // If start or end
+    // Door stays the same
+    if (app.role === "doorLine" || app.role === "door") {
+        paint(mesh, app.baseColor, app.baseOpacity)
         return
     }
+
     const accent = accentColor(emphasis)
-    const opacity =
-        app.role === "fill" ? Math.max(app.baseOpacity, 0.85)
-            : app.role === "line" ? 1
-                : Math.max(app.baseOpacity, 0.9)
-    paint(mesh, accent, opacity)
+    paint(mesh, accent, app.baseOpacity)
+
 }
 
 /** Apply visibility + appearance for the whole scene in place. No

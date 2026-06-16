@@ -13,11 +13,13 @@ import {
     storeyLabel,
 } from "../utils/classroomSearch"
 import { useIdleTimer } from "../hooks/useIdleTimer"
+import TypeHighlighter from "./kiosk/TypeHighlighter"
+import KioskNavbar from "./kiosk/KioskNavbar"
 
 /** Canvas background per theme. Dark mirrors the original kiosk palette;
  *  light is a soft slate that keeps the cyan geometry readable. */
 const CANVAS_BG_DARK = 0x070d18
-const CANVAS_BG_LIGHT = 0xe7edf5
+const CANVAS_BG_LIGHT = 0xe7f7f5
 
 /** Reset the kiosk after this long with no user input. */
 const IDLE_MS = 60_000
@@ -36,7 +38,7 @@ type View = "search" | "navigate"
  */
 export default function Kiosk() {
     const { graph, getFullGraph, isLoading, isError, error } = useGraph()
-    const { theme, change: setTheme } = useTheme()
+    const { theme, } = useTheme()
 
     const [view, setView] = useState<View>("search")
     const [query, setQuery] = useState("")
@@ -189,121 +191,86 @@ export default function Kiosk() {
         [graph, startQuery, view],
     )
 
-    const toggleType = (id: string) =>
-        setHighlightTypeIds((prev) =>
-            prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-        )
-
-    const startLabel = startId ? nameOf(startId) : myLocation ? "Saját pozíció" : "—"
+    const startLabel = startId ? nameOf(startId) : myLocation ? "Saját pozíció" : "-"
 
     return (
-        <div className="flex flex-col xl:flex-row gap-4 h-full w-full">
-            {/* 3D view: on top in portrait, beside the panel in landscape. */}
-            <div className="relative h-[45vh] min-h-0 xl:h-full xl:flex-1 rounded-xl overflow-hidden border border-base-300">
-                <KioskView3D
-                    graph={graph}
-                    isolatedFloor={isolatedFloor}
-                    selection={selection}
-                    highlight={highlight}
-                    path={path}
-                    myLocation={myLocation}
-                    background={background}
-                    viewResetToken={viewResetToken}
-                    onFloorClick={handleFloorClick}
-                    onClassroomClick={handleClassroomClick}
-                    onClassroomHover={setHoveredId}
-                    className="w-full h-full"
-                />
-                {hoveredId && (
-                    <div className="absolute bottom-2 left-2 badge badge-neutral">
-                        {nameOf(hoveredId)}
-                    </div>
-                )}
-            </div>
+        <div className="h-screen flex flex-col">
+            <KioskNavbar />
 
-            {/* Control panel. */}
-            <div className="flex flex-col gap-3 min-h-0 xl:w-96 xl:h-full xl:overflow-y-auto">
-                {/* Header + theme switch */}
-                <div className="flex items-center justify-between gap-2">
-                    <h1 className="text-2xl font-bold text-primary">Kioszk</h1>
-                    <label className="swap swap-rotate btn btn-ghost btn-circle" title="Téma váltása">
-                        <input
-                            type="checkbox"
-                            checked={theme}
-                            onChange={(e) => setTheme(e.target.checked)}
+            <main className="flex-1 min-h-0 p-4">
+                <div className="flex flex-col xl:flex-row gap-4 h-full">
+                    <div className="relative flex-1 min-h-[50%] rounded-xl overflow-hidden border border-base-300">
+                        <KioskView3D
+                            graph={graph}
+                            isolatedFloor={isolatedFloor}
+                            selection={selection}
+                            highlight={highlight}
+                            path={path}
+                            myLocation={myLocation}
+                            background={background}
+                            viewResetToken={viewResetToken}
+                            onFloorClick={handleFloorClick}
+                            onClassroomClick={handleClassroomClick}
+                            onClassroomHover={setHoveredId}
+                            className="w-full h-full"
                         />
-                        <span className="swap-off text-xl">☀️</span>
-                        <span className="swap-on text-xl">🌙</span>
-                    </label>
-                </div>
 
-                {isLoading && (
-                    <div className="alert alert-info py-2"><span>Adatok betöltése…</span></div>
-                )}
-                {isError && (
-                    <div className="alert alert-error py-2"><span>Hiba: {error ?? "ismeretlen"}</span></div>
-                )}
+                        {hoveredId && (
+                            <div className="absolute bottom-2 left-2 badge badge-neutral">
+                                {nameOf(hoveredId)}
+                            </div>
+                        )}
 
-                {view === "search" ? (
-                    <SearchPanel
-                        query={query}
-                        setQuery={setQuery}
-                        results={results}
-                        targetId={targetId}
-                        targetInfo={targetInfo}
-                        onSelect={selectTarget}
-                        onNavigate={goToNavigate}
-                        onClear={resetAll}
-                    />
-                ) : (
-                    <NavigatePanel
-                        targetName={targetInfo?.classroom.name ?? nameOf(targetId)}
-                        startLabel={startLabel}
-                        startQuery={startQuery}
-                        setStartQuery={setStartQuery}
-                        startResults={startResults}
-                        onPickStart={(id) => { setStartId(id); setStartQuery("") }}
-                        onResetStartToLocation={myLocation ? () => setStartId(null) : undefined}
-                        hasSavedLocation={!!myLocation}
-                        barrierFree={barrierFree}
-                        setBarrierFree={setBarrierFree}
-                        needsStart={needsStart}
-                        noRoute={noRoute}
-                        onBack={backToSearch}
-                    />
-                )}
-
-                {/* Type highlight — available in both views. */}
-                <div className="card bg-base-200 p-3">
-                    <h2 className="font-semibold mb-2 text-sm">Terem kiemelés (típus)</h2>
-                    <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
-                        {graph?.classroom_types.map((t) => {
-                            const active = highlightTypeIds.includes(t.id)
-                            return (
-                                <button
-                                    key={t.id}
-                                    onClick={() => toggleType(t.id)}
-                                    className={`btn btn-xs ${active ? "btn-primary" : "btn-outline"}`}
-                                >
-                                    <span
-                                        className="h-2 w-2 rounded-full mr-1"
-                                        style={{ background: t.colorhex || "#888" }}
-                                    />
-                                    {t.name}
-                                </button>
-                            )
-                        })}
+                        <div className="absolute bottom-2 right-2">
+                            <button className="btn btn-xs btn-outline" onClick={resetAll}>Visszaállítás</button>
+                        </div>
                     </div>
-                    {highlightTypeIds.length > 0 && (
-                        <button
-                            className="btn btn-xs btn-outline mt-2 w-fit"
-                            onClick={() => setHighlightTypeIds([])}
-                        >
-                            Kiemelés törlése
-                        </button>
-                    )}
+
+                    {/* Control panel. */}
+                    <div className="flex flex-col gap-3 min-h-0 xl:w-96 xl:h-full xl:overflow-y-auto">
+                        {isLoading && (
+                            <div className="alert alert-info py-2"><span>Adatok betöltése…</span></div>
+                        )}
+                        {isError && (
+                            <div className="alert alert-error py-2"><span>Hiba: {error ?? "ismeretlen"}</span></div>
+                        )}
+
+                        {view === "search" ? (
+                            <SearchPanel
+                                query={query}
+                                setQuery={setQuery}
+                                results={results}
+                                targetId={targetId}
+                                targetInfo={targetInfo}
+                                onSelect={selectTarget}
+                                onNavigate={goToNavigate}
+                            />
+                        ) : (
+                            <NavigatePanel
+                                targetName={targetInfo?.classroom.name ?? nameOf(targetId)}
+                                startLabel={startLabel}
+                                startQuery={startQuery}
+                                setStartQuery={setStartQuery}
+                                startResults={startResults}
+                                onPickStart={(id) => { setStartId(id); setStartQuery("") }}
+                                onResetStartToLocation={myLocation ? () => setStartId(null) : undefined}
+                                hasSavedLocation={!!myLocation}
+                                barrierFree={barrierFree}
+                                setBarrierFree={setBarrierFree}
+                                needsStart={needsStart}
+                                noRoute={noRoute}
+                                onBack={backToSearch}
+                            />
+                        )}
+
+                        <TypeHighlighter
+                            selectedIds={highlightTypeIds}
+                            setSelectedIds={setHighlightTypeIds}
+                            types={graph?.classroom_types ?? []}
+                        />
+                    </div>
                 </div>
-            </div>
+            </main>
         </div>
     )
 }
@@ -318,12 +285,10 @@ type SearchPanelProps = {
     targetInfo: ReturnType<typeof classroomInfo> | null
     onSelect: (id: string) => void
     onNavigate: () => void
-    onClear: () => void
 }
 
 function SearchPanel({
-    query, setQuery, results, targetId, targetInfo, onSelect, onNavigate, onClear,
-}: SearchPanelProps) {
+    query, setQuery, results, targetId, targetInfo, onSelect, onNavigate }: SearchPanelProps) {
     return (
         <>
             <div className="card bg-base-200 p-3 gap-2">
@@ -387,10 +352,6 @@ function SearchPanel({
                     </div>
                 </div>
             )}
-
-            <button className="btn btn-ghost btn-sm w-fit" onClick={onClear}>
-                Új keresés
-            </button>
         </>
     )
 }

@@ -39,3 +39,15 @@ export function kioskTypeColor(graph: FullGraph, typeId: string): number {
     const parsed = Number(type.colorhex.replace("#", "0x").slice(0, 8))
     return Number.isFinite(parsed) ? parsed : KIOSK_COLORS.classroomFallback
 }
+
+export function darkenColor(hex: number, factor = 0.8) {
+    const r = ((hex >> 16) & 255) * factor;
+    const g = ((hex >> 8) & 255) * factor;
+    const b = (hex & 255) * factor;
+
+    return (
+        (Math.round(r) << 16) |
+        (Math.round(g) << 8) |
+        Math.round(b)
+    );
+}
