@@ -52,7 +52,7 @@ export function buildFloorNode(
         storey,
         object: group,
         appearance: [plate],
-        pickables: [plate],
+        pickables: [],
         center: new THREE.Vector3(plate.position.x, floorPos, plate.position.z),
     }
 }

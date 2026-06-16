@@ -3,7 +3,7 @@ import { useGraph } from "../contexts/other/GraphContext"
 import { useTheme } from "../contexts/other/ThemeContext"
 import KioskView3D from "../three/KioskView3D"
 import type { Classroom } from "../types/navigator/Classroom"
-import type { IsolatedFloor } from "../three/kiosk/types"
+import type { IsolatedFloor, KioskNode } from "../three/kiosk/types"
 import type { Vec3 } from "../types/three/vector"
 import { GraphPathBuilder } from "../three/path/pathbuilder"
 import { loadMyLocation, type MyLocation } from "../types/navigator/MyLocation"
@@ -103,22 +103,17 @@ export default function Kiosk() {
         [classroomById],
     )
 
-    // ---- 3D callbacks ------------------------------------------------------
-    const handleClassroomClick = useCallback(
-        (id: string) => {
-            if (view === "navigate") {
-                // In navigate mode a tap chooses the start point.
-                setStartId((prev) => (prev === id ? null : id))
-            } else {
-                selectTarget(id)
-            }
-        },
-        [view, selectTarget],
-    )
+    const onObjectClick = (x: KioskNode) => {
+        if (x.kind !== "classroom")
+            return;
 
-    const handleFloorClick = useCallback((buildingId: string, storey: number) => {
-        setIsolatedFloor({ buildingId, storey })
-    }, [])
+        if (view === "navigate") {
+            if (startId !== x.id)
+                setStartId(x.id)
+        } else {
+            selectTarget(x.id)
+        }
+    }
 
     // ---- Navigation start/target & pathfinding -----------------------------
     const goToNavigate = useCallback(() => {
@@ -209,9 +204,7 @@ export default function Kiosk() {
                             myLocation={myLocation}
                             background={background}
                             viewResetToken={viewResetToken}
-                            onFloorClick={handleFloorClick}
-                            onClassroomClick={handleClassroomClick}
-                            onClassroomHover={setHoveredId}
+                            onObjectClick={onObjectClick}
                             className="w-full h-full"
                         />
 

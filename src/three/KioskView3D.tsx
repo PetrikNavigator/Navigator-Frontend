@@ -12,6 +12,7 @@ import { attachKioskInteraction } from "./kiosk/interaction"
 import type {
     IsolatedFloor,
     KioskHighlight,
+    KioskNode,
     KioskSelection,
 } from "./kiosk/types"
 import type { Vec3 } from "../types/three/vector"
@@ -35,12 +36,8 @@ type Props = {
     /** Bump this number to force the camera back to the default campus
      *  framing (used by the idle reset). */
     viewResetToken?: number
-    /** Tap on a floor plate. */
-    onFloorClick?: (buildingId: string, storey: number) => void
-    /** Tap on a classroom. */
-    onClassroomClick?: (id: string) => void
-    /** Hover over a classroom (null when leaving). */
-    onClassroomHover?: (id: string | null) => void
+    onObjectClick?: (node: KioskNode) => void
+    onObjectHover?: (node: KioskNode | null) => void
     className?: string
     initialDistance?: number
 }
@@ -65,9 +62,8 @@ export default function KioskView3D({
     myLocation,
     background,
     viewResetToken,
-    onFloorClick,
-    onClassroomClick,
-    onClassroomHover,
+    onObjectClick,
+    onObjectHover,
     className = "w-full h-full",
     initialDistance = 120,
 }: Props) {
@@ -78,14 +74,6 @@ export default function KioskView3D({
     const requestRenderRef = useRef<(() => void) | null>(null)
     const rendererRef = useRef<THREE.WebGLRenderer | null>(null)
     const sceneRef = useRef<THREE.Scene | null>(null)
-
-    // Latest callbacks/props read by the (long-lived) interaction handlers.
-    const onFloorClickRef = useRef(onFloorClick)
-    const onClassroomClickRef = useRef(onClassroomClick)
-    const onClassroomHoverRef = useRef(onClassroomHover)
-    useEffect(() => { onFloorClickRef.current = onFloorClick }, [onFloorClick])
-    useEffect(() => { onClassroomClickRef.current = onClassroomClick }, [onClassroomClick])
-    useEffect(() => { onClassroomHoverRef.current = onClassroomHover }, [onClassroomHover])
 
     // Change-tracking across renders so we only reframe when needed.
     const graphRef = useRef<FullGraph | null | undefined>(undefined)
@@ -132,11 +120,10 @@ export default function KioskView3D({
             camera,
             getNodes: () => controller.getNodes(),
             onPick: (pick) => {
-                if (pick.kind === "floor") onFloorClickRef.current?.(pick.buildingId, pick.storey)
-                else onClassroomClickRef.current?.(pick.id)
+                onObjectClick?.(pick)
             },
             onHover: (pick) => {
-                onClassroomHoverRef.current?.(pick?.kind === "classroom" ? pick.id : null)
+                onObjectHover?.(pick)
             },
             requestRender: loop.requestRender,
         })
