@@ -1,6 +1,6 @@
 import * as THREE from "three"
 import { updateNdcFromPointer } from "../gizmo/rayMath"
-import type { KioskNode, KioskPick } from "./types"
+import type { KioskNode } from "./types"
 
 export type KioskInteractionOpts = {
     canvas: HTMLCanvasElement
@@ -8,22 +8,15 @@ export type KioskInteractionOpts = {
     /** Current node list. Identity is used to cache the pickable map. */
     getNodes: () => KioskNode[]
     /** Fired on a genuine click (pointer that didn't move far = not an orbit). */
-    onPick: (pick: KioskPick) => void
+    onPick: (pick: KioskNode) => void
     /** Fired on hover; null when nothing is under the pointer. */
-    onHover?: (pick: KioskPick | null) => void
+    onHover?: (pick: KioskNode | null) => void
     requestRender?: () => void
 }
 
 // Pointer travel (px) under which a press/release counts as a click rather
 // than an orbit drag.
 const CLICK_MOVE_TOLERANCE = 6
-
-function pickFor(node: KioskNode): KioskPick {
-    if (node.kind === "floor") {
-        return { kind: "floor", buildingId: node.buildingId, storey: node.storey ?? 0 }
-    }
-    return { kind: "classroom", id: node.id }
-}
 
 /** Raycast-based pick/hover for the kiosk. Deliberately separate from
  *  geometry so an object can move (transform change) without any wiring
@@ -62,13 +55,13 @@ export function attachKioskInteraction(opts: KioskInteractionOpts): () => void {
         return out
     }
 
-    const raycastPick = (e: PointerEvent): KioskPick | null => {
+    const raycastPick = (e: PointerEvent): KioskNode | null => {
         updateNdcFromPointer(e, canvas, ndc)
         raycaster.setFromCamera(ndc, camera)
         const hits = raycaster.intersectObjects(collectVisiblePickables(), false)
         if (hits.length === 0) return null
         const node = meshToNode.get(hits[0].object)
-        return node ? pickFor(node) : null
+        return node ?? null
     }
 
     const onPointerMove = (e: PointerEvent): void => {

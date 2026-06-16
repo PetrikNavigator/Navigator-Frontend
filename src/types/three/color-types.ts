@@ -4,8 +4,8 @@
 export const COLORS = {
     bg: 0x070d18,
     line: 0x55ddff,
-    corridor: 0xaaf0ff,
-    yard: 0x88ee66,
+    corridor: 0x0088bb,
+    yard: 0x22aa00,
     yardDim: 0x4a7a3a,
     lift: 0xfacb4d,
     stairs: 0xddc4ff,

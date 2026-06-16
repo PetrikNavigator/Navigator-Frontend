@@ -51,7 +51,7 @@ export const GraphProvider = ({ children }: GraphProviderProps) => {
     }
 
     const getFullGraph = async () => {
-        if (graph !== null)
+        if (graph)
             return graph
 
         return fetchGraph()

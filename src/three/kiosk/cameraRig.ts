@@ -44,7 +44,7 @@ export function createCameraRig(
 
     const belongsToFloor = (n: KioskNode, floor: NonNullable<IsolatedFloor>): boolean => {
         if (n.buildingId !== floor.buildingId) return false
-        if (n.kind === "lift" || n.kind === "stairs")
+        if (n.kind === "lift" || n.kind === "stairs" || n.kind === "corridor")
             return false
 
         return n.storey === floor.storey

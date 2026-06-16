@@ -54,7 +54,7 @@ export default function ClassroomTypesTable() {
                                         <td className="font-medium">{b.name}</td>
 
                                         <td>
-                                            <div className="badge text-black" style={{ backgroundColor: b.colorhex }}>{b.colorhex.slice(0, -2)}</div>
+                                            <div className="badge text-black" style={{ backgroundColor: b.colorhex }}>{b.colorhex.toUpperCase()}</div>
                                         </td>
 
                                         <td>

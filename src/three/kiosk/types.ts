@@ -58,8 +58,3 @@ export type KioskAppearance = {
     selection?: KioskSelection
     highlight?: KioskHighlight
 }
-
-/** Picked entity reported to the host on click/hover. */
-export type KioskPick =
-    | { kind: "floor"; buildingId: string; storey: number }
-    | { kind: "classroom"; id: string }

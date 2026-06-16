@@ -8,7 +8,9 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-    const [theme, setTheme] = useState<boolean>(false);
+    const [theme, setTheme] = useState<boolean>(
+        () => localStorage.getItem("theme")?.toLocaleLowerCase() === "true",
+    );
 
     const change = (val: boolean) => {
         setTheme(val);
@@ -16,8 +18,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     };
 
     useEffect(() => {
-        change(localStorage.getItem("theme")?.toLocaleLowerCase() === "true");
-    }, [])
+        document.documentElement.setAttribute("data-theme", theme ? "dark" : "light");
+    }, [theme]);
 
     return (
         <ThemeContext.Provider value={{ theme, change }}>

@@ -19,7 +19,7 @@ export const KIOSK_COLORS = {
  *  read as ground, rooms read as solid, lines stay crisp. */
 export const KIOSK_OPACITY = {
     floorPlate: 0.18,
-    fill: 0.5,
+    fill: 1.0,
     line: 0.85,
     door: 0.85,
     doorLine: 0.9,
@@ -38,4 +38,16 @@ export function kioskTypeColor(graph: FullGraph, typeId: string): number {
     if (!type?.colorhex) return KIOSK_COLORS.classroomFallback
     const parsed = Number(type.colorhex.replace("#", "0x").slice(0, 8))
     return Number.isFinite(parsed) ? parsed : KIOSK_COLORS.classroomFallback
+}
+
+export function darkenColor(hex: number, factor = 0.8) {
+    const r = ((hex >> 16) & 255) * factor;
+    const g = ((hex >> 8) & 255) * factor;
+    const b = (hex & 255) * factor;
+
+    return (
+        (Math.round(r) << 16) |
+        (Math.round(g) << 8) |
+        Math.round(b)
+    );
 }

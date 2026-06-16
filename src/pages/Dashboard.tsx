@@ -1,6 +1,6 @@
 import { useAuth } from "../contexts/other/AuthContext";
+import Kiosk from "./Kiosk";
 import ManagerDashboard from "./ManagerDashboard";
-import PublicDashboard from "./PublicDashboard";
 
 export default function Dashboard() {
     const { user } = useAuth();
@@ -8,5 +8,5 @@ export default function Dashboard() {
     if (user)
         return <ManagerDashboard />
 
-    return <PublicDashboard />
+    return <Kiosk />
 }

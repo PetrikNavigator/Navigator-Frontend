@@ -30,12 +30,12 @@ export default function ClassroomTypesEditorModal({ classroom_type, open, setOpe
 
         if (editing) {
             await updateClassroomType(classroom_type.id, {
-                colorhex: form.colorhex + "ff",
+                colorhex: form.colorhex,
                 name: form.name
             })
         } else {
             await createClassroomType({
-                colorhex: form.colorhex + "ff",
+                colorhex: form.colorhex,
                 name: form.name,
             })
         }
