@@ -12,6 +12,7 @@ import KioskNavbar from "../components/kiosk/KioskNavbar"
 import SearchPanel from "../components/kiosk/SearchPanel"
 import TypeHighlighter from "../components/kiosk/TypeHighlighter"
 import NavigatePanel from "../components/kiosk/NavigatePanel"
+import { VirtualKeyboardProvider } from "../contexts/other/VirtualKeyboardContext"
 
 /** Canvas background per theme. Dark mirrors the original kiosk palette;
  *  light is a soft slate that keeps the cyan geometry readable. */
@@ -171,6 +172,7 @@ export default function Kiosk() {
         return
 
     return (
+        <VirtualKeyboardProvider>
         <div className="h-screen flex flex-col">
             <KioskNavbar />
 
@@ -243,5 +245,6 @@ export default function Kiosk() {
                 </div>
             </main>
         </div>
+        </VirtualKeyboardProvider>
     )
 }
