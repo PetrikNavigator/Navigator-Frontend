@@ -7,9 +7,10 @@ type Props = {
     onNavigate: (id: string) => void
     selectedId: string | null
     resetToken: number
+    selectedTypeIds: string[]
 }
 
-export default function SearchPanel({ onSelect, selectedId, onNavigate, resetToken }: Props) {
+export default function SearchPanel({ onSelect, selectedId, onNavigate, resetToken, selectedTypeIds }: Props) {
     const { graph, getFullGraph } = useGraph()
 
     const [query, setQuery] = useState("")
@@ -37,10 +38,14 @@ export default function SearchPanel({ onSelect, selectedId, onNavigate, resetTok
         return () => cancelAnimationFrame(id)
     }, [selectedId])
 
-    const results = useMemo(
-        () => searchClassrooms(graph, query),
-        [graph, query],
-    )
+    const results = useMemo(() => {
+        const result = searchClassrooms(graph, query)
+
+        if(selectedTypeIds.length == 0)
+            return result;
+
+        return result.filter(x => selectedTypeIds.includes(x.type_id))
+    }, [graph, query, selectedTypeIds])
 
     if (!graph)
         return

@@ -220,6 +220,7 @@ export default function Kiosk() {
 										onSelect={selectTarget}
 										selectedId={targetId}
 										resetToken={viewResetToken}
+										selectedTypeIds={highlightTypeIds}
 									/>
 								) : (
 									<NavigatePanel
