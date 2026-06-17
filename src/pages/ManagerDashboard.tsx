@@ -9,13 +9,15 @@ import ClassroomTypesTable from "../components/editor/classroom-types/ClassroomT
 import LiftsTab from "../components/editor/lift/LiftsTab";
 import StairsTab from "../components/editor/stair/StairsTab";
 import CorridorsTab from "../components/editor/corridor/CorridorsTab";
+import ThemeSwitcher from "../components/ThemeSwitcher";
 
 export default function ManagerDashboard() {
     return (
         <>
             <Layout
                 sidebarItems={<ManagerSidebar />}
-                navbarStart={<h2 className="text-center hidden sm:flex text-lg font-bold ms-2">Petrik App</h2>}>
+                navbarStart={<h2 className="text-center hidden sm:flex text-lg font-bold ms-2">Petrik App</h2>}
+                navbarEnd={<ThemeSwitcher />}>
 
                 <Routes>
                     <Route path="/" element={<ManagerMain />} />

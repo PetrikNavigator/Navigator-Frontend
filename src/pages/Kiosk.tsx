@@ -13,11 +13,7 @@ import SearchPanel from "../components/kiosk/SearchPanel"
 import TypeHighlighter from "../components/kiosk/TypeHighlighter"
 import NavigatePanel from "../components/kiosk/NavigatePanel"
 import { VirtualKeyboardProvider } from "../contexts/other/VirtualKeyboardContext"
-
-/** Canvas background per theme. Dark mirrors the original kiosk palette;
- *  light is a soft slate that keeps the cyan geometry readable. */
-const CANVAS_BG_DARK = 0x070d18
-const CANVAS_BG_LIGHT = 0xE8FBED
+import { CANVAS_BG_DARK, CANVAS_BG_LIGHT } from "../types/three/material-types"
 
 /** Reset the kiosk after this long with no user input. */
 const IDLE_MS = 60_000

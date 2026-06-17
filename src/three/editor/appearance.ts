@@ -1,5 +1,4 @@
 import type * as THREE from "three"
-import { DIM_OPACITY } from "../../types/three/material-types"
 import type { AppData } from "../kiosk/materials"
 import { KIOSK_COLORS } from "../kiosk/palette"
 import type { KioskNode } from "../kiosk/types"
@@ -88,7 +87,7 @@ function applyMesh(mesh: THREE.Object3D, emphasis: Emphasis): void {
         return
     }
     if (emphasis === "dim") {
-        paint(mesh, data.baseColor, data.baseOpacity * DIM_OPACITY)
+        paint(mesh, data.baseColor, data.baseOpacity * 0.2)
         return
     }
 

@@ -8,6 +8,8 @@ import type { EditorAppearance, EditTarget } from "../../../three/editor/types"
 import { useGraph } from "../../../contexts/other/GraphContext"
 import useUpdateEffect from "../../../useUpdateEffect"
 import LiftForm from "./LiftForm"
+import { CANVAS_BG_DARK, CANVAS_BG_LIGHT } from "../../../types/three/material-types"
+import { useTheme } from "../../../contexts/other/ThemeContext"
 
 const emptyForm = {
     name: "",
@@ -22,6 +24,7 @@ export default function LiftsTab() {
     const { buildings, getBuildings } = useBuildings()
     const { lifts, getLifts, deleteLift, isError, error, addLift, updateLift, clearError, isLoading } = useLifts()
     const { graph, getFullGraph, invalidateGraph } = useGraph()
+    const { theme } = useTheme()
 
     const [editing, setEditing] = useState<Lift | null>(null)
     const [editorOpen, setEditorOpen] = useState(false)
@@ -148,6 +151,8 @@ export default function LiftsTab() {
         },
     }
 
+    const background = theme ? CANVAS_BG_DARK : CANVAS_BG_LIGHT
+
     return (
         <>
             <button className={`btn ${!editorOpen && "btn-primary"} w-max mb-4`} onClick={() => {
@@ -193,6 +198,7 @@ export default function LiftsTab() {
                         className="w-full h-full"
                         initialDistance={120}
                         showAxes
+                        background={background}
                         graph={graph}
                         edit={edit}
                         appearance={appearance}

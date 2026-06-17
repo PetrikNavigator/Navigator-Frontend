@@ -28,6 +28,7 @@ type Props = {
     showAxes?: boolean
     className?: string
     initialDistance?: number
+    background?: number
 }
 
 /**
@@ -45,6 +46,7 @@ export default function EditorView3D({
     myLocation,
     onTransform,
     showAxes,
+    background,
     className = "w-full h-full",
     initialDistance,
 }: Props) {
@@ -54,6 +56,8 @@ export default function EditorView3D({
     const controlsRef = useRef<OrbitControls | null>(null)
     const controllerRef = useRef<EditorSceneController | null>(null)
     const requestRenderRef = useRef<(() => void) | null>(null)
+    const rendererRef = useRef<THREE.WebGLRenderer | null>(null)
+    const sceneRef = useRef<THREE.Scene | null>(null)
 
     // Latest callback read by the (long-lived) gizmo handler.
     const onTransformRef = useRef(onTransform)
@@ -68,6 +72,8 @@ export default function EditorView3D({
 
         const renderer = createRenderer(container)
         const scene = createScene()
+        rendererRef.current = renderer
+        sceneRef.current = scene
         const camera = createCamera(initialDistance ?? 80)
         const controls = new OrbitControls(camera, renderer.domElement)
         controls.enableDamping = true
@@ -115,6 +121,8 @@ export default function EditorView3D({
             cameraRef.current = null
             controlsRef.current = null
             requestRenderRef.current = null
+            rendererRef.current = null
+            sceneRef.current = null
             renderer.dispose()
             renderer.forceContextLoss()
             container.removeChild(renderer.domElement)
@@ -136,6 +144,17 @@ export default function EditorView3D({
 
         requestRenderRef.current?.()
     }, [graph, appearance, edit, myLocation])
+
+    useEffect(() => {
+        if (background == null) return
+        const renderer = rendererRef.current
+        const scene = sceneRef.current
+        if (!renderer || !scene) return
+        renderer.setClearColor(background)
+        if (scene.background instanceof THREE.Color) scene.background.set(background)
+        else scene.background = new THREE.Color(background)
+        requestRenderRef.current?.()
+    }, [background])
 
     return (
         <div className={className} style={{ position: "relative", overflow: "hidden", minHeight: 0, minWidth: 0 }}>
