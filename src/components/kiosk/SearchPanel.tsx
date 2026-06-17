@@ -77,7 +77,7 @@ export default function SearchPanel({ onSelect, selectedId, onNavigate, resetTok
                         results.map(x => {
                             const info = classroomInfo(graph, x)
 
-                            return (<ClassroomCard info={info} x={x} itemRefs={itemRefs} onNavigate={onNavigate} onSelect={onSelect} selectedId={selectedId} />)
+                            return (<ClassroomCard key={x.id} info={info} x={x} itemRefs={itemRefs} onNavigate={onNavigate} onSelect={onSelect} selectedId={selectedId} />)
                         })
                     }
                 </div>

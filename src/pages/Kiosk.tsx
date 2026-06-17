@@ -173,12 +173,12 @@ export default function Kiosk() {
 
 	return (
 		<VirtualKeyboardProvider>
-			<div className="h-screen flex flex-col">
+			<div className="md:h-screen flex flex-col">
 				<KioskNavbar />
 
-				<main className="flex-1 min-h-0 p-4">
-					<div className="flex flex-col xl:flex-row gap-4 h-full">
-						<div className="relative flex-1 min-h-[50%] rounded-xl overflow-hidden border border-base-300">
+				<main className="flex-1 min-h-0 p-4 overflow-auto md:overflow-hidden">
+					<div className="flex flex-col xl:flex-row gap-4 h-full min-h-0">
+						<div className="relative flex-1 min-h-[50%] md:min-h-0 rounded-xl overflow-hidden border border-base-300">
 							<KioskView3D
 								graph={graph}
 								isolatedFloor={isolatedFloor}
@@ -199,21 +199,34 @@ export default function Kiosk() {
 								</div>
 							)}
 
-							<div className="absolute bottom-2 right-2">
+							<div className="absolute bottom-2 right-2 space-x-2">
+								{highlightTypeIds.length > 0 && (
+									<button
+										className="btn btn-xs md:btn-md btn-outline"
+										onClick={() => setHighlightTypeIds([])}
+									>
+										Kiemelés törlése
+									</button>
+								)}
 								<button className="btn btn-xs md:btn-md btn-outline" onClick={resetAll}>Visszaállítás</button>
 							</div>
 						</div>
 
 						{/* Control panel. */}
-						<div className="flex flex-col gap-3 min-h-0 xl:w-96 xl:h-full xl:overflow-y-auto">
+						<div className="flex flex-col gap-3 min-h-0 xl:w-96 flex-shrink">
 							{isLoading && (
-								<div className="alert alert-info py-2"><span>Adatok betöltése…</span></div>
-							)}
-							{isError && (
-								<div className="alert alert-error py-2"><span>Hiba: {error ?? "ismeretlen"}</span></div>
+								<div className="alert alert-info py-2">
+									<span>Adatok betöltése…</span>
+								</div>
 							)}
 
-							<div className="grid grid-cols-2 xl:grid-cols-1 gap-2">
+							{isError && (
+								<div className="alert alert-error py-2">
+									<span>Hiba: {error ?? "ismeretlen"}</span>
+								</div>
+							)}
+
+							<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-2 min-h-0">
 								{view === "search" ? (
 									<SearchPanel
 										onNavigate={goToNavigate}
