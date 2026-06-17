@@ -6,6 +6,8 @@ import Modal from "../../Modal"
 import type { EditTarget, EditorAppearance } from "../../../three/editor/types"
 import { useGraph } from "../../../contexts/other/GraphContext"
 import useUpdateEffect from "../../../useUpdateEffect"
+import { CANVAS_BG_DARK, CANVAS_BG_LIGHT } from "../../../types/three/material-types"
+import { useTheme } from "../../../contexts/other/ThemeContext"
 
 type Props = {
     building: Building | null
@@ -16,6 +18,7 @@ type Props = {
 export default function BuildingEditorModal({ building, open, setOpen }: Props) {
     const { isError, error, addBuilding, updateBuilding, isLoading, buildings } = useBuildings()
     const { graph, getFullGraph, invalidateGraph } = useGraph()
+    const { theme } = useTheme()
     const [form, setForm] = useState<Building>({ id: "", description: "", name: "", x: 0, y: 0 })
     const [err, setErr] = useState<string>("")
 
@@ -101,6 +104,8 @@ export default function BuildingEditorModal({ building, open, setOpen }: Props) 
         },
     }
 
+    const background = theme ? CANVAS_BG_DARK : CANVAS_BG_LIGHT
+
     return (
         <Modal
             showClose={false}
@@ -183,6 +188,7 @@ export default function BuildingEditorModal({ building, open, setOpen }: Props) 
                         <textarea
                             className="textarea textarea-bordered w-full"
                             value={form.description}
+                            maxLength={16000}
                             required
                             onChange={(e) =>
                                 setForm({
@@ -216,6 +222,7 @@ export default function BuildingEditorModal({ building, open, setOpen }: Props) 
                             className="w-full h-full"
                             initialDistance={120}
                             showAxes={true}
+                            background={background}
                             onTransform={(patch) =>
                                 setForm((f) => ({
                                     ...f,

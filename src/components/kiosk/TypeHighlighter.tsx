@@ -19,11 +19,15 @@ export default function TypeHighlighter({ setSelectedIds, selectedIds, types }: 
     }
 
     return (
-        <div className="card bg-base-200 p-3">
-            <h2 className="font-semibold mb-2 text-sm">Terem kiemelés (típus)</h2>
-            <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
+        <div className="card bg-base-200 p-3 min-h-0 overflow-hidden">
+            <h2 className="font-semibold mb-2 text-sm">
+                Terem kiemelés (típus)
+            </h2>
+
+            <div className="flex flex-wrap gap-2 overflow-y-auto">
                 {types.map((t) => {
                     const active = selectedIds.includes(t.id)
+
                     return (
                         <button
                             key={t.id}
@@ -39,14 +43,6 @@ export default function TypeHighlighter({ setSelectedIds, selectedIds, types }: 
                     )
                 })}
             </div>
-            {selectedIds.length > 0 && (
-                <button
-                    className="btn btn-xs mt-2 w-fit"
-                    onClick={() => setSelectedIds([])}
-                >
-                    Kiemelés törlése
-                </button>
-            )}
         </div>
     )
 }

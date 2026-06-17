@@ -97,7 +97,7 @@ export const ClassroomProvider = ({ children }: ClassroomProviderProps) => {
             const updated = classroom as Classroom
             const withoutThis = classrooms.filter(x => x.id !== updated!.id)
             withoutThis.push(updated)
-            withoutThis.sort((a, b) => (a.id < b.id ? -1 : 1))
+            withoutThis.sort((a, b) => (a.name < b.name ? -1 : 1))
             setClassrooms(withoutThis)
         } catch (err: unknown) {
             const normalized = normalizeError(err);

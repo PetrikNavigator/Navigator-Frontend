@@ -8,6 +8,8 @@ import type { EditorAppearance, EditorFilter, EditTarget } from "../../../three/
 import { useGraph } from "../../../contexts/other/GraphContext"
 import useUpdateEffect from "../../../useUpdateEffect"
 import CorridorForm from "./CorridorForm"
+import { CANVAS_BG_DARK, CANVAS_BG_LIGHT } from "../../../types/three/material-types"
+import { useTheme } from "../../../contexts/other/ThemeContext"
 
 const emptyForm = {
     name: "",
@@ -26,6 +28,7 @@ export default function CorridorsTab() {
     const { buildings, getBuildings } = useBuildings()
     const { corridors, getCorridors, deleteCorridor, isError, error, addCorridor, updateCorridor, clearError, isLoading } = useCorridor()
     const { graph, getFullGraph, invalidateGraph } = useGraph()
+    const { theme } = useTheme()
 
     const [editing, setEditing] = useState<Corridor | null>(null)
     const [editorOpen, setEditorOpen] = useState(false)
@@ -181,6 +184,8 @@ export default function CorridorsTab() {
         },
     }
 
+    const background = theme ? CANVAS_BG_DARK : CANVAS_BG_LIGHT
+
     return (
         <>
             <button className={`btn ${!editorOpen && "btn-primary"} w-max mb-4`} onClick={() => {
@@ -261,6 +266,7 @@ export default function CorridorsTab() {
                         className="w-full h-full"
                         initialDistance={120}
                         showAxes
+                        background={background}
                         graph={graph}
                         edit={edit}
                         appearance={appearance}

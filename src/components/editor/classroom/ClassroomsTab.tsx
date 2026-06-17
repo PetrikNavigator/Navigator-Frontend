@@ -9,6 +9,8 @@ import { useGraph } from "../../../contexts/other/GraphContext"
 import useUpdateEffect from "../../../useUpdateEffect"
 import ClassroomForm from "./ClassroomForm"
 import { useClassroomType } from "../../../contexts/navigator/ClassroomTypesContext"
+import { CANVAS_BG_DARK, CANVAS_BG_LIGHT } from "../../../types/three/material-types"
+import { useTheme } from "../../../contexts/other/ThemeContext"
 
 const emptyForm = {
     description: "",
@@ -31,6 +33,7 @@ export default function ClassroomsTab() {
     const { classrooms, getClassrooms, deleteClassroom, isError, error, createClassroom, updateClassroom, clearError, isLoading } = useClassroom()
     const { classroom_types, getClassroomTypes } = useClassroomType()
     const { graph, getFullGraph, invalidateGraph } = useGraph()
+    const { theme } = useTheme()
 
     const [editing, setEditing] = useState<Classroom | null>(null)
     const [editorOpen, setEditorOpen] = useState(false)
@@ -190,6 +193,8 @@ export default function ClassroomsTab() {
         return classrooms.filter(c => (selectedBuildingId ? c.building_id === selectedBuildingId : true) && (selectedFloor !== "" ? c.storey === Number(selectedFloor) : true))
     }, [selectedFloor, selectedBuildingId, classrooms])
 
+    const background = theme ? CANVAS_BG_DARK : CANVAS_BG_LIGHT
+
     return (
         <>
             <button className={`btn ${!editorOpen && "btn-primary"} w-max mb-4`} onClick={() => {
@@ -273,6 +278,7 @@ export default function ClassroomsTab() {
                         className="w-full h-full"
                         initialDistance={120}
                         showAxes
+                        background={background}
                         graph={graph}
                         edit={edit}
                         appearance={appearance}

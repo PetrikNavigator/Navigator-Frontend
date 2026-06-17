@@ -1,12 +1,21 @@
-import SidebarProfileButtons from "../SidebarProfileButtons";
 import { useBuildings } from "../../contexts/navigator/BuildingContext";
 import { useEffect } from "react";
 import { useClassroomType } from "../../contexts/navigator/ClassroomTypesContext";
 import SidebarLink from "../SidebarLink";
+import { useAuth } from "../../contexts/other/AuthContext";
+import { useNavigate } from "react-router";
 
 export default function ManagerSidebar() {
     const { buildings, getBuildings } = useBuildings()
     const { classroom_types, getClassroomTypes } = useClassroomType()
+    const { logout, isLoading } = useAuth();
+
+    const navigate = useNavigate()
+
+    const onLogout = async () => {
+        await logout();
+        navigate("/", { replace: true })
+    }
 
     useEffect(() => {
         getBuildings()
@@ -64,7 +73,11 @@ export default function ManagerSidebar() {
                         text="3D Előnézet"
                         url="elonezet" />
 
-                    <SidebarProfileButtons />
+                    <div className="mt-auto">
+                        <button onClick={onLogout} className="btn btn-error mt-2 btn-sm w-full" disabled={isLoading}>
+                            Kijelentkezés
+                        </button>
+                    </div>
                 </ul>
             </div>
         </>

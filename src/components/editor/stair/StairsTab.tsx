@@ -8,6 +8,8 @@ import type { EditorAppearance, EditTarget } from "../../../three/editor/types"
 import { useGraph } from "../../../contexts/other/GraphContext"
 import useUpdateEffect from "../../../useUpdateEffect"
 import StairForm from "./StairForm"
+import { CANVAS_BG_DARK, CANVAS_BG_LIGHT } from "../../../types/three/material-types"
+import { useTheme } from "../../../contexts/other/ThemeContext"
 
 const emptyForm = {
     name: "",
@@ -26,6 +28,7 @@ export default function StairsTab() {
     const { buildings, getBuildings } = useBuildings()
     const { stairs, getStairs, deleteStair, isError, error, addStair, updateStair, clearError, isLoading } = useStairs()
     const { graph, getFullGraph, invalidateGraph } = useGraph()
+    const { theme } = useTheme()
 
     const [editing, setEditing] = useState<Stair | null>(null)
     const [editorOpen, setEditorOpen] = useState(false)
@@ -153,6 +156,8 @@ export default function StairsTab() {
         },
     }
 
+    const background = theme ? CANVAS_BG_DARK : CANVAS_BG_LIGHT
+
     return (
         <>
             <button className={`btn ${!editorOpen && "btn-primary"} w-max mb-4`} onClick={() => {
@@ -198,6 +203,7 @@ export default function StairsTab() {
                         className="w-full h-full"
                         initialDistance={120}
                         showAxes
+                        background={background}
                         graph={graph}
                         edit={edit}
                         appearance={appearance}

@@ -1,8 +1,7 @@
 import type * as THREE from "three"
-import { DIM_OPACITY } from "../../types/three/material-types"
 import type { AppData } from "../kiosk/materials"
 import { KIOSK_COLORS } from "../kiosk/palette"
-import type { KioskNode } from "../kiosk/types"
+import type { KioskNode, KioskNodeKind } from "../kiosk/types"
 import type { EditorAppearance, EditorFilter } from "./types"
 
 /** How a single node reads against the current state. */
@@ -79,7 +78,7 @@ function emphasisOf(node: KioskNode, app: EditorAppearance): Emphasis {
 
 /** Repaint one mesh from its stored base look, so "base"/"dim" always
  *  restore cleanly. Mirrors the kiosk appearance pass. */
-function applyMesh(mesh: THREE.Object3D, emphasis: Emphasis): void {
+function applyMesh(mesh: THREE.Object3D, emphasis: Emphasis, kind: KioskNodeKind): void {
     const data = mesh.userData.app as AppData | undefined
     if (!data) return
 
@@ -88,7 +87,7 @@ function applyMesh(mesh: THREE.Object3D, emphasis: Emphasis): void {
         return
     }
     if (emphasis === "dim") {
-        paint(mesh, data.baseColor, data.baseOpacity * DIM_OPACITY)
+        paint(mesh, data.baseColor, data.baseOpacity * (kind === "classroom" ? 0.1 : 1))
         return
     }
 
@@ -111,12 +110,12 @@ export function applyEditorAppearance(nodes: KioskNode[], app: EditorAppearance)
     for (const node of nodes) {
         node.object.visible = passesFilter(node, app.filter)
         const emphasis = emphasisOf(node, app)
-        for (const mesh of node.appearance) applyMesh(mesh, emphasis)
+        for (const mesh of node.appearance) applyMesh(mesh, emphasis, node.kind)
     }
 }
 
 /** Force one node's whole appearance to the accent look. Used for the live
  *  preview node of the entity being edited (it lives outside `nodes`). */
 export function accentNode(node: KioskNode): void {
-    for (const mesh of node.appearance) applyMesh(mesh, "highlight")
+    for (const mesh of node.appearance) applyMesh(mesh, "highlight", node.kind)
 }

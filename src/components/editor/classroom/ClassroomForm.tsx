@@ -2,6 +2,7 @@ import { useRef, useEffect } from "react"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
 import { useClassroomType } from "../../../contexts/navigator/ClassroomTypesContext"
 import type { AddClassroom } from "../../../types/navigator/Classroom"
+import { FLOOR_HEIGHT } from "../../../types/three/material-types"
 
 type Props = {
     formData: AddClassroom
@@ -42,7 +43,7 @@ export default function ClassroomForm({ onSubmit, onFormChange: setForm, isError
                         <input
                             type="text"
                             className="input input-bordered w-full"
-                            placeholder="Pl. Informatika labor"
+                            placeholder="Pl. A205"
                             value={form.name}
                             onChange={(e) =>
                                 setForm({
@@ -272,14 +273,14 @@ export default function ClassroomForm({ onSubmit, onFormChange: setForm, isError
                         <input
                             type="number"
                             min={1}
-                            max={10}
+                            max={FLOOR_HEIGHT}
                             className="input input-bordered w-full"
                             value={form.size_z}
                             onChange={(e) =>
                                 setForm({
                                     ...form,
                                     size_z: Math.min(
-                                        10,
+                                        FLOOR_HEIGHT,
                                         Math.round(Number(e.target.value))
                                     ),
                                 })
@@ -287,7 +288,7 @@ export default function ClassroomForm({ onSubmit, onFormChange: setForm, isError
                         />
 
                         <p className="label text-xs opacity-60">
-                            Maximum 10 méter
+                            {`Maximum ${FLOOR_HEIGHT} méter`}
                         </p>
                     </fieldset>
                 </div>
@@ -300,6 +301,7 @@ export default function ClassroomForm({ onSubmit, onFormChange: setForm, isError
                         className="textarea textarea-bordered min-h-[120px] w-full"
                         placeholder="Rövid leírás a teremről..."
                         value={form.description}
+                        maxLength={16000}
                         onChange={(e) =>
                             setForm({
                                 ...form,
