@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useLayoutEffect, useRef, useState } from "react"
 import type { Classroom } from "../../types/navigator/Classroom"
 import type { ClassroomInfo } from "../../utils/classroomSearch"
 
@@ -20,6 +20,25 @@ export default function ClassroomCard({
     itemRefs,
 }: ClassroomCardProp) {
     const [expanded, setExpanded] = useState(false)
+
+    const textRef = useRef<HTMLParagraphElement | null>(null)
+    const [isOverflowing, setIsOverflowing] = useState(false)
+
+    useLayoutEffect(() => {
+        const el = textRef.current
+        if (!el) return
+
+        const check = () => {
+            setIsOverflowing(el.scrollHeight > el.clientHeight)
+        }
+
+        check()
+
+        const ro = new ResizeObserver(check)
+        ro.observe(el)
+
+        return () => ro.disconnect()
+    }, [info.classroom.description, expanded])
 
     return (
         <div
@@ -76,25 +95,28 @@ export default function ClassroomCard({
 
                 {info.classroom.description && (
                     <div>
-                        <p
-                            className={`opacity-80 ${expanded ? "" : "line-clamp-2 truncate"}`}
-                        >
+                        <p ref={textRef} className={`opacity-80 ${expanded ? "" : "line-clamp-2"}`}>
                             {info.classroom.description}
                         </p>
                     </div>
                 )}
             </div>
 
-            <div className="card-actions">
-                <button
-                    className="btn btn-ghost btn-xs"
-                    onClick={(e) => {
-                        e.stopPropagation()
-                        setExpanded((v) => !v)
-                    }}
-                >
-                    {expanded ? "Kevesebb" : "Több"}</button>
-            </div>
+            {
+                info.classroom.description && (isOverflowing || expanded) && (
+                    <div className="card-actions">
+                        <button
+                            className="btn btn-ghost btn-xs"
+                            onClick={(e) => {
+                                e.stopPropagation()
+                                setExpanded((v) => !v)
+                            }}
+                        >
+                            {expanded ? "Kevesebb" : "Több"}
+                        </button>
+                    </div>
+                )
+            }
         </div>
     )
 }

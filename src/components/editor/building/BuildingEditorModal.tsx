@@ -183,6 +183,7 @@ export default function BuildingEditorModal({ building, open, setOpen }: Props) 
                         <textarea
                             className="textarea textarea-bordered w-full"
                             value={form.description}
+                            maxLength={16000}
                             required
                             onChange={(e) =>
                                 setForm({
