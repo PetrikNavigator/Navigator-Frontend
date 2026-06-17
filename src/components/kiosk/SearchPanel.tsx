@@ -72,7 +72,7 @@ export default function SearchPanel({ onSelect, selectedId, onNavigate, resetTok
                         <button className="btn btn-ghost btn-xs" onClick={() => setQuery("")}>✕</button>
                     )}
                 </label>
-                <div className="overflow-y-auto max-h-96 my-4 space-y-4">
+                <div className="overflow-y-auto lg:min-h-96 max-h-96 my-4 space-y-4">
                     {
                         results.map(x => {
                             const info = classroomInfo(graph, x)
