@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useGraph } from "../contexts/other/GraphContext"
 import { useTheme } from "../contexts/other/ThemeContext"
 import KioskView3D from "../three/KioskView3D"
@@ -31,6 +32,7 @@ type View = "search" | "navigate"
  * page reload.
  */
 export default function Kiosk() {
+	const { t } = useTranslation()
 	const { graph, getFullGraph, isLoading, isError, error } = useGraph()
 	const { theme } = useTheme()
 
@@ -63,8 +65,8 @@ export default function Kiosk() {
 
 	const nameOf = useCallback(
 		(id?: string | null): string =>
-			id ? classroomById.get(id)?.name ?? id : "—",
-		[classroomById],
+			id ? t(classroomById.get(id)?.name ?? id) : "—",
+		[classroomById, t],
 	)
 
 	const resetAll = useCallback(() => {
@@ -201,10 +203,10 @@ export default function Kiosk() {
 										className="btn btn-xs md:btn-md btn-outline"
 										onClick={() => setHighlightTypeIds([])}
 									>
-										Kiemelés törlése
+										{t("ui.kiosk.clear_highlight")}
 									</button>
 								)}
-								<button className="btn btn-xs md:btn-md btn-outline" onClick={resetAll}>Visszaállítás</button>
+								<button className="btn btn-xs md:btn-md btn-outline" onClick={resetAll}>{t("ui.kiosk.reset")}</button>
 							</div>
 						</div>
 
@@ -212,13 +214,13 @@ export default function Kiosk() {
 						<div className="flex flex-col gap-3 min-h-0 xl:w-96 flex-shrink">
 							{isLoading && (
 								<div className="alert alert-info py-2">
-									<span>Adatok betöltése…</span>
+									<span>{t("ui.kiosk.loading")}</span>
 								</div>
 							)}
 
 							{isError && (
 								<div className="alert alert-error py-2">
-									<span>Hiba: {error ?? "ismeretlen"}</span>
+									<span>{t("ui.kiosk.error", { error: error ?? t("ui.common.unknown") })}</span>
 								</div>
 							)}
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
 import { useClassroom } from "../../../contexts/navigator/ClassroomContext"
 import type { AddClassroom, Classroom } from "../../../types/navigator/Classroom"
@@ -29,6 +30,7 @@ const normalizeDeg0To359 = (deg: number) => ((deg % 360) + 360) % 360
 const normalizeDoorRotation = (deg: number) => normalizeDeg0To359(Math.round(deg))
 
 export default function ClassroomsTab() {
+    const { t } = useTranslation()
     const { buildings, getBuildings } = useBuildings()
     const { classrooms, getClassrooms, deleteClassroom, isError, error, createClassroom, updateClassroom, clearError, isLoading } = useClassroom()
     const { classroom_types, getClassroomTypes } = useClassroomType()
@@ -60,15 +62,15 @@ export default function ClassroomsTab() {
         clearError()
 
         if (!form.name.trim()) {
-            setErr("Add meg az épület nevét")
+            setErr(t("ui.classroom.err_name"))
             return
         }
         if (!form.description.trim()) {
-            setErr("Add meg az épület leírását")
+            setErr(t("ui.classroom.err_desc"))
             return
         }
         if (!Number.isFinite(form.x) || !Number.isFinite(form.y)) {
-            setErr("A pozíciónak érvényes számnak kell lennie")
+            setErr(t("ui.common.err_position_number"))
             return
         }
 
@@ -83,7 +85,7 @@ export default function ClassroomsTab() {
     }
 
     const onRemove = async (classroom: Classroom) => {
-        const res = confirm(`Biztos hogy törölöd a(z) ${classroom.name}?`)
+        const res = confirm(t("ui.confirm.delete", { name: t(classroom.name) }))
         if (res)
             await deleteClassroom(classroom.id)
     }
@@ -155,7 +157,7 @@ export default function ClassroomsTab() {
             kind: "classroom",
             id: editing?.id,
             preview: {
-                name: form.name || "új terem",
+                name: form.name || t("ui.classroom.new_placeholder"),
                 capacity: form.capacity,
                 storey: form.storey,
                 x: form.x,
@@ -200,7 +202,7 @@ export default function ClassroomsTab() {
             <button className={`btn ${!editorOpen && "btn-primary"} w-max mb-4`} onClick={() => {
                 editorOpen ? onClose() : onCreate()
             }}>
-                {editorOpen ? "Mégse" : "Terem hozzáadása"}
+                {editorOpen ? t("ui.common.cancel") : t("ui.classroom.add")}
             </button>
             <div className="xl:flex xl:space-x-6">
                 <div className="overflow-x-auto xl:min-w-[40vw] max-h-[80vh]">
@@ -223,36 +225,36 @@ export default function ClassroomsTab() {
                                     onSubmit={onSubmit}
                                 />
                                 <button className="btn btn-primary mt-2" form="classroom-form" disabled={isLoading}>
-                                    {editing ? "Mentés" : "Létrehozás"}
+                                    {editing ? t("ui.common.save") : t("ui.common.create")}
                                 </button>
                             </>
                             :
                             <>
                                 <div className="flex space-x-2">
                                     <fieldset className="fieldset">
-                                        <legend className="label">Épület</legend>
+                                        <legend className="label">{t("ui.common.building")}</legend>
                                         <select
                                             className="select select-bordered"
                                             value={selectedBuildingId || ""}
                                             onChange={(e) => setSelectedBuildingId(e.target.value || null)}
                                         >
-                                            <option value="">Összes</option>
+                                            <option value="">{t("ui.common.all")}</option>
                                             {buildings.map((b) => (
                                                 <option key={b.id} value={b.id}>
-                                                    {b.name}
+                                                    {t(b.name)}
                                                 </option>
                                             ))}
                                         </select>
                                     </fieldset>
 
                                     <fieldset className="fieldset">
-                                        <legend className="label">Szint</legend>
+                                        <legend className="label">{t("ui.common.storey_filter")}</legend>
                                         <select
                                             className="select select-bordered"
                                             value={selectedFloor}
                                             onChange={(e) => setSelectedFloor(e.target.value)}
                                         >
-                                            <option value="">Összes</option>
+                                            <option value="">{t("ui.common.all")}</option>
                                             {availableFloors.map((b) => (
                                                 <option key={b} value={b}>
                                                     {b}

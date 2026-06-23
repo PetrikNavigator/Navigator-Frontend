@@ -1,4 +1,5 @@
 import { useRef, useEffect } from "react"
+import { useTranslation } from "react-i18next"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
 import { useClassroomType } from "../../../contexts/navigator/ClassroomTypesContext"
 import type { AddClassroom } from "../../../types/navigator/Classroom"
@@ -16,6 +17,7 @@ const normalizeDeg0To359 = (deg: number) => ((deg % 360) + 360) % 360
 const normalizeDoorRotation = (deg: number) => normalizeDeg0To359(Math.round(deg))
 
 export default function ClassroomForm({ onSubmit, onFormChange: setForm, isError, error, formData: form }: Props) {
+    const { t } = useTranslation()
     const { buildings } = useBuildings()
     const { classroom_types } = useClassroomType()
     const errorRef = useRef<HTMLDivElement>(null)
@@ -38,12 +40,12 @@ export default function ClassroomForm({ onSubmit, onFormChange: setForm, isError
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     <fieldset className="fieldset">
-                        <legend className="fieldset-legend">Név</legend>
+                        <legend className="fieldset-legend">{t("ui.common.name")}</legend>
 
                         <input
                             type="text"
                             className="input input-bordered w-full"
-                            placeholder="Pl. A205"
+                            placeholder={t("ui.classroom.name_placeholder")}
                             value={form.name}
                             onChange={(e) =>
                                 setForm({
@@ -57,7 +59,7 @@ export default function ClassroomForm({ onSubmit, onFormChange: setForm, isError
 
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Épület
+                            {t("ui.common.building")}
                         </legend>
 
                         <select
@@ -74,7 +76,7 @@ export default function ClassroomForm({ onSubmit, onFormChange: setForm, isError
                                     key={b.id}
                                     value={b.id}
                                 >
-                                    {b.name}
+                                    {t(b.name)}
                                 </option>
                             ))}
                         </select>
@@ -82,7 +84,7 @@ export default function ClassroomForm({ onSubmit, onFormChange: setForm, isError
 
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Terem típusa
+                            {t("ui.classroom.type")}
                         </legend>
 
                         <select
@@ -98,7 +100,7 @@ export default function ClassroomForm({ onSubmit, onFormChange: setForm, isError
                                     key={ct.id.toString()}
                                     value={ct.id.toString()}
                                 >
-                                    {ct.name}
+                                    {t(ct.name)}
                                 </option>
                             ))}
                         </select>
@@ -106,7 +108,7 @@ export default function ClassroomForm({ onSubmit, onFormChange: setForm, isError
 
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Emelet
+                            {t("ui.common.floor")}
                         </legend>
 
                         <input
@@ -122,13 +124,13 @@ export default function ClassroomForm({ onSubmit, onFormChange: setForm, isError
                         />
 
                         <p className="label text-xs opacity-60">
-                            Negatív érték is megadható
+                            {t("ui.common.negative_allowed")}
                         </p>
                     </fieldset>
 
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Befogadóképesség
+                            {t("ui.classroom.capacity")}
                         </legend>
 
                         <input
@@ -152,7 +154,7 @@ export default function ClassroomForm({ onSubmit, onFormChange: setForm, isError
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Pozíció X
+                            {t("ui.common.pos_x")}
                         </legend>
 
                         <input
@@ -170,7 +172,7 @@ export default function ClassroomForm({ onSubmit, onFormChange: setForm, isError
 
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Pozíció Y
+                            {t("ui.common.pos_y")}
                         </legend>
 
                         <input
@@ -188,7 +190,7 @@ export default function ClassroomForm({ onSubmit, onFormChange: setForm, isError
 
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Forgatás
+                            {t("ui.common.rotation")}
                         </legend>
 
                         <div className="join w-full">
@@ -221,7 +223,7 @@ export default function ClassroomForm({ onSubmit, onFormChange: setForm, isError
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Szélesség (X)
+                            {t("ui.classroom.size_x")}
                         </legend>
 
                         <input
@@ -238,13 +240,13 @@ export default function ClassroomForm({ onSubmit, onFormChange: setForm, isError
                         />
 
                         <p className="label text-xs opacity-60">
-                            Méterben megadva
+                            {t("ui.common.meters")}
                         </p>
                     </fieldset>
 
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Mélység (Y)
+                            {t("ui.classroom.size_y")}
                         </legend>
 
                         <input
@@ -261,13 +263,13 @@ export default function ClassroomForm({ onSubmit, onFormChange: setForm, isError
                         />
 
                         <p className="label text-xs opacity-60">
-                            Méterben megadva
+                            {t("ui.common.meters")}
                         </p>
                     </fieldset>
 
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Belmagasság (Z)
+                            {t("ui.classroom.size_z")}
                         </legend>
 
                         <input
@@ -288,7 +290,7 @@ export default function ClassroomForm({ onSubmit, onFormChange: setForm, isError
                         />
 
                         <p className="label text-xs opacity-60">
-                            {`Maximum ${FLOOR_HEIGHT} méter`}
+                            {t("ui.classroom.size_z_max", { n: FLOOR_HEIGHT })}
                         </p>
                     </fieldset>
                 </div>
@@ -299,7 +301,7 @@ export default function ClassroomForm({ onSubmit, onFormChange: setForm, isError
                 <fieldset className="fieldset">
                     <textarea
                         className="textarea textarea-bordered min-h-[120px] w-full"
-                        placeholder="Rövid leírás a teremről..."
+                        placeholder={t("ui.classroom.desc_placeholder")}
                         value={form.description}
                         maxLength={16000}
                         onChange={(e) =>

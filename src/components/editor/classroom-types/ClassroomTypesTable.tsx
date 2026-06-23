@@ -1,16 +1,18 @@
 import { useLayoutEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import ClassroomTypesEditorModal from "./ClassroomTypeEditorModal";
 import type { ClassroomType } from "../../../types/navigator/ClassroomType";
 import { useClassroomType } from "../../../contexts/navigator/ClassroomTypesContext";
 
 export default function ClassroomTypesTable() {
+    const { t } = useTranslation()
     const { classroom_types, getClassroomTypes, deleteClassroomType } = useClassroomType()
 
     const [editing, setEditing] = useState<ClassroomType | null>(null)
     const [open, setOpen] = useState(false)
 
     const onRemove = async (classroomType: ClassroomType) => {
-        const res = confirm(`Biztos hogy törölöd a(z) ${classroomType.name}?`)
+        const res = confirm(t("ui.confirm.delete", { name: t(classroomType.name) }))
         if (res)
             await deleteClassroomType(classroomType.id)
     }
@@ -34,14 +36,14 @@ export default function ClassroomTypesTable() {
             <div className="card bg-base-100 shadow-sm">
                 <div className="card-body p-0">
                     <button className="btn btn-primary w-max mb-4" onClick={onCreate}>
-                        Típus hozzáadása
+                        {t("ui.type.add")}
                     </button>
                     <div className="overflow-x-auto max-h-[80vh]">
                         <table className="table table-pin-rows">
                             <thead>
                                 <tr>
-                                    <th>Név</th>
-                                    <th>Szín</th>
+                                    <th>{t("ui.common.name")}</th>
+                                    <th>{t("ui.common.color")}</th>
                                     <th className="w-32"></th>
                                 </tr>
                             </thead>
@@ -51,7 +53,7 @@ export default function ClassroomTypesTable() {
                                     <tr
                                         key={b.id.toString()}
                                     >
-                                        <td className="font-medium">{b.name}</td>
+                                        <td className="font-medium">{t(b.name)}</td>
 
                                         <td>
                                             <div className="badge text-black" style={{ backgroundColor: b.colorhex }}>{b.colorhex.toUpperCase()}</div>
@@ -63,14 +65,14 @@ export default function ClassroomTypesTable() {
                                                     className="btn btn-ghost btn-sm"
                                                     onClick={() => onEdit(b)}
                                                 >
-                                                    Szerk.
+                                                    {t("ui.common.edit")}
                                                 </button>
 
                                                 <button
                                                     className="btn btn-error btn-sm"
                                                     onClick={() => onRemove(b)}
                                                 >
-                                                    Törlés
+                                                    {t("ui.common.delete")}
                                                 </button>
                                             </div>
                                         </td>
@@ -83,8 +85,7 @@ export default function ClassroomTypesTable() {
                                             colSpan={4}
                                             className="text-center text-base-content/60 py-8"
                                         >
-                                            Nincs még típus. Adj hozzá egyet a jobb felső
-                                            gombbal.
+                                            {t("ui.type.empty")}
                                         </td>
                                     </tr>
                                 )}

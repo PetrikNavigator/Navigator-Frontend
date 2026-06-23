@@ -1,4 +1,5 @@
 import { Route, Routes } from "react-router";
+import { useTranslation } from "react-i18next";
 import Layout from "../components/Layout";
 import ManagerSidebar from "../components/manager/ManagerSidebar";
 import ManagerMain from "../components/manager/ManagerMain";
@@ -10,14 +11,22 @@ import LiftsTab from "../components/editor/lift/LiftsTab";
 import StairsTab from "../components/editor/stair/StairsTab";
 import CorridorsTab from "../components/editor/corridor/CorridorsTab";
 import ThemeSwitcher from "../components/ThemeSwitcher";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 export default function ManagerDashboard() {
+    const { t } = useTranslation()
+
     return (
         <>
             <Layout
                 sidebarItems={<ManagerSidebar />}
-                navbarStart={<h2 className="text-center hidden sm:flex text-lg font-bold ms-2">Petrik App</h2>}
-                navbarEnd={<ThemeSwitcher />}>
+                navbarStart={<h2 className="text-center hidden sm:flex text-lg font-bold ms-2">{t("ui.app.title")}</h2>}
+                navbarEnd={
+                    <div className="flex items-center gap-2">
+                        <LanguageSwitcher />
+                        <ThemeSwitcher />
+                    </div>
+                }>
 
                 <Routes>
                     <Route path="/" element={<ManagerMain />} />

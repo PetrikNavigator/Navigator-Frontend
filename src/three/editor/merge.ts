@@ -5,12 +5,13 @@ import type { Lift } from "../../types/navigator/Lift"
 import type { Stair } from "../../types/navigator/Stair"
 import type { FullGraph } from "../../types/FullGraph"
 import type { EditTarget } from "./types"
+import i18n from "../../i18n/i18n"
 
 /** Placeholder id for an entity being created (not yet saved). */
 const NEW_ID = ""
 
 const defaultClassroom = (graph: FullGraph): Classroom => ({
-    id: NEW_ID, name: "új terem", capacity: 0, storey: 0,
+    id: NEW_ID, name: i18n.t("ui.classroom.new_placeholder"), capacity: 0, storey: 0,
     x: 0, y: 0, rotation: 0,
     size_x: 6, size_y: 6, size_z: 3,
     description: "",
@@ -19,11 +20,11 @@ const defaultClassroom = (graph: FullGraph): Classroom => ({
 })
 
 const defaultBuilding = (): Building => ({
-    id: NEW_ID, name: "új épület", description: "", x: 0, y: 0,
+    id: NEW_ID, name: i18n.t("ui.building.new_placeholder"), description: "", x: 0, y: 0,
 })
 
 const defaultLift = (graph: FullGraph): Lift => ({
-    id: NEW_ID, name: "új", x: 0, y: 0,
+    id: NEW_ID, name: i18n.t("ui.editor.new_generic"), x: 0, y: 0,
     min_storey: 0, max_storey: 1,
     building_id: graph.buildings[0]?.id ?? NEW_ID,
 })

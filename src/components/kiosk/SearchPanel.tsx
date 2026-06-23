@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useGraph } from "../../contexts/other/GraphContext"
 import { classroomInfo, searchClassrooms } from "../../utils/classroomSearch"
 import ClassroomCard from "./ClassroomCard"
@@ -12,6 +13,7 @@ type Props = {
 }
 
 export default function SearchPanel({ onSelect, selectedId, onNavigate, resetToken, selectedTypeIds }: Props) {
+    const { t } = useTranslation()
     const { graph, getFullGraph } = useGraph()
 
     const [query, setQuery] = useState("")
@@ -42,13 +44,13 @@ export default function SearchPanel({ onSelect, selectedId, onNavigate, resetTok
     }, [selectedId])
 
     const results = useMemo(() => {
-        const result = searchClassrooms(graph, query)
+        const result = searchClassrooms(graph, query, t)
 
         if (selectedTypeIds.length == 0)
             return result;
 
         return result.filter(x => selectedTypeIds.includes(x.type_id))
-    }, [graph, query, selectedTypeIds])
+    }, [graph, query, selectedTypeIds, t])
 
     if (!graph)
         return
@@ -64,7 +66,7 @@ export default function SearchPanel({ onSelect, selectedId, onNavigate, resetTok
                         ref={inputRef}
                         type="text"
                         className="grow"
-                        placeholder="Terem keresése"
+                        placeholder={t("ui.search.placeholder")}
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                     />
@@ -75,7 +77,7 @@ export default function SearchPanel({ onSelect, selectedId, onNavigate, resetTok
                 <div className="overflow-y-auto lg:min-h-96 max-h-96 my-4 space-y-4">
                     {
                         results.map(x => {
-                            const info = classroomInfo(graph, x)
+                            const info = classroomInfo(graph, x, t)
 
                             return (<ClassroomCard key={x.id} info={info} x={x} itemRefs={itemRefs} onNavigate={onNavigate} onSelect={onSelect} selectedId={selectedId} />)
                         })

@@ -1,4 +1,5 @@
 import { useRef, useEffect } from "react"
+import { useTranslation } from "react-i18next"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
 import type { AddLift } from "../../../types/navigator/Lift"
 
@@ -11,6 +12,7 @@ type Props = {
 }
 
 export default function LiftForm({ onSubmit, onFormChange: setForm, isError, error, formData: form }: Props) {
+    const { t } = useTranslation()
     const { buildings } = useBuildings()
     const errorRef = useRef<HTMLDivElement>(null)
 
@@ -30,12 +32,12 @@ export default function LiftForm({ onSubmit, onFormChange: setForm, isError, err
             <section className="space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <fieldset className="fieldset">
-                        <legend className="fieldset-legend">Név</legend>
+                        <legend className="fieldset-legend">{t("ui.common.name")}</legend>
 
                         <input
                             type="text"
                             className="input input-bordered w-full"
-                            placeholder="Pl. A1 lift"
+                            placeholder={t("ui.lift.name_placeholder")}
                             value={form.name}
                             onChange={(e) =>
                                 setForm({
@@ -49,7 +51,7 @@ export default function LiftForm({ onSubmit, onFormChange: setForm, isError, err
 
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Épület
+                            {t("ui.common.building")}
                         </legend>
 
                         <select
@@ -65,7 +67,7 @@ export default function LiftForm({ onSubmit, onFormChange: setForm, isError, err
                                     key={b.id}
                                     value={b.id}
                                 >
-                                    {b.name}
+                                    {t(b.name)}
                                 </option>
                             ))}
                         </select>
@@ -78,7 +80,7 @@ export default function LiftForm({ onSubmit, onFormChange: setForm, isError, err
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Pozíció X
+                            {t("ui.common.pos_x")}
                         </legend>
 
                         <input
@@ -96,7 +98,7 @@ export default function LiftForm({ onSubmit, onFormChange: setForm, isError, err
 
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Pozíció Y
+                            {t("ui.common.pos_y")}
                         </legend>
 
                         <input
@@ -119,7 +121,7 @@ export default function LiftForm({ onSubmit, onFormChange: setForm, isError, err
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Minimum emelet
+                            {t("ui.common.min_storey")}
                         </legend>
 
                         <input
@@ -135,13 +137,13 @@ export default function LiftForm({ onSubmit, onFormChange: setForm, isError, err
                         />
 
                         <p className="label text-xs opacity-60">
-                            Negatív érték is megadható
+                            {t("ui.common.negative_allowed")}
                         </p>
                     </fieldset>
 
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Maximum emelet
+                            {t("ui.common.max_storey")}
                         </legend>
 
                         <input
@@ -157,7 +159,7 @@ export default function LiftForm({ onSubmit, onFormChange: setForm, isError, err
                         />
 
                         <p className="label text-xs opacity-60">
-                            A lift legfelső megállója
+                            {t("ui.lift.max_hint")}
                         </p>
                     </fieldset>
                 </div>

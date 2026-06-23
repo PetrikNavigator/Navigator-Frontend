@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react"
+import { useTranslation } from "react-i18next"
 import * as THREE from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
 
@@ -67,6 +68,7 @@ export default function KioskView3D({
     className = "w-full h-full",
     initialDistance = 120,
 }: Props) {
+    const { t } = useTranslation()
     const containerRef = useRef<HTMLDivElement>(null)
 
     const controllerRef = useRef<KioskSceneController | null>(null)
@@ -213,7 +215,7 @@ export default function KioskView3D({
 
             {!graph && (
                 <div className="absolute inset-0 grid place-items-center text-cyan-300 text-sm">
-                    Nincs elérhető adat
+                    {t("ui.common.no_data")}
                 </div>
             )}
         </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
 import { useCorridor } from "../../../contexts/navigator/CorridorContext"
 import type { AddCorridor, Corridor } from "../../../types/navigator/Corridor"
@@ -25,6 +26,7 @@ const emptyForm = {
 }
 
 export default function CorridorsTab() {
+    const { t } = useTranslation()
     const { buildings, getBuildings } = useBuildings()
     const { corridors, getCorridors, deleteCorridor, isError, error, addCorridor, updateCorridor, clearError, isLoading } = useCorridor()
     const { graph, getFullGraph, invalidateGraph } = useGraph()
@@ -54,7 +56,7 @@ export default function CorridorsTab() {
         clearError()
 
         if (!form.name.trim()) {
-            setErr("Add meg a folyosó nevét")
+            setErr(t("ui.corridor.err_name"))
             return
         }
         if (
@@ -63,15 +65,15 @@ export default function CorridorsTab() {
             !Number.isFinite(form.x2) ||
             !Number.isFinite(form.y2)
         ) {
-            setErr("A pozícióknak érvényes számoknak kell lenniük")
+            setErr(t("ui.corridor.err_positions"))
             return
         }
         if (form.x1 === form.x2 && form.y1 === form.y2) {
-            setErr("A kezdő- és végpont nem lehet ugyanaz")
+            setErr(t("ui.corridor.err_same_point"))
             return
         }
         if (form.width <= 0) {
-            setErr("A szélességnek pozitívnak kell lennie")
+            setErr(t("ui.corridor.err_width"))
             return
         }
 
@@ -86,7 +88,7 @@ export default function CorridorsTab() {
     }
 
     const onRemove = async (corridor: Corridor) => {
-        const res = confirm(`Biztos hogy törölöd a(z) ${corridor.name}?`)
+        const res = confirm(t("ui.confirm.delete", { name: t(corridor.name) }))
         if (res)
             await deleteCorridor(corridor.id)
     }
@@ -148,7 +150,7 @@ export default function CorridorsTab() {
             kind: "corridor",
             id: editing?.id,
             preview: {
-                name: form.name || "új folyosó",
+                name: form.name || t("ui.corridor.new_placeholder"),
                 storey: form.storey,
                 x1: form.x1,
                 y1: form.y1,
@@ -191,7 +193,7 @@ export default function CorridorsTab() {
             <button className={`btn ${!editorOpen && "btn-primary"} w-max mb-4`} onClick={() => {
                 editorOpen ? onClose() : onCreate()
             }}>
-                {editorOpen ? "Mégse" : "Folyosó hozzáadása"}
+                {editorOpen ? t("ui.common.cancel") : t("ui.corridor.add")}
             </button>
             <div className="xl:flex xl:space-x-6">
                 <div className="overflow-x-auto xl:min-w-[40vw] max-h-[80vh]">
@@ -212,36 +214,36 @@ export default function CorridorsTab() {
                                     onSubmit={onSubmit}
                                 />
                                 <button className="btn btn-primary mt-2" form="corridor-form" disabled={isLoading}>
-                                    {editing ? "Mentés" : "Létrehozás"}
+                                    {editing ? t("ui.common.save") : t("ui.common.create")}
                                 </button>
                             </>
                             :
                             <>
                                 <div className="flex space-x-2">
                                     <fieldset className="fieldset">
-                                        <legend className="label">Épület</legend>
+                                        <legend className="label">{t("ui.common.building")}</legend>
                                         <select
                                             className="select select-bordered"
                                             value={selectedBuildingId || ""}
                                             onChange={(e) => setSelectedBuildingId(e.target.value || null)}
                                         >
-                                            <option value="">Összes</option>
+                                            <option value="">{t("ui.common.all")}</option>
                                             {buildings.map((b) => (
                                                 <option key={b.id} value={b.id}>
-                                                    {b.name}
+                                                    {t(b.name)}
                                                 </option>
                                             ))}
                                         </select>
                                     </fieldset>
 
                                     <fieldset className="fieldset">
-                                        <legend className="label">Szint</legend>
+                                        <legend className="label">{t("ui.common.storey_filter")}</legend>
                                         <select
                                             className="select select-bordered"
                                             value={selectedFloor}
                                             onChange={(e) => setSelectedFloor(e.target.value)}
                                         >
-                                            <option value="">Összes</option>
+                                            <option value="">{t("ui.common.all")}</option>
                                             {availableFloors.map((b) => (
                                                 <option key={b} value={b}>
                                                     {b}
