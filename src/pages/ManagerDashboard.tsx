@@ -10,6 +10,7 @@ import ClassroomTypesTable from "../components/editor/classroom-types/ClassroomT
 import LiftsTab from "../components/editor/lift/LiftsTab";
 import StairsTab from "../components/editor/stair/StairsTab";
 import CorridorsTab from "../components/editor/corridor/CorridorsTab";
+import TranslationsTable from "../components/editor/translation/TranslationsTable";
 import ThemeSwitcher from "../components/ThemeSwitcher";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 
@@ -37,6 +38,7 @@ export default function ManagerDashboard() {
                     <Route path="/lepcsok" element={<StairsTab />} />
                     <Route path="/folyosok" element={<CorridorsTab />} />
                     <Route path="/elonezet" element={<Preview />} />
+                    <Route path="/forditasok" element={<TranslationsTable />} />
                 </Routes>
 
             </Layout>

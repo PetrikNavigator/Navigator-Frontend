@@ -75,6 +75,10 @@ export default function ManagerSidebar() {
                         text={t("ui.sidebar.preview")}
                         url="elonezet" />
 
+                    <SidebarLink
+                        text={t("ui.sidebar.translations")}
+                        url="forditasok" />
+
                     <div className="mt-auto">
                         <button onClick={onLogout} className="btn btn-error mt-2 btn-sm w-full" disabled={isLoading}>
                             {t("ui.sidebar.logout")}
