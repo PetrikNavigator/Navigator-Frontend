@@ -42,14 +42,3 @@ export const LAYOUTS: Record<KeyboardLang, KeyboardLayout> = {
     hu: HU_LAYOUT,
     en: EN_LAYOUT,
 }
-
-const LANG_KEY = "keyboardLang"
-
-/** Read the remembered layout language (defaults to Hungarian). */
-export function loadKeyboardLang(): KeyboardLang {
-    return localStorage.getItem(LANG_KEY) === "en" ? "en" : "hu"
-}
-
-export function saveKeyboardLang(lang: KeyboardLang): void {
-    localStorage.setItem(LANG_KEY, lang)
-}

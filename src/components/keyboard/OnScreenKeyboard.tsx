@@ -10,7 +10,6 @@ type Props = {
     onSpace: () => void
     onEnter: () => void
     onShift: () => void
-    onToggleLang: () => void
     onClose: () => void
 }
 
@@ -23,7 +22,7 @@ type Props = {
  * steals focus from (and thus never blurs) the active input.
  */
 export default function OnScreenKeyboard({
-    layout, shift, onChar, onBackspace, onSpace, onEnter, onShift, onToggleLang, onClose,
+    layout, shift, onChar, onBackspace, onSpace, onEnter, onShift, onClose,
 }: Props) {
     const { t } = useTranslation()
     const cap = (ch: string) => (shift ? ch.toLocaleUpperCase("hu") : ch)
@@ -37,16 +36,7 @@ export default function OnScreenKeyboard({
             aria-label={t("ui.keyboard.aria")}
         >
             <div className="mx-auto max-w-3xl flex flex-col gap-1.5">
-                {/* Top bar: language toggle + close. */}
-                <div className="flex items-center justify-between">
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-outline"
-                        onClick={onToggleLang}
-                        title={t("ui.keyboard.switch_lang")}
-                    >
-                        {layout.label} ⇄
-                    </button>
+                <div className="flex items-center justify-end">
                     <button
                         type="button"
                         className="btn btn-sm btn-ghost"
