@@ -166,7 +166,7 @@ export default function KioskView3D({
         if (!controller) return
 
         const graphChanged = graphRef.current !== graph
-        controller.setGraph(graph)
+        controller.setGraph(graph, t("kiosk.location.marker"))
         graphRef.current = graph
 
         controller.apply({
@@ -175,7 +175,7 @@ export default function KioskView3D({
             highlight,
         })
         controller.setPath(path)
-        controller.setMyLocation(myLocation)
+        controller.setMyLocation(myLocation, t("kiosk.location.marker"))
 
         const floorKey = floorKeyOf(isolatedFloor ?? null)
         const floorChanged = floorKeyRef.current !== floorKey
@@ -185,7 +185,7 @@ export default function KioskView3D({
         if (graphChanged || floorChanged) rig?.frameFloor(isolatedFloor ?? null)
 
         requestRenderRef.current?.()
-    }, [graph, isolatedFloor, selection, highlight, path, myLocation])
+    }, [graph, isolatedFloor, selection, highlight, path, myLocation, t])
 
     // Live theme background: recolor the clear color + scene background
     // without touching geometry.
