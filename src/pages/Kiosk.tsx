@@ -58,8 +58,8 @@ export default function Kiosk() {
 		getFullGraph()
 		setMyLocation(loadMyLocation())
 
-		const start = searchParams.get("start")
-		const end = searchParams.get("end")
+		const start = searchParams.get("kezdes")
+		const end = searchParams.get("cel")
 		const barrierFree = searchParams.get("akadalymentes")
 
 		if (start)
@@ -111,21 +111,21 @@ export default function Kiosk() {
 
 		setSearchParams((prev) => {
 			if (startId) {
-				prev.set("start", startId);
+				prev.set("kezdes", startId);
 			} else {
-				prev.delete("start");
+				prev.delete("kezdes");
 			}
 
 			if (targetId) {
-				prev.set("end", targetId);
+				prev.set("cel", targetId);
 			} else {
-				prev.delete("end");
+				prev.delete("cel");
 			}
 
 			if (barrierFree) {
-				prev.set("barrierFree", "1");
+				prev.set("akadalymentes", "1");
 			} else {
-				prev.delete("barrierFree");
+				prev.delete("akadalymentes");
 			}
 
 
