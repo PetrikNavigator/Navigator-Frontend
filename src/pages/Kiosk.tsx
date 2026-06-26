@@ -15,6 +15,7 @@ import TypeHighlighter from "../components/kiosk/TypeHighlighter"
 import NavigatePanel from "../components/kiosk/NavigatePanel"
 import { VirtualKeyboardProvider } from "../contexts/other/VirtualKeyboardContext"
 import { CANVAS_BG_DARK, CANVAS_BG_LIGHT } from "../types/three/material-types"
+import { useSearchParams } from "react-router"
 
 /** Reset the kiosk after this long with no user input. */
 const IDLE_MS = 60_000
@@ -37,6 +38,7 @@ export default function Kiosk() {
 	const { theme } = useTheme()
 
 	const [view, setView] = useState<View>("search")
+	const [searchParams, setSearchParams] = useSearchParams();
 
 	// The classroom chosen in search → becomes the navigation target.
 	const [targetId, setTargetId] = useState<string | null>(null)
@@ -55,7 +57,26 @@ export default function Kiosk() {
 	useEffect(() => {
 		getFullGraph()
 		setMyLocation(loadMyLocation())
+
+		const start = searchParams.get("start")
+		const end = searchParams.get("end")
+		const barrierFree = searchParams.get("akadalymentes")
+
+		if (start)
+			setStartId(start)
+
+		if (barrierFree)
+			setBarrierFree(barrierFree == "1")
+
+		if (end) {
+			setView("navigate")
+			setTargetId(end)
+		}
 	}, [])
+
+	useEffect(() => {
+		copyToParams()
+	}, [startId, targetId, barrierFree, view])
 
 	const classroomById = useMemo(() => {
 		const m = new Map<string, Classroom>()
@@ -81,6 +102,36 @@ export default function Kiosk() {
 	}, [])
 
 	useIdleTimer(resetAll, IDLE_MS)
+
+	const copyToParams = () => {
+		if (view === "search") {
+			setSearchParams("")
+			return
+		}
+
+		setSearchParams((prev) => {
+			if (startId) {
+				prev.set("start", startId);
+			} else {
+				prev.delete("start");
+			}
+
+			if (targetId) {
+				prev.set("end", targetId);
+			} else {
+				prev.delete("end");
+			}
+
+			if (barrierFree) {
+				prev.set("barrierFree", "1");
+			} else {
+				prev.delete("barrierFree");
+			}
+
+
+			return prev;
+		});
+	}
 
 	const selectTarget = (id: string) => {
 		setTargetId(id)
