@@ -5,6 +5,12 @@ const PATH: string = "/api/translations"
 
 export type TranslationBundle = Record<string, string>
 
+export async function getAvailableLanguages(): Promise<string[]> {
+    return await get_request<string[]>(
+        `${PATH}/available`
+    )
+}
+
 /**
  * Public endpoint: returns every translation for the given language as a flat
  * { codename: text } map. No authentication required.

@@ -1,17 +1,18 @@
 import { useLanguage } from "../contexts/other/LanguageContext"
-import { SUPPORTED_LANGUAGES, type AppLanguage } from "../i18n/i18n"
-
-const LABELS: Record<AppLanguage, string> = {
-    hu: "HU",
-    en: "EN",
-}
+import { useTranslations } from "../contexts/other/TranslationsContext"
+import { useLayoutEffect } from "react"
 
 export default function LanguageSwitcher() {
     const { language, setLanguage } = useLanguage()
+    const { available, getAvailableLanguages } = useTranslations()
+
+    useLayoutEffect(() => {
+        getAvailableLanguages();
+    }, [])
 
     return (
         <div className="join">
-            {SUPPORTED_LANGUAGES.map((lang) => (
+            {available.map((lang) => (
                 <button
                     key={lang}
                     type="button"
@@ -19,7 +20,7 @@ export default function LanguageSwitcher() {
                     aria-pressed={language === lang}
                     onClick={() => setLanguage(lang)}
                 >
-                    {LABELS[lang]}
+                    {lang.toUpperCase()}
                 </button>
             ))}
         </div>

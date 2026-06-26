@@ -2,6 +2,7 @@ import React, {
     createContext,
     useCallback,
     useContext,
+    useEffect,
     useMemo,
     useState
 } from 'react';
@@ -10,6 +11,7 @@ import i18n from '../../i18n/i18n';
 import type { Translation, TranslationGroup } from '../../types/Translation';
 import {
     getTranslations as api_get,
+    getAvailableLanguages as api_available,
     addTranslation as api_add,
     modifyTranslation as api_modify,
     deleteTranslation as api_delete,
@@ -20,12 +22,14 @@ export type TranslationsContextValue = {
     isError: boolean;
     error: string | null;
     clearError: () => void;
+    available: string[];
     /** Raw rows (one per lang_key + text_key). */
     translations: Translation[];
     /** Rows folded into one entry per codename. */
     groups: TranslationGroup[];
     /** Distinct language keys present in the data, sorted. */
     languages: string[];
+    getAvailableLanguages: () => Promise<string[]>
     getTranslations: () => Promise<Translation[] | null>;
     /** Create a codename with a text per language. */
     createGroup: (text_key: string, values: Record<string, string>) => Promise<void>;
@@ -42,10 +46,15 @@ type TranslationsProviderProps = {
 const TranslationsContext = createContext<TranslationsContextValue | undefined>(undefined);
 
 export const TranslationsProvider = ({ children }: TranslationsProviderProps) => {
+    const [available, setAvailable] = useState<string[]>([]);
     const [translations, setTranslations] = useState<Translation[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isError, setIsError] = useState<boolean>(false);
+
+    useEffect(() => {
+        getAvailableLanguages();
+    }, [translations])
 
     const clearError = useCallback(() => {
         setError(null);
@@ -81,6 +90,25 @@ export const TranslationsProvider = ({ children }: TranslationsProviderProps) =>
         i18n.addResourceBundle(lang, 'translation', bundle, false, true);
         void i18n.changeLanguage(lang);
     }, []);
+
+    const getAvailableLanguages = async () => {
+        setIsLoading(true);
+        setIsError(false);
+        setError(null);
+
+        try {
+            const rows = await api_available();
+            setAvailable(rows);
+            return rows;
+        } catch (err: unknown) {
+            setAvailable([]);
+            setError(normalizeError(err));
+            setIsError(true);
+            return [];
+        } finally {
+            setIsLoading(false);
+        }
+    }
 
     const getTranslations = useCallback(async (): Promise<Translation[] | null> => {
         setIsLoading(true);
@@ -208,6 +236,8 @@ export const TranslationsProvider = ({ children }: TranslationsProviderProps) =>
         createGroup,
         updateGroup,
         deleteGroup,
+        getAvailableLanguages,
+        available
     }), [
         isLoading,
         isError,
@@ -220,6 +250,8 @@ export const TranslationsProvider = ({ children }: TranslationsProviderProps) =>
         createGroup,
         updateGroup,
         deleteGroup,
+        getAvailableLanguages,
+        available
     ]);
 
     return <TranslationsContext.Provider value={value}>{children}</TranslationsContext.Provider>;

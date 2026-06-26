@@ -1,23 +1,20 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import i18n, { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, type AppLanguage } from '../../i18n/i18n';
+import i18n from '../../i18n/i18n';
 import { getLang } from '../../api/translations.api';
 
 interface LanguageContextType {
-    language: AppLanguage;
-    setLanguage: (lang: AppLanguage) => void;
+    language: string;
+    setLanguage: (lang: string) => void;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-function readStoredLanguage(): AppLanguage {
-    const stored = localStorage.getItem("language")
-    return SUPPORTED_LANGUAGES.includes(stored as AppLanguage)
-        ? (stored as AppLanguage)
-        : DEFAULT_LANGUAGE
+function readStoredLanguage(): string {
+    return localStorage.getItem("language") || "hu"
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-    const [language, setLanguageState] = useState<AppLanguage>(readStoredLanguage)
+    const [language, setLanguageState] = useState<string>(readStoredLanguage)
     // Gate the first paint so the UI never flashes raw codenames before the
     // initial bundle arrives. Later language switches keep the old content
     // visible until the new bundle swaps in.
@@ -43,7 +40,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         return () => { active = false }
     }, [language])
 
-    const setLanguage = (lang: AppLanguage) => {
+    const setLanguage = (lang: string) => {
         setLanguageState(lang)
         localStorage.setItem("language", lang)
     }
