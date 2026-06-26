@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 import Modal from "../../Modal"
 import type { ClassroomType } from "../../../types/navigator/ClassroomType"
 import { useClassroomType } from "../../../contexts/navigator/ClassroomTypesContext"
@@ -12,6 +13,7 @@ type Props = {
 const empty = { colorhex: "#ffffff", name: "" }
 
 export default function ClassroomTypesEditorModal({ classroom_type, open, setOpen }: Props) {
+    const { t } = useTranslation()
     const { isError, error, createClassroomType, updateClassroomType, isLoading } = useClassroomType()
     const [form, setForm] = useState(empty)
     const [err, setErr] = useState<string>("")
@@ -24,7 +26,7 @@ export default function ClassroomTypesEditorModal({ classroom_type, open, setOpe
         e.preventDefault()
 
         if (!form.name.trim()) {
-            setErr("Add meg a típus nevét")
+            setErr(t("ui.type.err_name"))
             return
         }
 
@@ -58,16 +60,16 @@ export default function ClassroomTypesEditorModal({ classroom_type, open, setOpe
     return (
         <Modal
             showClose={false}
-            title={editing ? "Típus szerkesztése" : "Új típus"}
+            title={editing ? t("ui.type.edit_title") : t("ui.type.new_title")}
             open={open}
             onClose={onClose}
             footer={
                 <>
                     <button className="btn btn-ghost" onClick={onClose}>
-                        Mégse
+                        {t("ui.common.cancel")}
                     </button>
                     <button className="btn btn-primary" form="building-form" disabled={isLoading}>
-                        {editing ? "Mentés" : "Létrehozás"}
+                        {editing ? t("ui.common.save") : t("ui.common.create")}
                     </button>
                 </>
             }
@@ -78,7 +80,7 @@ export default function ClassroomTypesEditorModal({ classroom_type, open, setOpe
                     {/* NAME */}
                     <div className="form-control">
                         <label className="label">
-                            <span className="label-text">Név</span>
+                            <span className="label-text">{t("ui.common.name")}</span>
                         </label>
                         <input
                             className="input input-bordered w-full"
@@ -92,7 +94,7 @@ export default function ClassroomTypesEditorModal({ classroom_type, open, setOpe
 
                     <div className="form-control">
                         <label className="label">
-                            <span className="label-text">Szín</span>
+                            <span className="label-text">{t("ui.common.color")}</span>
                         </label>
                         <input
                             type="color"

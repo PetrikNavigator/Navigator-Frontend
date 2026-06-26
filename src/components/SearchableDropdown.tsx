@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 type SearchableListProps<T> = {
     items: T[];
@@ -28,10 +29,11 @@ export function SearchableDropdown<T>({
     onSelect,
     query,
     setQuery,
-    placeholder = "Keresés...",
+    placeholder,
     titleButton,
     unselectable = false
 }: SearchableListProps<T>) {
+    const { t } = useTranslation();
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const handleSelect = (item: T) => {
@@ -39,7 +41,7 @@ export function SearchableDropdown<T>({
             onSelect(undefined)
         else
             onSelect(item);
-        
+
         dropdownRef.current?.blur();
     };
 
@@ -60,7 +62,7 @@ export function SearchableDropdown<T>({
                             <input
                                 autoFocus
                                 type="text"
-                                placeholder={placeholder}
+                                placeholder={placeholder ?? t("ui.common.search_placeholder")}
                                 className="input input-bordered w-full"
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
@@ -72,12 +74,12 @@ export function SearchableDropdown<T>({
                     <ul className="menu w-full max-h-64 overflow-y-auto overflow-x-hidden flex-nowrap">
                         {isLoading && items.length === 0 ? (
                             <li>
-                                <span className="opacity-60">Betöltés...</span>
+                                <span className="opacity-60">{t("ui.common.loading")}</span>
                             </li>
                         ) : items.length === 0 ? (
                             <li>
                                 <span className="opacity-60">
-                                    Nincs találat.
+                                    {t("ui.common.no_results")}
                                 </span>
                             </li>
                         ) : (

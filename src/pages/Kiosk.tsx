@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useGraph } from "../contexts/other/GraphContext"
 import { useTheme } from "../contexts/other/ThemeContext"
 import KioskView3D from "../three/KioskView3D"
@@ -14,6 +15,7 @@ import TypeHighlighter from "../components/kiosk/TypeHighlighter"
 import NavigatePanel from "../components/kiosk/NavigatePanel"
 import { VirtualKeyboardProvider } from "../contexts/other/VirtualKeyboardContext"
 import { CANVAS_BG_DARK, CANVAS_BG_LIGHT } from "../types/three/material-types"
+import { useSearchParams } from "react-router"
 
 /** Reset the kiosk after this long with no user input. */
 const IDLE_MS = 60_000
@@ -31,10 +33,12 @@ type View = "search" | "navigate"
  * page reload.
  */
 export default function Kiosk() {
+	const { t } = useTranslation()
 	const { graph, getFullGraph, isLoading, isError, error } = useGraph()
 	const { theme } = useTheme()
 
 	const [view, setView] = useState<View>("search")
+	const [searchParams, setSearchParams] = useSearchParams();
 
 	// The classroom chosen in search → becomes the navigation target.
 	const [targetId, setTargetId] = useState<string | null>(null)
@@ -53,7 +57,26 @@ export default function Kiosk() {
 	useEffect(() => {
 		getFullGraph()
 		setMyLocation(loadMyLocation())
+
+		const start = searchParams.get("start")
+		const end = searchParams.get("end")
+		const barrierFree = searchParams.get("akadalymentes")
+
+		if (start)
+			setStartId(start)
+
+		if (barrierFree)
+			setBarrierFree(barrierFree == "1")
+
+		if (end) {
+			setView("navigate")
+			setTargetId(end)
+		}
 	}, [])
+
+	useEffect(() => {
+		copyToParams()
+	}, [startId, targetId, barrierFree, view])
 
 	const classroomById = useMemo(() => {
 		const m = new Map<string, Classroom>()
@@ -63,8 +86,8 @@ export default function Kiosk() {
 
 	const nameOf = useCallback(
 		(id?: string | null): string =>
-			id ? classroomById.get(id)?.name ?? id : "—",
-		[classroomById],
+			id ? t(classroomById.get(id)?.name ?? id) : "—",
+		[classroomById, t],
 	)
 
 	const resetAll = useCallback(() => {
@@ -79,6 +102,36 @@ export default function Kiosk() {
 	}, [])
 
 	useIdleTimer(resetAll, IDLE_MS)
+
+	const copyToParams = () => {
+		if (view === "search") {
+			setSearchParams("")
+			return
+		}
+
+		setSearchParams((prev) => {
+			if (startId) {
+				prev.set("start", startId);
+			} else {
+				prev.delete("start");
+			}
+
+			if (targetId) {
+				prev.set("end", targetId);
+			} else {
+				prev.delete("end");
+			}
+
+			if (barrierFree) {
+				prev.set("barrierFree", "1");
+			} else {
+				prev.delete("barrierFree");
+			}
+
+
+			return prev;
+		});
+	}
 
 	const selectTarget = (id: string) => {
 		setTargetId(id)
@@ -201,10 +254,10 @@ export default function Kiosk() {
 										className="btn btn-xs md:btn-md btn-outline"
 										onClick={() => setHighlightTypeIds([])}
 									>
-										Kiemelés törlése
+										{t("ui.kiosk.clear_highlight")}
 									</button>
 								)}
-								<button className="btn btn-xs md:btn-md btn-outline" onClick={resetAll}>Visszaállítás</button>
+								<button className="btn btn-xs md:btn-md btn-outline" onClick={resetAll}>{t("ui.kiosk.reset")}</button>
 							</div>
 						</div>
 
@@ -212,13 +265,13 @@ export default function Kiosk() {
 						<div className="flex flex-col gap-3 min-h-0 xl:w-96 flex-shrink">
 							{isLoading && (
 								<div className="alert alert-info py-2">
-									<span>Adatok betöltése…</span>
+									<span>{t("ui.kiosk.loading")}</span>
 								</div>
 							)}
 
 							{isError && (
 								<div className="alert alert-error py-2">
-									<span>Hiba: {error ?? "ismeretlen"}</span>
+									<span>{t("ui.kiosk.error", { error: error ?? t("ui.common.unknown") })}</span>
 								</div>
 							)}
 

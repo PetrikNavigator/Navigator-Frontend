@@ -1,4 +1,5 @@
 import { useRef, useEffect } from "react"
+import { useTranslation } from "react-i18next"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
 import type { AddStair } from "../../../types/navigator/Stair"
 
@@ -14,6 +15,7 @@ const normalizeDeg0To359 = (deg: number) => ((deg % 360) + 360) % 360
 const normalizeRotation = (deg: number) => normalizeDeg0To359(Math.round(deg))
 
 export default function StairForm({ onSubmit, onFormChange: setForm, isError, error, formData: form }: Props) {
+    const { t } = useTranslation()
     const { buildings } = useBuildings()
     const errorRef = useRef<HTMLDivElement>(null)
 
@@ -33,12 +35,12 @@ export default function StairForm({ onSubmit, onFormChange: setForm, isError, er
             <section className="space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <fieldset className="fieldset">
-                        <legend className="fieldset-legend">Név</legend>
+                        <legend className="fieldset-legend">{t("ui.common.name")}</legend>
 
                         <input
                             type="text"
                             className="input input-bordered w-full"
-                            placeholder="Pl. Főlépcső"
+                            placeholder={t("ui.stair.name_placeholder")}
                             value={form.name}
                             onChange={(e) =>
                                 setForm({
@@ -52,7 +54,7 @@ export default function StairForm({ onSubmit, onFormChange: setForm, isError, er
 
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Épület
+                            {t("ui.common.building")}
                         </legend>
 
                         <select
@@ -68,7 +70,7 @@ export default function StairForm({ onSubmit, onFormChange: setForm, isError, er
                                     key={b.id}
                                     value={b.id}
                                 >
-                                    {b.name}
+                                    {t(b.name)}
                                 </option>
                             ))}
                         </select>
@@ -81,7 +83,7 @@ export default function StairForm({ onSubmit, onFormChange: setForm, isError, er
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Pozíció X
+                            {t("ui.common.pos_x")}
                         </legend>
 
                         <input
@@ -99,7 +101,7 @@ export default function StairForm({ onSubmit, onFormChange: setForm, isError, er
 
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Pozíció Y
+                            {t("ui.common.pos_y")}
                         </legend>
 
                         <input
@@ -117,7 +119,7 @@ export default function StairForm({ onSubmit, onFormChange: setForm, isError, er
 
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Forgatás
+                            {t("ui.common.rotation")}
                         </legend>
 
                         <div className="join w-full">
@@ -149,7 +151,7 @@ export default function StairForm({ onSubmit, onFormChange: setForm, isError, er
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Minimum emelet
+                            {t("ui.common.min_storey")}
                         </legend>
 
                         <input
@@ -165,13 +167,13 @@ export default function StairForm({ onSubmit, onFormChange: setForm, isError, er
                         />
 
                         <p className="label text-xs opacity-60">
-                            Negatív érték is megadható
+                            {t("ui.common.negative_allowed")}
                         </p>
                     </fieldset>
 
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Maximum emelet
+                            {t("ui.common.max_storey")}
                         </legend>
 
                         <input
@@ -187,7 +189,7 @@ export default function StairForm({ onSubmit, onFormChange: setForm, isError, er
                         />
 
                         <p className="label text-xs opacity-60">
-                            A lépcső legfelső szintje
+                            {t("ui.stair.max_hint")}
                         </p>
                     </fieldset>
                 </div>

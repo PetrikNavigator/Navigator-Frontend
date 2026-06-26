@@ -1,23 +1,25 @@
 import { isAxiosError } from "axios"
-
-const FALLBACK = "Ismeretlen hiba történt. Próbáld újra!"
+import i18n from "../i18n/i18n"
 
 // Coerces anything thrown — strings, Error objects, undefined, axios errors,
 // nested API payloads — into a stable user-facing string. The contexts store
 // these in React state and render them as `{error}` in JSX, so an Error
 // object or undefined would either crash ("Objects are not valid as a React
-// child") or silently render nothing.
+// child") or silently render nothing. Messages are resolved through i18next so
+// they follow the active language.
 export function normalizeError(err: unknown): string {
-    if (err === null || err === undefined) return FALLBACK
-    if (typeof err === "string") return err.trim() || FALLBACK
+    const fallback = () => i18n.t("ui.error.fallback")
+
+    if (err === null || err === undefined) return fallback()
+    if (typeof err === "string") return err.trim() || fallback()
     if (typeof err === "number" || typeof err === "boolean") return String(err)
 
     if (isAxiosError(err)) {
         if (err.code === "ERR_NETWORK" || err.message === "Network Error") {
-            return "A szerver nem elérhető. Ellenőrizd a kapcsolatot!"
+            return i18n.t("ui.error.network")
         }
         if (err.code === "ECONNABORTED") {
-            return "Időtúllépés a szerver válaszára várva."
+            return i18n.t("ui.error.timeout")
         }
         const status = err.response?.status
         const data: any = err.response?.data
@@ -27,17 +29,17 @@ export function normalizeError(err: unknown): string {
             data?.error ??
             data?.detail
         if (typeof fromData === "string" && fromData.trim()) return fromData
-        if (status === 401) return "Be kell jelentkezned a művelethez."
-        if (status === 403) return "Nincs jogosultságod a művelethez."
-        if (status === 404) return "A keresett erőforrás nem található."
-        if (status === 409) return "Ütközés: az adat időközben módosulhatott."
-        if (status === 422) return "Hibás adat — ellenőrizd a kitöltést."
-        if (status && status >= 500) return "Szerverhiba. Próbáld újra később!"
+        if (status === 401) return i18n.t("ui.error.unauthorized")
+        if (status === 403) return i18n.t("ui.error.forbidden")
+        if (status === 404) return i18n.t("ui.error.not_found")
+        if (status === 409) return i18n.t("ui.error.conflict")
+        if (status === 422) return i18n.t("ui.error.unprocessable")
+        if (status && status >= 500) return i18n.t("ui.error.server")
         if (err.message) return err.message
-        return FALLBACK
+        return fallback()
     }
 
-    if (err instanceof Error) return err.message?.trim() || FALLBACK
+    if (err instanceof Error) return err.message?.trim() || fallback()
 
     if (typeof err === "object") {
         const obj = err as Record<string, unknown>
@@ -59,5 +61,5 @@ export function normalizeError(err: unknown): string {
         }
     }
 
-    return FALLBACK
+    return fallback()
 }

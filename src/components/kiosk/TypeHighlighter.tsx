@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next"
 import type { ClassroomType } from "../../types/navigator/ClassroomType"
 
 type Props = {
@@ -7,38 +8,39 @@ type Props = {
 }
 
 export default function TypeHighlighter({ setSelectedIds, selectedIds, types }: Props) {
+    const { t } = useTranslation()
 
-    const onClick = (t: ClassroomType) => {
-        if (selectedIds.includes(t.id)) {
-            const without = selectedIds.filter(x => x !== t.id)
+    const onClick = (type: ClassroomType) => {
+        if (selectedIds.includes(type.id)) {
+            const without = selectedIds.filter(x => x !== type.id)
             setSelectedIds(without)
         }
         else {
-            setSelectedIds((prev: string[]) => [...prev, t.id])
+            setSelectedIds((prev: string[]) => [...prev, type.id])
         }
     }
 
     return (
         <div className="card bg-base-200 p-3 min-h-0 overflow-hidden">
             <h2 className="font-semibold mb-2 text-sm">
-                Terem kiemelés (típus)
+                {t("ui.highlighter.title")}
             </h2>
 
             <div className="flex flex-wrap gap-2 overflow-y-auto">
-                {types.map((t) => {
-                    const active = selectedIds.includes(t.id)
+                {types.map((type) => {
+                    const active = selectedIds.includes(type.id)
 
                     return (
                         <button
-                            key={t.id}
-                            onClick={() => onClick(t)}
+                            key={type.id}
+                            onClick={() => onClick(type)}
                             className={`btn btn-xs ${active ? "btn-primary" : "btn-outline"}`}
                         >
                             <span
                                 className="h-2 w-2 rounded-full mr-1"
-                                style={{ background: t.colorhex || "#888" }}
+                                style={{ background: type.colorhex || "#888" }}
                             />
-                            {t.name}
+                            {t(type.name)}
                         </button>
                     )
                 })}

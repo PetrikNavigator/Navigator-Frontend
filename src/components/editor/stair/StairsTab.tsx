@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { useTranslation } from "react-i18next"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
 import { useStairs } from "../../../contexts/navigator/StairsContext"
 import type { AddStair, Stair } from "../../../types/navigator/Stair"
@@ -25,6 +26,7 @@ const normalizeDeg0To359 = (deg: number) => ((deg % 360) + 360) % 360
 const normalizeRotation = (deg: number) => normalizeDeg0To359(Math.round(deg))
 
 export default function StairsTab() {
+    const { t } = useTranslation()
     const { buildings, getBuildings } = useBuildings()
     const { stairs, getStairs, deleteStair, isError, error, addStair, updateStair, clearError, isLoading } = useStairs()
     const { graph, getFullGraph, invalidateGraph } = useGraph()
@@ -51,15 +53,15 @@ export default function StairsTab() {
         clearError()
 
         if (!form.name.trim()) {
-            setErr("Add meg a lépcső nevét")
+            setErr(t("ui.stair.err_name"))
             return
         }
         if (!Number.isFinite(form.x) || !Number.isFinite(form.y)) {
-            setErr("A pozíciónak érvényes számnak kell lennie")
+            setErr(t("ui.common.err_position_number"))
             return
         }
         if (form.min_storey > form.max_storey) {
-            setErr("A minimum emelet nem lehet nagyobb a maximumnál")
+            setErr(t("ui.common.err_min_max"))
             return
         }
 
@@ -74,7 +76,7 @@ export default function StairsTab() {
     }
 
     const onRemove = async (stair: Stair) => {
-        const res = confirm(`Biztos hogy törölöd a(z) ${stair.name}?`)
+        const res = confirm(t("ui.confirm.delete", { name: t(stair.name) }))
         if (res)
             await deleteStair(stair.id)
     }
@@ -136,7 +138,7 @@ export default function StairsTab() {
             kind: "stairs",
             id: editing?.id,
             preview: {
-                name: form.name || "új lépcső",
+                name: form.name || t("ui.stair.new_placeholder"),
                 x: form.x,
                 y: form.y,
                 min_storey: form.min_storey,
@@ -163,7 +165,7 @@ export default function StairsTab() {
             <button className={`btn ${!editorOpen && "btn-primary"} w-max mb-4`} onClick={() => {
                 editorOpen ? onClose() : onCreate()
             }}>
-                {editorOpen ? "Mégse" : "Lépcső hozzáadása"}
+                {editorOpen ? t("ui.common.cancel") : t("ui.stair.add")}
             </button>
             <div className="xl:flex xl:space-x-6">
                 <div className="overflow-x-auto xl:min-w-[40vw] max-h-[80vh]">
@@ -184,7 +186,7 @@ export default function StairsTab() {
                                     onSubmit={onSubmit}
                                 />
                                 <button className="btn btn-primary mt-2" form="stair-form" disabled={isLoading}>
-                                    {editing ? "Mentés" : "Létrehozás"}
+                                    {editing ? t("ui.common.save") : t("ui.common.create")}
                                 </button>
                             </>
                             :

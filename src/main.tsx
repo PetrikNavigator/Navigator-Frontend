@@ -12,28 +12,35 @@ import { StairsProvider } from './contexts/navigator/StairsContext.tsx'
 import { AuthProvider } from './contexts/other/AuthContext.tsx'
 import { ThemeProvider } from './contexts/other/ThemeContext.tsx'
 import { GraphProvider } from './contexts/other/GraphContext.tsx'
+import { LanguageProvider } from './contexts/other/LanguageContext.tsx'
+import { TranslationsProvider } from './contexts/other/TranslationsContext.tsx'
+import './i18n/i18n.ts'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <GraphProvider>
       <ThemeProvider>
-        <BrowserRouter>
-          <AuthProvider>
-            <BuildingsProvider>
-              <ClassroomProvider>
-                <CorridorProvider>
-                  <LiftsProvider>
-                    <StairsProvider>
-                      <ClassroomTypeProvider>
-                        <App />
-                      </ClassroomTypeProvider>
-                    </StairsProvider>
-                  </LiftsProvider>
-                </CorridorProvider>
-              </ClassroomProvider>
-            </BuildingsProvider>
-          </AuthProvider>
-        </BrowserRouter>
+        <LanguageProvider>
+          <BrowserRouter>
+            <AuthProvider>
+              <BuildingsProvider>
+                <ClassroomProvider>
+                  <CorridorProvider>
+                    <LiftsProvider>
+                      <StairsProvider>
+                        <ClassroomTypeProvider>
+                          <TranslationsProvider>
+                            <App />
+                          </TranslationsProvider>
+                        </ClassroomTypeProvider>
+                      </StairsProvider>
+                    </LiftsProvider>
+                  </CorridorProvider>
+                </ClassroomProvider>
+              </BuildingsProvider>
+            </AuthProvider>
+          </BrowserRouter>
+        </LanguageProvider>
       </ThemeProvider>
     </GraphProvider>
   </StrictMode >

@@ -1,8 +1,11 @@
 import type { Classroom } from "../types/navigator/Classroom"
 import type { FullGraph } from "../types/FullGraph"
 
-/** Combining diacritical marks (U+0300–U+036F), stripped after NFD. */
-const COMBINING_MARKS = /[̀-ͯ]/g
+/** Combining diacritical marks, stripped after NFD. */
+const COMBINING_MARKS = /\p{Diacritic}/gu
+
+/** Translator function (i18next `t`) used to resolve entity codenames. */
+export type Translator = (key: string, options?: Record<string, unknown>) => string
 
 /** Lowercase + strip diacritics so "Á" matches "a" (Hungarian-friendly). */
 export function normalize(s: string): string {
@@ -19,47 +22,49 @@ export type ClassroomInfo = {
     typeName: string
     typeColor: string
     buildingName: string
-    /** Human floor label, e.g. "2. emelet" / "Földszint". */
+    /** Localized floor label, e.g. "2. emelet" / "Földszint". */
     floorLabel: string
 }
 
-export function storeyLabel(storey: number): string {
-    if (storey === 0) return "Földszint"
-    if (storey < 0) return `${Math.abs(storey)}. alagsor`
-    return `${storey}. emelet`
+/** Resolve a localized floor label for a storey number. */
+export function storeyLabel(storey: number, t: Translator): string {
+    if (storey === 0) return t("ui.floor.ground")
+    if (storey < 0) return t("ui.floor.basement", { n: Math.abs(storey) })
+    return t("ui.floor.upper", { n: storey })
 }
 
 /** Resolve the type/building/floor display info for a classroom. */
-export function classroomInfo(graph: FullGraph, c: Classroom): ClassroomInfo {
-    const type = graph.classroom_types.find((t) => t.id === c.type_id)
+export function classroomInfo(graph: FullGraph, c: Classroom, t: Translator): ClassroomInfo {
+    const type = graph.classroom_types.find((ct) => ct.id === c.type_id)
     const building = graph.buildings.find((b) => b.id === c.building_id)
     return {
         classroom: c,
-        typeName: type?.name ?? "Ismeretlen típus",
+        typeName: type ? t(type.name) : t("ui.common.unknown_type"),
         typeColor: type?.colorhex || "#888888",
-        buildingName: building?.name ?? "?",
-        floorLabel: storeyLabel(c.storey),
+        buildingName: building ? t(building.name) : "?",
+        floorLabel: storeyLabel(c.storey, t),
     }
 }
 
 /**
  * Match classrooms by name OR description (accent/case-insensitive). An
- * empty query returns every classroom (sorted by name). Matches are ranked:
- * name-prefix, then name-substring, then description.
+ * empty query returns every classroom. Names, descriptions and type names are
+ * translated through `t` before matching so search works in the active
+ * language.
  */
-export function searchClassrooms(graph: FullGraph | null, query: string): Classroom[] {
+export function searchClassrooms(graph: FullGraph | null, query: string, t: Translator): Classroom[] {
     const rooms = graph?.classrooms ?? []
     const q = normalize(query)
 
     const values: Classroom[] = []
     for (const c of rooms) {
 
-        if (normalize(c.name).includes(q)) {
+        if (normalize(t(c.name)).includes(q)) {
             values.push(c)
             continue
         }
 
-        if (normalize(c.description).includes(q)) {
+        if (normalize(t(c.description)).includes(q)) {
             values.push(c)
             continue
         }
@@ -67,7 +72,7 @@ export function searchClassrooms(graph: FullGraph | null, query: string): Classr
         if (!graph)
             continue
 
-        const info = classroomInfo(graph, c)
+        const info = classroomInfo(graph, c, t)
         if (normalize(info.typeName).includes(q)) {
             values.push(c)
             continue

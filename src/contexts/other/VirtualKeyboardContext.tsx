@@ -10,16 +10,13 @@ import {
 import OnScreenKeyboard from "../../components/keyboard/OnScreenKeyboard"
 import {
     LAYOUTS,
-    loadKeyboardLang,
-    saveKeyboardLang,
     type KeyboardLang,
 } from "../../components/keyboard/layouts"
+import i18next from "i18next"
 
 type Editable = HTMLInputElement | HTMLTextAreaElement
 
 type VirtualKeyboardContextValue = {
-    /** Current layout language. */
-    lang: KeyboardLang
     /** Whether the keyboard is currently shown. */
     open: boolean
     /** Force the keyboard closed (also blurs the active field). */
@@ -61,7 +58,6 @@ export function VirtualKeyboardProvider({ children }: { children: ReactNode }) {
     const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     const [open, setOpen] = useState(false)
-    const [lang, setLang] = useState<KeyboardLang>(() => loadKeyboardLang())
     const [shift, setShift] = useState(false)
 
     const close = useCallback(() => {
@@ -146,16 +142,8 @@ export function VirtualKeyboardProvider({ children }: { children: ReactNode }) {
         restoreCaret(el, start)
     }, [restoreCaret])
 
-    const onToggleLang = useCallback(() => {
-        setLang((prev) => {
-            const nextLang: KeyboardLang = prev === "hu" ? "en" : "hu"
-            saveKeyboardLang(nextLang)
-            return nextLang
-        })
-    }, [])
-
     return (
-        <VirtualKeyboardContext.Provider value={{ lang, open, close }}>
+        <VirtualKeyboardContext.Provider value={{ open, close }}>
             {/* display:contents → no layout box, but focus events still bubble here. */}
             <div ref={containerRef} style={{ display: "contents" }}>
                 {children}
@@ -163,14 +151,13 @@ export function VirtualKeyboardProvider({ children }: { children: ReactNode }) {
 
             {open && (
                 <OnScreenKeyboard
-                    layout={LAYOUTS[lang]}
+                    layout={LAYOUTS[i18next.language as KeyboardLang]}
                     shift={shift}
                     onChar={onChar}
                     onBackspace={onBackspace}
                     onSpace={() => insert(" ")}
                     onEnter={close}
                     onShift={() => setShift((s) => !s)}
-                    onToggleLang={onToggleLang}
                     onClose={close}
                 />
             )}

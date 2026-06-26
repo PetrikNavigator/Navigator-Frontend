@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next"
 import type { KeyboardLayout } from "./layouts"
 
 type Props = {
@@ -9,7 +10,6 @@ type Props = {
     onSpace: () => void
     onEnter: () => void
     onShift: () => void
-    onToggleLang: () => void
     onClose: () => void
 }
 
@@ -22,8 +22,9 @@ type Props = {
  * steals focus from (and thus never blurs) the active input.
  */
 export default function OnScreenKeyboard({
-    layout, shift, onChar, onBackspace, onSpace, onEnter, onShift, onToggleLang, onClose,
+    layout, shift, onChar, onBackspace, onSpace, onEnter, onShift, onClose,
 }: Props) {
+    const { t } = useTranslation()
     const cap = (ch: string) => (shift ? ch.toLocaleUpperCase("hu") : ch)
 
     return (
@@ -32,25 +33,16 @@ export default function OnScreenKeyboard({
             onMouseDown={(e) => e.preventDefault()}
             className="fixed inset-x-0 bottom-0 z-[1000] bg-base-200 border-t border-base-300 shadow-2xl p-2 select-none"
             role="group"
-            aria-label="Képernyő-billentyűzet"
+            aria-label={t("ui.keyboard.aria")}
         >
             <div className="mx-auto max-w-3xl flex flex-col gap-1.5">
-                {/* Top bar: language toggle + close. */}
-                <div className="flex items-center justify-between">
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-outline"
-                        onClick={onToggleLang}
-                        title="Nyelv váltása"
-                    >
-                        {layout.label} ⇄
-                    </button>
+                <div className="flex items-center justify-end">
                     <button
                         type="button"
                         className="btn btn-sm btn-ghost"
                         onClick={onClose}
-                        title="Bezárás"
-                        aria-label="Billentyűzet bezárása"
+                        title={t("ui.keyboard.close")}
+                        aria-label={t("ui.keyboard.close_aria")}
                     >
                         ✕
                     </button>
@@ -88,13 +80,13 @@ export default function OnScreenKeyboard({
                         className="btn btn-sm sm:btn-md flex-1"
                         onClick={onSpace}
                     >
-                        Szóköz
+                        {t("ui.keyboard.space")}
                     </button>
                     <button
                         type="button"
                         className="btn btn-sm sm:btn-md btn-neutral"
                         onClick={onBackspace}
-                        title="Törlés"
+                        title={t("ui.common.delete")}
                     >
                         ⌫
                     </button>

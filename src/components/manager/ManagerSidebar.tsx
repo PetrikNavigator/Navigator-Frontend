@@ -1,11 +1,13 @@
 import { useBuildings } from "../../contexts/navigator/BuildingContext";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useClassroomType } from "../../contexts/navigator/ClassroomTypesContext";
 import SidebarLink from "../SidebarLink";
 import { useAuth } from "../../contexts/other/AuthContext";
 import { useNavigate } from "react-router";
 
 export default function ManagerSidebar() {
+    const { t } = useTranslation()
     const { buildings, getBuildings } = useBuildings()
     const { classroom_types, getClassroomTypes } = useClassroomType()
     const { logout, isLoading } = useAuth();
@@ -35,47 +37,51 @@ export default function ManagerSidebar() {
             <div className="bg-base-200 min-h-full w-72 flex flex-col">
                 <ul className="menu flex-1 p-4 w-full">
                     <SidebarLink
-                        text="Áttekintés"
+                        text={t("ui.sidebar.overview")}
                         url=""
                         end />
 
                     <SidebarLink
-                        text="Épületek"
+                        text={t("ui.sidebar.buildings")}
                         url="epuletek" />
 
                     <SidebarLink
                         disabled={!hasBuildings}
-                        text="Terem típusok"
+                        text={t("ui.sidebar.classroom_types")}
                         url="teremtipusok" />
 
                     <SidebarLink
                         disabled={!hasBuildings || !hasClassroomTypes}
-                        text="Termek"
+                        text={t("ui.sidebar.classrooms")}
                         url="termek" />
 
                     <SidebarLink
                         disabled={!hasBuildings}
-                        text="Liftek"
+                        text={t("ui.sidebar.lifts")}
                         url="liftek" />
 
                     <SidebarLink
                         disabled={!hasBuildings}
-                        text="Lépcsők"
+                        text={t("ui.sidebar.stairs")}
                         url="lepcsok" />
 
                     <SidebarLink
                         disabled={!hasBuildings}
-                        text="Folyosók"
+                        text={t("ui.sidebar.corridors")}
                         url="folyosok" />
 
                     <SidebarLink
                         disabled={!hasBuildings}
-                        text="3D Előnézet"
+                        text={t("ui.sidebar.preview")}
                         url="elonezet" />
+
+                    <SidebarLink
+                        text={t("ui.sidebar.translations")}
+                        url="forditasok" />
 
                     <div className="mt-auto">
                         <button onClick={onLogout} className="btn btn-error mt-2 btn-sm w-full" disabled={isLoading}>
-                            Kijelentkezés
+                            {t("ui.sidebar.logout")}
                         </button>
                     </div>
                 </ul>

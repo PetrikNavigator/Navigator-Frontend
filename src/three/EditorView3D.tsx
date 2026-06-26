@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react"
+import { useTranslation } from "react-i18next"
 import * as THREE from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
 
@@ -50,6 +51,7 @@ export default function EditorView3D({
     className = "w-full h-full",
     initialDistance,
 }: Props) {
+    const { t } = useTranslation()
     const containerRef = useRef<HTMLDivElement>(null)
 
     const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
@@ -164,7 +166,7 @@ export default function EditorView3D({
 
             {!graph && (
                 <div className="absolute inset-0 grid place-items-center text-cyan-300 text-sm">
-                    Nincs elérhető adat
+                    {t("ui.common.no_data")}
                 </div>
             )}
         </div>

@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import type { Classroom } from "../../types/navigator/Classroom"
 import type { ClassroomInfo } from "../../utils/classroomSearch"
 
@@ -19,6 +20,7 @@ export default function ClassroomCard({
     onNavigate,
     itemRefs,
 }: ClassroomCardProp) {
+    const { t } = useTranslation()
     const [expanded, setExpanded] = useState(false)
 
     const textRef = useRef<HTMLParagraphElement | null>(null)
@@ -51,7 +53,7 @@ export default function ClassroomCard({
         >
             <div className="flex items-start justify-between gap-2">
                 <div>
-                    <h2 className="font-bold text-lg">{x.name}</h2>
+                    <h2 className="font-bold text-lg">{t(x.name)}</h2>
 
                     <div className="flex items-center gap-1 text-sm opacity-80">
                         <span
@@ -70,7 +72,7 @@ export default function ClassroomCard({
                             onNavigate(x.id)
                         }}
                     >
-                        Navigálás →
+                        {t("ui.card.navigate")}
                     </button>
                 )}
             </div>
@@ -96,7 +98,7 @@ export default function ClassroomCard({
                 {info.classroom.description && (
                     <div>
                         <p ref={textRef} className={`opacity-80 ${expanded ? "" : "line-clamp-2"}`}>
-                            {info.classroom.description}
+                            {t(info.classroom.description)}
                         </p>
                     </div>
                 )}
@@ -112,7 +114,7 @@ export default function ClassroomCard({
                                 setExpanded((v) => !v)
                             }}
                         >
-                            {expanded ? "Kevesebb" : "Több"}
+                            {expanded ? t("ui.common.less") : t("ui.common.more")}
                         </button>
                     </div>
                 )

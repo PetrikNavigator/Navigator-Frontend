@@ -1,4 +1,5 @@
 import { useRef, useEffect } from "react"
+import { useTranslation } from "react-i18next"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
 import type { AddCorridor } from "../../../types/navigator/Corridor"
 
@@ -11,6 +12,7 @@ type Props = {
 }
 
 export default function CorridorForm({ onSubmit, onFormChange: setForm, isError, error, formData: form }: Props) {
+    const { t } = useTranslation()
     const { buildings } = useBuildings()
     const errorRef = useRef<HTMLDivElement>(null)
 
@@ -30,12 +32,12 @@ export default function CorridorForm({ onSubmit, onFormChange: setForm, isError,
             <section className="space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     <fieldset className="fieldset">
-                        <legend className="fieldset-legend">Név</legend>
+                        <legend className="fieldset-legend">{t("ui.common.name")}</legend>
 
                         <input
                             type="text"
                             className="input input-bordered w-full"
-                            placeholder="Pl. 2. emeleti folyosó"
+                            placeholder={t("ui.corridor.name_placeholder")}
                             value={form.name}
                             onChange={(e) =>
                                 setForm({
@@ -49,7 +51,7 @@ export default function CorridorForm({ onSubmit, onFormChange: setForm, isError,
 
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Épület
+                            {t("ui.common.building")}
                         </legend>
 
                         <select
@@ -65,7 +67,7 @@ export default function CorridorForm({ onSubmit, onFormChange: setForm, isError,
                                     key={b.id}
                                     value={b.id}
                                 >
-                                    {b.name}
+                                    {t(b.name)}
                                 </option>
                             ))}
                         </select>
@@ -73,7 +75,7 @@ export default function CorridorForm({ onSubmit, onFormChange: setForm, isError,
 
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Emelet
+                            {t("ui.common.floor")}
                         </legend>
 
                         <input
@@ -89,7 +91,7 @@ export default function CorridorForm({ onSubmit, onFormChange: setForm, isError,
                         />
 
                         <p className="label text-xs opacity-60">
-                            Negatív érték is megadható
+                            {t("ui.common.negative_allowed")}
                         </p>
                     </fieldset>
                 </div>
@@ -100,7 +102,7 @@ export default function CorridorForm({ onSubmit, onFormChange: setForm, isError,
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Kezdőpont X
+                            {t("ui.corridor.start_x")}
                         </legend>
 
                         <input
@@ -118,7 +120,7 @@ export default function CorridorForm({ onSubmit, onFormChange: setForm, isError,
 
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Kezdőpont Y
+                            {t("ui.corridor.start_y")}
                         </legend>
 
                         <input
@@ -141,7 +143,7 @@ export default function CorridorForm({ onSubmit, onFormChange: setForm, isError,
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Végpont X
+                            {t("ui.corridor.end_x")}
                         </legend>
 
                         <input
@@ -159,7 +161,7 @@ export default function CorridorForm({ onSubmit, onFormChange: setForm, isError,
 
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Végpont Y
+                            {t("ui.corridor.end_y")}
                         </legend>
 
                         <input
@@ -182,7 +184,7 @@ export default function CorridorForm({ onSubmit, onFormChange: setForm, isError,
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Szélesség
+                            {t("ui.corridor.width")}
                         </legend>
 
                         <input
@@ -201,13 +203,13 @@ export default function CorridorForm({ onSubmit, onFormChange: setForm, isError,
                         />
 
                         <p className="label text-xs opacity-60">
-                            Méterben megadva
+                            {t("ui.common.meters")}
                         </p>
                     </fieldset>
 
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Akadálymentes
+                            {t("ui.corridor.barrier_free")}
                         </legend>
 
                         <label className="label cursor-pointer justify-start gap-3">
@@ -222,13 +224,13 @@ export default function CorridorForm({ onSubmit, onFormChange: setForm, isError,
                                     })
                                 }
                             />
-                            <span className="label-text">Igen</span>
+                            <span className="label-text">{t("ui.common.yes")}</span>
                         </label>
                     </fieldset>
 
                     <fieldset className="fieldset">
                         <legend className="fieldset-legend">
-                            Kültéri
+                            {t("ui.corridor.outdoor")}
                         </legend>
 
                         <label className="label cursor-pointer justify-start gap-3">
@@ -243,7 +245,7 @@ export default function CorridorForm({ onSubmit, onFormChange: setForm, isError,
                                     })
                                 }
                             />
-                            <span className="label-text">Igen</span>
+                            <span className="label-text">{t("ui.common.yes")}</span>
                         </label>
                     </fieldset>
                 </div>

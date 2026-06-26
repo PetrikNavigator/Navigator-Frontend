@@ -1,6 +1,8 @@
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import type { Stair } from "../../../types/navigator/Stair"
 import type { Building } from "../../../types/navigator/Building"
+import { storeyLabel } from "../../../utils/classroomSearch"
 
 type Props = {
     buildings: Building[]
@@ -10,13 +12,13 @@ type Props = {
     onHover: (s: Stair) => void
 }
 
-const storeyLabel = (n: number) => (n === 0 ? "Földszint" : n.toString())
-
 export default function StairsTable({ stairs, buildings, onRemove, onEdit, onHover }: Props) {
+    const { t } = useTranslation()
     const [selectedBuildingId, setSelectedBuildingId] = useState<string | null>(null)
 
     const buildingName = (id: string) => {
-        return buildings.find(x => x.id === id)?.name
+        const building = buildings.find(x => x.id === id)
+        return building ? t(building.name) : ""
     }
 
     const filteredStairs = selectedBuildingId
@@ -26,16 +28,16 @@ export default function StairsTable({ stairs, buildings, onRemove, onEdit, onHov
     return (
         <div className="space-y-4">
             <fieldset className="fieldset">
-                <legend className="label">Épület</legend>
+                <legend className="label">{t("ui.common.building")}</legend>
                 <select
                     className="select select-bordered"
                     value={selectedBuildingId || ""}
                     onChange={(e) => setSelectedBuildingId(e.target.value || null)}
                 >
-                    <option value="">Összes</option>
+                    <option value="">{t("ui.common.all")}</option>
                     {buildings.map((b) => (
                         <option key={b.id} value={b.id}>
-                            {b.name}
+                            {t(b.name)}
                         </option>
                     ))}
                 </select>
@@ -43,10 +45,10 @@ export default function StairsTable({ stairs, buildings, onRemove, onEdit, onHov
             <table className="table table-pin-rows">
                 <thead>
                     <tr>
-                        <th>Név</th>
-                        <th>Épület</th>
-                        <th>Min. emelet</th>
-                        <th>Max. emelet</th>
+                        <th>{t("ui.common.name")}</th>
+                        <th>{t("ui.common.building")}</th>
+                        <th>{t("ui.common.min_storey_short")}</th>
+                        <th>{t("ui.common.max_storey_short")}</th>
                         <th className="w-40"></th>
                     </tr>
                 </thead>
@@ -57,22 +59,22 @@ export default function StairsTable({ stairs, buildings, onRemove, onEdit, onHov
                             className="hover:bg-base-200"
                             key={s.id.toString()}
                         >
-                            <td>{s.name}</td>
+                            <td>{t(s.name)}</td>
                             <td>{buildingName(s.building_id)}</td>
-                            <td>{storeyLabel(s.min_storey)}</td>
-                            <td>{storeyLabel(s.max_storey)}</td>
+                            <td>{storeyLabel(s.min_storey, t)}</td>
+                            <td>{storeyLabel(s.max_storey, t)}</td>
                             <td className="table-actions">
                                 <button
                                     className="btn btn-ghost btn-sm"
                                     onClick={() => onEdit(s)}
                                 >
-                                    Szerk.
+                                    {t("ui.common.edit")}
                                 </button>
                                 <button
                                     className="btn btn-error btn-sm"
                                     onClick={() => onRemove(s)}
                                 >
-                                    Törlés
+                                    {t("ui.common.delete")}
                                 </button>
                             </td>
                         </tr>
@@ -84,8 +86,7 @@ export default function StairsTable({ stairs, buildings, onRemove, onEdit, onHov
                                 colSpan={7}
                                 className="text-center text-base-content/60 py-8"
                             >
-                                Nincs még lépcső. Adj hozzá egyet a jobb felső
-                                gombbal.
+                                {t("ui.stair.empty")}
                             </td>
                         </tr>
                     )}

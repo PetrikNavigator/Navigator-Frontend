@@ -1,5 +1,7 @@
+import { useTranslation } from "react-i18next"
 import type { Corridor } from "../../../types/navigator/Corridor"
 import type { Building } from "../../../types/navigator/Building"
+import { storeyLabel } from "../../../utils/classroomSearch"
 
 type Props = {
     buildings: Building[]
@@ -9,22 +11,23 @@ type Props = {
     onHover: (c: Corridor) => void
 }
 
-const storeyLabel = (n: number) => (n === 0 ? "Földszint" : n.toString())
-
 export default function CorridorsTable({ corridors, buildings, onRemove, onEdit, onHover }: Props) {
+    const { t } = useTranslation()
+
     const buildingName = (id: string) => {
-        return buildings.find(x => x.id === id)?.name
+        const building = buildings.find(x => x.id === id)
+        return building ? t(building.name) : ""
     }
 
     return (
         <table className="table table-pin-rows">
             <thead>
                 <tr>
-                    <th>Név</th>
-                    <th>Épület</th>
-                    <th>Emelet</th>
-                    <th>Akadálym.</th>
-                    <th>Kültéri</th>
+                    <th>{t("ui.common.name")}</th>
+                    <th>{t("ui.common.building")}</th>
+                    <th>{t("ui.common.floor")}</th>
+                    <th>{t("ui.corridor.barrier_free_short")}</th>
+                    <th>{t("ui.corridor.outdoor_short")}</th>
                     <th className="w-40"></th>
                 </tr>
             </thead>
@@ -35,23 +38,23 @@ export default function CorridorsTable({ corridors, buildings, onRemove, onEdit,
                         className="hover:bg-base-200"
                         key={c.id.toString()}
                     >
-                        <td>{c.name}</td>
+                        <td>{t(c.name)}</td>
                         <td>{buildingName(c.building_id)}</td>
-                        <td>{storeyLabel(c.storey)}</td>
-                        <td>{c.barrier_free ? "Igen" : "Nem"}</td>
-                        <td>{c.is_outdoor ? "Igen" : "Nem"}</td>
+                        <td>{storeyLabel(c.storey, t)}</td>
+                        <td>{c.barrier_free ? t("ui.common.yes") : t("ui.common.no")}</td>
+                        <td>{c.is_outdoor ? t("ui.common.yes") : t("ui.common.no")}</td>
                         <td className="table-actions">
                             <button
                                 className="btn btn-ghost btn-sm"
                                 onClick={() => onEdit(c)}
                             >
-                                Szerk.
+                                {t("ui.common.edit")}
                             </button>
                             <button
                                 className="btn btn-error btn-sm"
                                 onClick={() => onRemove(c)}
                             >
-                                Törlés
+                                {t("ui.common.delete")}
                             </button>
                         </td>
                     </tr>
@@ -63,8 +66,7 @@ export default function CorridorsTable({ corridors, buildings, onRemove, onEdit,
                             colSpan={9}
                             className="text-center text-base-content/60 py-8"
                         >
-                            Nincs még folyosó. Adj hozzá egyet a jobb felső
-                            gombbal.
+                            {t("ui.corridor.empty")}
                         </td>
                     </tr>
                 )}

@@ -14,13 +14,13 @@ import type { MyLocation } from "../../types/navigator/MyLocation"
  *  highlight) is a cheap in-place appearance pass. */
 export type KioskSceneController = {
     /** (Re)build geometry for a graph. No-op if the same graph instance. */
-    setGraph: (graph: FullGraph | null) => void
+    setGraph: (graph: FullGraph | null, locationMarkerLabel: string) => void
     /** Apply visibility + colors for the current state. */
     apply: (state: KioskAppearance) => void
     /** Set (or clear) the A* route overlay. Cheap; rebuilds only the path. */
     setPath: (path: Vec3[] | null | undefined) => void
     /** Set (or clear) the "you are here" marker overlay. */
-    setMyLocation: (loc: MyLocation | null | undefined) => void
+    setMyLocation: (loc: MyLocation | null | undefined, locationMarkerLabel: string) => void
     getNodes: () => KioskNode[]
     getRoot: () => THREE.Group | null
     dispose: () => void
@@ -50,14 +50,14 @@ export function createKioskScene(scene: THREE.Scene): KioskSceneController {
     }
 
     // The marker is a child of `root` too, for the same centering reason.
-    const rebuildMarker = (): void => {
+    const rebuildMarker = (locationMarkerLabel: string): void => {
         if (markerGroup) {
             markerGroup.parent?.remove(markerGroup)
             disposeDeep(markerGroup)
             markerGroup = null
         }
         if (root && markerData && graphRef) {
-            markerGroup = buildLocationMarker(graphRef, markerData)
+            markerGroup = buildLocationMarker(graphRef, markerData, locationMarkerLabel)
             root.add(markerGroup)
         }
     }
@@ -73,7 +73,7 @@ export function createKioskScene(scene: THREE.Scene): KioskSceneController {
         markerGroup = null
     }
 
-    const setGraph = (graph: FullGraph | null): void => {
+    const setGraph = (graph: FullGraph | null, locationMarkerLabel: string): void => {
         if (graph === graphRef) return
         graphRef = graph
         clear()
@@ -83,7 +83,7 @@ export function createKioskScene(scene: THREE.Scene): KioskSceneController {
         nodes = built.nodes
         scene.add(root)
         rebuildPath() // re-attach any existing path to the fresh root
-        rebuildMarker() // re-attach any existing marker to the fresh root
+        rebuildMarker(locationMarkerLabel) // re-attach any existing marker to the fresh root
     }
 
     const setPath = (path: Vec3[] | null | undefined): void => {
@@ -91,9 +91,9 @@ export function createKioskScene(scene: THREE.Scene): KioskSceneController {
         rebuildPath()
     }
 
-    const setMyLocation = (loc: MyLocation | null | undefined): void => {
+    const setMyLocation = (loc: MyLocation | null | undefined, locationMarkerLabel: string): void => {
         markerData = loc ?? null
-        rebuildMarker()
+        rebuildMarker(locationMarkerLabel)
     }
 
     const apply = (state: KioskAppearance): void => {

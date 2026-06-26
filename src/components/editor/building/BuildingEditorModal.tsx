@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
 import EditorView3D from "../../../three/EditorView3D"
 import type { Building } from "../../../types/navigator/Building"
@@ -16,6 +17,7 @@ type Props = {
 }
 
 export default function BuildingEditorModal({ building, open, setOpen }: Props) {
+    const { t } = useTranslation()
     const { isError, error, addBuilding, updateBuilding, isLoading, buildings } = useBuildings()
     const { graph, getFullGraph, invalidateGraph } = useGraph()
     const { theme } = useTheme()
@@ -30,15 +32,15 @@ export default function BuildingEditorModal({ building, open, setOpen }: Props) 
         e.preventDefault()
 
         if (!form.name.trim()) {
-            setErr("Add meg az épület nevét")
+            setErr(t("ui.building.err_name"))
             return
         }
         if (!form.description.trim()) {
-            setErr("Add meg az épület leírását")
+            setErr(t("ui.building.err_desc"))
             return
         }
         if (!Number.isFinite(form.x) || !Number.isFinite(form.y)) {
-            setErr("A pozíciónak érvényes számnak kell lennie")
+            setErr(t("ui.common.err_position_number"))
             return
         }
         const ix = Math.round(form.x)
@@ -88,7 +90,7 @@ export default function BuildingEditorModal({ building, open, setOpen }: Props) 
             kind: "building",
             id: building?.id,
             preview: {
-                name: form.name || "új épület",
+                name: form.name || t("ui.building.new_placeholder"),
                 description: form.description,
                 x: form.x,
                 y: form.y,
@@ -109,16 +111,16 @@ export default function BuildingEditorModal({ building, open, setOpen }: Props) 
     return (
         <Modal
             showClose={false}
-            title={editing ? "Épület szerkesztése" : "Új épület"}
+            title={editing ? t("ui.building.edit_title") : t("ui.building.new_title")}
             open={open}
             onClose={onClose}
             footer={
                 <>
                     <button className="btn btn-ghost" onClick={onClose}>
-                        Mégse
+                        {t("ui.common.cancel")}
                     </button>
                     <button className="btn btn-primary" form="building-form" disabled={isLoading}>
-                        {editing ? "Mentés" : "Létrehozás"}
+                        {editing ? t("ui.common.save") : t("ui.common.create")}
                     </button>
                 </>
             }
@@ -129,7 +131,7 @@ export default function BuildingEditorModal({ building, open, setOpen }: Props) 
                     {/* NAME */}
                     <div className="form-control">
                         <label className="label">
-                            <span className="label-text">Név</span>
+                            <span className="label-text">{t("ui.common.name")}</span>
                         </label>
                         <input
                             className="input input-bordered w-full"
@@ -145,7 +147,7 @@ export default function BuildingEditorModal({ building, open, setOpen }: Props) 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="form-control">
                             <label className="label">
-                                <span className="label-text">Pozíció X (m)</span>
+                                <span className="label-text">{t("ui.common.pos_x_m")}</span>
                             </label>
                             <input
                                 type="number"
@@ -163,7 +165,7 @@ export default function BuildingEditorModal({ building, open, setOpen }: Props) 
 
                         <div className="form-control">
                             <label className="label">
-                                <span className="label-text">Pozíció Y (m)</span>
+                                <span className="label-text">{t("ui.common.pos_y_m")}</span>
                             </label>
                             <input
                                 type="number"
@@ -183,7 +185,7 @@ export default function BuildingEditorModal({ building, open, setOpen }: Props) 
                     {/* DESCRIPTION */}
                     <div className="form-control">
                         <label className="label">
-                            <span className="label-text">Leírás</span>
+                            <span className="label-text">{t("ui.common.description")}</span>
                         </label>
                         <textarea
                             className="textarea textarea-bordered w-full"
@@ -211,7 +213,7 @@ export default function BuildingEditorModal({ building, open, setOpen }: Props) 
                 {/* SIDEBAR PREVIEW */}
                 <aside className="hidden lg:flex flex-col gap-3">
                     <div className="text-xs uppercase tracking-widest opacity-60 font-semibold">
-                        3D előnézet
+                        {t("ui.common.preview_3d")}
                     </div>
 
                     <div className="rounded-box overflow-hidden border border-base-300 h-[420px] bg-base-300/20">
@@ -238,8 +240,7 @@ export default function BuildingEditorModal({ building, open, setOpen }: Props) 
                     </div>
 
                     <p className="text-xs opacity-60 leading-relaxed">
-                        A szerkesztett épület termei narancssárgával kiemelve. A kék
-                        korongot húzva az épület pozíciója a 3D nézetben is állítható.
+                        {t("ui.building.preview_hint")}
                     </p>
                 </aside>
             </div>

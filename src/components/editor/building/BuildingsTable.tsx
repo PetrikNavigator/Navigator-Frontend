@@ -1,16 +1,18 @@
 import { useLayoutEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import BuildingEditorModal from "./BuildingEditorModal";
 import type { Building } from "../../../types/navigator/Building";
 import { useBuildings } from "../../../contexts/navigator/BuildingContext";
 
 export default function BuildingsTable() {
+    const { t } = useTranslation()
     const { buildings, getBuildings, deleteBuilding } = useBuildings()
 
     const [editing, setEditing] = useState<Building | null>(null)
     const [open, setOpen] = useState(false)
 
     const onRemove = async (building: Building) => {
-        const res = confirm(`Biztos hogy törölöd a(z) ${building.name}?`)
+        const res = confirm(t("ui.confirm.delete", { name: t(building.name) }))
         if (res)
             await deleteBuilding(building.id)
     }
@@ -34,14 +36,14 @@ export default function BuildingsTable() {
             <div className="card bg-base-100 shadow-sm">
                 <div className="card-body p-0">
                     <button className="btn btn-primary w-max mb-4" onClick={onCreate}>
-                        Épület hozzáadása
+                        {t("ui.building.add")}
                     </button>
                     <div className="overflow-x-auto max-h-[80vh]">
                         <table className="table table-pin-rows">
                             <thead>
                                 <tr>
-                                    <th>Név</th>
-                                    <th>Leírás</th>
+                                    <th>{t("ui.common.name")}</th>
+                                    <th>{t("ui.common.description")}</th>
                                     <th className="w-32"></th>
                                 </tr>
                             </thead>
@@ -51,9 +53,9 @@ export default function BuildingsTable() {
                                     <tr
                                         key={b.id.toString()}
                                     >
-                                        <td className="font-medium">{b.name}</td>
+                                        <td className="font-medium">{t(b.name)}</td>
 
-                                        <td>{b.description || "—"}</td>
+                                        <td>{b.description ? t(b.description) : "—"}</td>
 
                                         <td>
                                             <div className="flex justify-end gap-2">
@@ -61,14 +63,14 @@ export default function BuildingsTable() {
                                                     className="btn btn-ghost btn-sm"
                                                     onClick={() => onEdit(b)}
                                                 >
-                                                    Szerk.
+                                                    {t("ui.common.edit")}
                                                 </button>
 
                                                 <button
                                                     className="btn btn-error btn-sm"
                                                     onClick={() => onRemove(b)}
                                                 >
-                                                    Törlés
+                                                    {t("ui.common.delete")}
                                                 </button>
                                             </div>
                                         </td>
@@ -81,8 +83,7 @@ export default function BuildingsTable() {
                                             colSpan={4}
                                             className="text-center text-base-content/60 py-8"
                                         >
-                                            Nincs még épület. Adj hozzá egyet a jobb felső
-                                            gombbal.
+                                            {t("ui.building.empty")}
                                         </td>
                                     </tr>
                                 )}

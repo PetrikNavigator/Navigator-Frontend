@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import EditorView3D from "../three/EditorView3D";
 import { useGraph } from "../contexts/other/GraphContext";
 import {
@@ -8,6 +9,7 @@ import {
 import { getStoreyRange } from "../three/entities/buildingHelpers";
 
 export default function Settings() {
+    const { t } = useTranslation()
     const { graph, getFullGraph } = useGraph()
     const [storey, setStorey] = useState(0)
     const [buildingId, setBuildingId] = useState("")
@@ -36,7 +38,7 @@ export default function Settings() {
 
     const saveLocation = () => {
         if(buildingId === "") {
-            alert("Nincs épület kiválasztva!")
+            alert(t("ui.settings.no_building"))
             return
         }
 
@@ -57,10 +59,10 @@ export default function Settings() {
         <div className="p-6">
             <div className="xl:flex xl:space-x-6">
                 <div>
-                    <h1 className="card-title text-2xl">Beállítások</h1>
+                    <h1 className="card-title text-2xl">{t("ui.settings.title")}</h1>
 
                     <fieldset className="fieldset">
-                        <legend className="label">X</legend>
+                        <legend className="label">{t("ui.common.x")}</legend>
                         <input
                             type="number"
                             className="input input-bordered"
@@ -70,7 +72,7 @@ export default function Settings() {
                     </fieldset>
 
                     <fieldset className="fieldset">
-                        <legend className="label">Y</legend>
+                        <legend className="label">{t("ui.common.y")}</legend>
                         <input
                             type="number"
                             className="input input-bordered"
@@ -81,7 +83,7 @@ export default function Settings() {
 
                     <fieldset className="fieldset">
                         <legend className="label">
-                            Emelet ({storeyRange.min}–{storeyRange.max})
+                            {t("ui.settings.storey", { min: storeyRange.min, max: storeyRange.max })}
                         </legend>
                         <input
                             type="number"
@@ -94,16 +96,16 @@ export default function Settings() {
                     </fieldset>
 
                     <fieldset className="fieldset">
-                        <legend className="label">Épület</legend>
+                        <legend className="label">{t("ui.common.building")}</legend>
                         <select
                             className="select select-bordered"
                             value={buildingId}
                             onChange={(e) => setBuildingId(e.target.value)}
                         >
-                            <option value="" disabled>Válassz</option>
+                            <option value="" disabled>{t("ui.common.choose")}</option>
                             {graph?.buildings.map((b) => (
                                 <option key={b.id} value={b.id}>
-                                    {b.name}
+                                    {t(b.name)}
                                 </option>
                             ))}
                         </select>
@@ -111,16 +113,16 @@ export default function Settings() {
 
                     <div className="mt-6 flex gap-2">
                         <button className="btn btn-primary" onClick={saveLocation}>
-                            Mentés
+                            {t("ui.common.save")}
                         </button>
                         <button className="btn btn-outline" onClick={clearLocation}>
-                            Törlés
+                            {t("ui.common.delete")}
                         </button>
                     </div>
 
                     {saved && (
                         <div className="alert alert-success mt-4">
-                            <span>Sikeres mentés.</span>
+                            <span>{t("ui.settings.saved")}</span>
                         </div>
                     )}
                 </div>

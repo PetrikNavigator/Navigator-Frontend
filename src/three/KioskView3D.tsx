@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react"
+import { useTranslation } from "react-i18next"
 import * as THREE from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
 
@@ -67,6 +68,7 @@ export default function KioskView3D({
     className = "w-full h-full",
     initialDistance = 120,
 }: Props) {
+    const { t } = useTranslation()
     const containerRef = useRef<HTMLDivElement>(null)
 
     const controllerRef = useRef<KioskSceneController | null>(null)
@@ -164,7 +166,7 @@ export default function KioskView3D({
         if (!controller) return
 
         const graphChanged = graphRef.current !== graph
-        controller.setGraph(graph)
+        controller.setGraph(graph, t("kiosk.location.marker"))
         graphRef.current = graph
 
         controller.apply({
@@ -173,7 +175,7 @@ export default function KioskView3D({
             highlight,
         })
         controller.setPath(path)
-        controller.setMyLocation(myLocation)
+        controller.setMyLocation(myLocation, t("kiosk.location.marker"))
 
         const floorKey = floorKeyOf(isolatedFloor ?? null)
         const floorChanged = floorKeyRef.current !== floorKey
@@ -183,7 +185,7 @@ export default function KioskView3D({
         if (graphChanged || floorChanged) rig?.frameFloor(isolatedFloor ?? null)
 
         requestRenderRef.current?.()
-    }, [graph, isolatedFloor, selection, highlight, path, myLocation])
+    }, [graph, isolatedFloor, selection, highlight, path, myLocation, t])
 
     // Live theme background: recolor the clear color + scene background
     // without touching geometry.
@@ -213,7 +215,7 @@ export default function KioskView3D({
 
             {!graph && (
                 <div className="absolute inset-0 grid place-items-center text-cyan-300 text-sm">
-                    Nincs elérhető adat
+                    {t("ui.common.no_data")}
                 </div>
             )}
         </div>

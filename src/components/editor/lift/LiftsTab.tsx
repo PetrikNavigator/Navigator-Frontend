@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { useTranslation } from "react-i18next"
 import { useBuildings } from "../../../contexts/navigator/BuildingContext"
 import { useLifts } from "../../../contexts/navigator/LiftsContext"
 import type { AddLift, Lift } from "../../../types/navigator/Lift"
@@ -21,6 +22,7 @@ const emptyForm = {
 }
 
 export default function LiftsTab() {
+    const { t } = useTranslation()
     const { buildings, getBuildings } = useBuildings()
     const { lifts, getLifts, deleteLift, isError, error, addLift, updateLift, clearError, isLoading } = useLifts()
     const { graph, getFullGraph, invalidateGraph } = useGraph()
@@ -47,15 +49,15 @@ export default function LiftsTab() {
         clearError()
 
         if (!form.name.trim()) {
-            setErr("Add meg a lift nevét")
+            setErr(t("ui.lift.err_name"))
             return
         }
         if (!Number.isFinite(form.x) || !Number.isFinite(form.y)) {
-            setErr("A pozíciónak érvényes számnak kell lennie")
+            setErr(t("ui.common.err_position_number"))
             return
         }
         if (form.min_storey > form.max_storey) {
-            setErr("A minimum emelet nem lehet nagyobb a maximumnál")
+            setErr(t("ui.common.err_min_max"))
             return
         }
 
@@ -70,7 +72,7 @@ export default function LiftsTab() {
     }
 
     const onRemove = async (lift: Lift) => {
-        const res = confirm(`Biztos hogy törölöd a(z) ${lift.name}?`)
+        const res = confirm(t("ui.confirm.delete", { name: t(lift.name) }))
         if (res)
             await deleteLift(lift.id)
     }
@@ -132,7 +134,7 @@ export default function LiftsTab() {
             kind: "lift",
             id: editing?.id,
             preview: {
-                name: form.name || "új lift",
+                name: form.name || t("ui.lift.new_placeholder"),
                 x: form.x,
                 y: form.y,
                 min_storey: form.min_storey,
@@ -158,7 +160,7 @@ export default function LiftsTab() {
             <button className={`btn ${!editorOpen && "btn-primary"} w-max mb-4`} onClick={() => {
                 editorOpen ? onClose() : onCreate()
             }}>
-                {editorOpen ? "Mégse" : "Lift hozzáadása"}
+                {editorOpen ? t("ui.common.cancel") : t("ui.lift.add")}
             </button>
             <div className="xl:flex xl:space-x-6">
                 <div className="overflow-x-auto xl:min-w-[40vw] max-h-[80vh]">
@@ -179,7 +181,7 @@ export default function LiftsTab() {
                                     onSubmit={onSubmit}
                                 />
                                 <button className="btn btn-primary mt-2" form="lift-form" disabled={isLoading}>
-                                    {editing ? "Mentés" : "Létrehozás"}
+                                    {editing ? t("ui.common.save") : t("ui.common.create")}
                                 </button>
                             </>
                             :
