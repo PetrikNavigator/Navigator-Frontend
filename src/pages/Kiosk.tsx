@@ -16,6 +16,7 @@ import NavigatePanel from "../components/kiosk/NavigatePanel"
 import { VirtualKeyboardProvider } from "../contexts/other/VirtualKeyboardContext"
 import { CANVAS_BG_DARK, CANVAS_BG_LIGHT } from "../types/three/material-types"
 import { useSearchParams } from "react-router"
+import StartPopup from "../components/kiosk/StartPopup"
 
 /** Reset the kiosk after this long with no user input. */
 const IDLE_MS = 60_000
@@ -50,6 +51,8 @@ export default function Kiosk() {
 	const [barrierFree, setBarrierFree] = useState(false)
 	const [hoveredId, setHoveredId] = useState<string | null>(null)
 	const [myLocation, setMyLocation] = useState<MyLocation | null>(null)
+
+	const [welcomeActive, setWelcomeActive] = useState<boolean>(true)
 
 	// Bumped to force the 3D camera back to the default campus framing.
 	const [viewResetToken, setViewResetToken] = useState(0)
@@ -99,6 +102,7 @@ export default function Kiosk() {
 		setBarrierFree(false)
 		setHoveredId(null)
 		setViewResetToken((n) => n + 1)
+		setWelcomeActive(true)
 	}, [])
 
 	useIdleTimer(resetAll, IDLE_MS)
@@ -224,6 +228,10 @@ export default function Kiosk() {
 		<VirtualKeyboardProvider>
 			<div className="md:h-screen flex flex-col">
 				<KioskNavbar />
+				<StartPopup
+					isActive={welcomeActive}
+					setIsActive={setWelcomeActive}
+				/>
 
 				<main className="flex-1 min-h-0 p-4 overflow-auto md:overflow-hidden">
 					<div className="flex flex-col xl:flex-row gap-4 h-full min-h-0">

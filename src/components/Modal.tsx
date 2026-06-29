@@ -36,7 +36,7 @@ export default function Modal({
                 </div>
 
                 {/* BODY */}
-                <div className="py-4">{children}</div>
+                <div>{children}</div>
 
                 {/* FOOTER */}
                 {footer && <div className="modal-action">{footer}</div>}
